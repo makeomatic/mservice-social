@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["network", "id", "refresh", "access", "meta"],
+  "properties": {
+    "network": {
+      "description": "Social network to fetch feed from",
+      "type": "string"
+    },
+    "id": {
+      "description": "Account ID",
+      "type": "string"
+    },
+    "refresh": {
+      "description": "Refresh token for account",
+      "type": "string"
+    },
+    "access": {
+      "description": "Access token for account",
+      "type": "string"
+    },
+    "meta": {
+      "description": "Additional parameters, like facebook page id",
+      "type": "object"
+    }
+  }
+}

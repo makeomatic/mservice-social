@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["network", "id"],
+  "properties": {
+    "network": {
+      "description": "Social network to fetch feed from",
+      "type": "string"
+    },
+    "id": {
+      "description": "Account ID",
+      "type": "string"
+    },
+    "filter": {
+      "description": "Optional filter",
+      "type": "object",
+      "properties": {
+        "mentions": {
+          "description": "Array of mentions to search for",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "tags": {
+          "description": "Array of hashtags to search for",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

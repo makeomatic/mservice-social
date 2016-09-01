@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "accounts": {
+      "description": "Array of accounts to sync, if not specified, syncs everything",
+      "type": "array",
+      "items": {
+        "network": {
+          "description": "Social network to fetch feed from",
+          "type": "string"
+        },
+        "id": {
+          "description": "Account ID",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
