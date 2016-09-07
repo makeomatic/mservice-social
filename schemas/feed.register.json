@@ -1,27 +1,32 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["network", "id", "refresh", "access", "meta"],
+  "required": ["id", "network", "filter"],
   "properties": {
+    "id": {
+      "description": "Internal ID to assign this feed to",
+      "type": "string"
+    },
     "network": {
       "description": "Social network to fetch feed from",
       "type": "string"
     },
-    "id": {
-      "description": "Account ID",
-      "type": "string"
-    },
-    "refresh": {
-      "description": "Refresh token for account",
-      "type": "string"
-    },
-    "access": {
-      "description": "Access token for account",
-      "type": "string"
-    },
-    "meta": {
-      "description": "Additional parameters, like facebook page id",
-      "type": "object"
+    "filter": {
+      "description": "What to fetch",
+      "type": "object",
+      "properties": {
+        "account": {
+          "description": "Read feed from this account",
+          "type": "string"
+        },
+        "hashtags": {
+          "description": "Array of hashtags to watch",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

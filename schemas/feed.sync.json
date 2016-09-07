@@ -3,15 +3,15 @@
   "additionalProperties": false,
   "properties": {
     "accounts": {
-      "description": "Array of accounts to sync, if not specified, syncs everything",
+      "description": "Array of feeds to sync, if not specified, syncs everything",
       "type": "array",
       "items": {
         "network": {
-          "description": "Social network to fetch feed from",
+          "description": "Social network to fetch feed from, optional. If not specified, syncs all.",
           "type": "string"
         },
         "id": {
-          "description": "Account ID",
+          "description": "Internal ID",
           "type": "string"
         }
       }

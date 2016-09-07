@@ -5,13 +5,10 @@ const path = require('path');
 
 const StorageService = require('./services/storage');
 const TwitterService = require('./services/twitter');
+const FeedService = require('./services/feed');
 
 const defaultConfig = globFiles(path.resolve(__dirname, 'configs'));
 
-/**
- * @property {object}      Chat.services
- * @property {RoomService} Chat.services.room
- */
 class Social extends MService {
   /**
    * @param config
@@ -20,11 +17,13 @@ class Social extends MService {
     super(_.merge({}, defaultConfig, config));
 
     const storage = new StorageService(this.config.storage);
-    const twitter = new TwitterService(this.config.twitter);
+    const twitter = new TwitterService(this.config.twitter, storage, this.logger);
+    const feed = new FeedService(this.config.feed);
 
     this.services = {
       storage,
       twitter,
+      feed,
     };
   }
 }

@@ -1,26 +1,22 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["network", "id"],
+  "required": ["filter"],
   "properties": {
-    "network": {
-      "description": "Social network to fetch feed from",
-      "type": "string"
-    },
-    "id": {
-      "description": "Account ID",
-      "type": "string"
-    },
     "filter": {
-      "description": "Optional filter",
+      "description": "What to fetch, filters are cumulative (e.g. shows feed for both account id and mentions)",
       "type": "object",
       "properties": {
+        "id": {
+          "description": "Internal ID to fetch feed for",
+          "type": "string"
+        },
         "mentions": {
           "description": "Array of mentions to search for",
           "type": "array",
           "items": { "type": "string" }
         },
-        "tags": {
+        "hashtags": {
           "description": "Array of hashtags to search for",
           "type": "array",
           "items": { "type": "string" }
