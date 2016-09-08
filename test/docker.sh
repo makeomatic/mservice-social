@@ -8,8 +8,8 @@ DC="$DIR/docker-compose.yml"
 PATH=$PATH:$DIR/.bin/
 COMPOSE=$(which docker-compose)
 MOCHA=$BIN/_mocha
-COVER="$BIN/isparta cover"
-NODE=$BIN/babel-node
+COVER="$BIN/istanbul cover"
+NODE=node
 TESTS=${TESTS:-test/suites/*.js}
 COMPOSE_VER=${COMPOSE_VER:-1.7.1}
 COMPOSE="docker-compose -f $DC"
@@ -30,7 +30,7 @@ fi
 $COMPOSE up -d
 
 # make sure that services are up
-sleep 40
+#sleep 4
 
 echo "cleaning old coverage"
 rm -rf ./coverage
@@ -53,5 +53,5 @@ docker exec tester test/aggregate-report.js
 
 if [[ x"$CI" == x"true" ]]; then
   echo "uploading coverage report from ./coverage/lcov.info"
-  $BIN/codecov -f ./coverage/lcov.info
+  #$BIN/codecov -f ./coverage/lcov.info
 fi

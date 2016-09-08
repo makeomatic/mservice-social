@@ -6,4 +6,13 @@ global.SERVICES = {
       },
     },
   },
+  storage: {
+    connection: {
+      host: 'pg',
+      user: 'postgres',
+      password: '',
+    },
+  },
+  twitter: {},
+  feed: {},
 };

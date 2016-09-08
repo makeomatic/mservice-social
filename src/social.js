@@ -17,7 +17,7 @@ class Social extends MService {
     super(_.merge({}, defaultConfig, config));
 
     const storage = new StorageService(this.config.storage);
-    const twitter = new TwitterService(this.config.twitter, storage, this.logger);
+    const twitter = new TwitterService(this.config.twitter, storage, this.log);
     const feed = new FeedService(this.config.feed);
 
     this.services = {

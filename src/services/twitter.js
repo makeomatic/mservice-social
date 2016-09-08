@@ -60,10 +60,11 @@ class Twitter {
   }
 
   log(results) {
-    if (!isArray(results)) {
-      results = [results];
+    let data = results;
+    if (!isArray(data)) {
+      data = [results];
     }
-    results.map(this.logger.info);
+    data.map(this.logger.info);
   }
 
   error(exception) {
@@ -82,13 +83,6 @@ class Twitter {
 
       this.storage.insert(status).then(this.log);
     }
-  }
-
-  /**
-   * @param {object} filter
-   */
-  search(filter) {
-
   }
 }
 
