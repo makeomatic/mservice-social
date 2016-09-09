@@ -25,7 +25,9 @@ class Twitter {
       id_str: isString,
       text: isString,
     });
+  }
 
+  init() {
     return this.storage
       .fetchFeeds({ network: 'twitter' })
       .bind(this)

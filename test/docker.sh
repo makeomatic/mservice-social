@@ -30,7 +30,7 @@ fi
 $COMPOSE up -d
 
 # make sure that services are up
-#sleep 4
+sleep 5
 
 echo "cleaning old coverage"
 rm -rf ./coverage

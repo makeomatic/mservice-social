@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["filter", "token"],
+  "properties": {
+    "filter": {
+      "description": "Search clauses",
+      "type": "object",
+      "properties": {
+        "internal": {
+          "description": "Internal ID to fetch feeds for, if omitted, list all feeds",
+          "type": "string"
+        }
+      }
+    },
+    "token": {
+      "description": "Auth token",
+      "type": "string"
+    }
+  }
+}

@@ -1,3 +1,5 @@
+const omit = require('lodash/omit');
+
 /**
  * @api {http} <prefix>.feed.read Read feed by account with optional filters
  * @apiVersion 1.0.0
@@ -7,7 +9,7 @@
  */
 function FeedReadAction(request) {
   const { params } = request;
-  return this.services.feed.read(params);
+  return this.services.feed.read(omit(params, 'token'));
 }
 
 FeedReadAction.schema = 'feed.read';

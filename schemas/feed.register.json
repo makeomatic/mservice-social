@@ -1,9 +1,9 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "network", "filter"],
+  "required": ["internal", "network", "filter", "token"],
   "properties": {
-    "id": {
+    "internal": {
       "description": "Internal ID to assign this feed to",
       "type": "string"
     },
@@ -27,6 +27,10 @@
           }
         }
       }
+    },
+    "token": {
+      "description": "Auth token",
+      "type": "string"
     }
   }
 }

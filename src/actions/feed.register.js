@@ -1,5 +1,6 @@
 const Errors = require('common-errors');
 const Promise = require('bluebird');
+const omit = require('lodash/omit');
 
 /**
  * @api {http} <prefix>.feed.register Register new feed source
@@ -10,7 +11,7 @@ const Promise = require('bluebird');
  */
 function FeedRegisterAction(request) {
   const { params } = request;
-  return this.services.feed.register(params);
+  return this.services.feed.register(omit(params, 'token'));
 }
 
 const allowed = request => {

@@ -22,7 +22,7 @@ module.exports = {
         host: 'redis-3',
         port: 6379,
       },
-    ]
+    ],
   },
   admins: [
     {

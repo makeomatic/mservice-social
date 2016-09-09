@@ -8,14 +8,34 @@ services:
     image: makeomatic/alpine-redis
     hostname: redis-1
 
+  redis-2:
+    expose:
+      - "6379"
+      - "16379"
+    container_name: redis-2
+    image: makeomatic/alpine-redis
+    hostname: redis-2
+
+  redis-3:
+    expose:
+      - "6379"
+      - "16379"
+    container_name: redis-3
+    image: makeomatic/alpine-redis
+    hostname: redis-3
+
   redis-client:
     links:
       - redis-1
+      - redis-2
+      - redis-3
     container_name: redis-client
     image: makeomatic/redis-trib
     hostname: redis-client
     environment:
       - REDIS_1=redis-1
+      - REDIS_2=redis-2
+      - REDIS_3=redis-3
 
   rabbitmq:
     expose:
