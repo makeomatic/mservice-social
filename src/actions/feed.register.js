@@ -1,6 +1,5 @@
-const Errors = require('common-errors');
-const Promise = require('bluebird');
 const omit = require('lodash/omit');
+const allowed = require('../allowed');
 
 /**
  * @api {http} <prefix>.feed.register Register new feed source
@@ -13,16 +12,6 @@ function FeedRegisterAction(request) {
   const { params } = request;
   return this.services.feed.register(omit(params, 'token'));
 }
-
-const allowed = request => {
-  const { auth } = request;
-
-  if (auth.credentials.isAdmin !== true) {
-    return Promise.reject(new Errors.NotPermittedError('Not an admin'));
-  }
-
-  return Promise.resolve(request);
-};
 
 FeedRegisterAction.allowed = allowed;
 FeedRegisterAction.auth = 'token';

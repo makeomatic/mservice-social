@@ -9,6 +9,7 @@ describe('twitter', function testSuite() {
   const uri = {
     register: 'http://0.0.0.0:3000/api/social/feed/register',
     list: 'http://0.0.0.0:3000/api/social/feed/list',
+    read: 'http://0.0.0.0:3000/api/social/feed/read',
   };
 
   const payload = {
@@ -16,15 +17,21 @@ describe('twitter', function testSuite() {
       internal: 'test@test.ru',
       network: 'twitter',
       filter: {
-        account: 'pixiv',
+        hashtags: ['twitter'],
       },
     },
-    registerFail: {},
     list: {
       filter: {
         internal: 'test@test.ru',
       },
     },
+    read: {
+      filter: {
+        internal: 'test@test.ru',
+      },
+    },
+
+    registerFail: {},
   };
 
   before('start service', () => {
@@ -68,6 +75,21 @@ describe('twitter', function testSuite() {
         expect(statusCode).to.be.equal(200);
         expect(body.length).to.be.equal(1);
         expect(body[0].id).to.be.equal(1);
+        done();
+      });
+  });
+
+  it('wait for some tweets to arrive', done => {
+    this.timeout(5000);
+    setTimeout(done, 3000);
+  });
+
+  it('should have collected some tweets', done => {
+    request(uri.read, merge(payload.read, { token: this.adminToken }))
+      .then(response => {
+        const { body, statusCode } = response;
+        expect(statusCode).to.be.equal(200);
+        expect(body.length).to.be.not.equal(0);
         done();
       });
   });

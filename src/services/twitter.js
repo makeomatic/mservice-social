@@ -1,6 +1,6 @@
 const TwitterClient = require('twitter');
-const moment = require('moment');
 const { isObject, isString, isArray, conforms } = require('lodash');
+const Errors = require('common-errors');
 
 /**
  * @property {TwitterClient} client
@@ -16,7 +16,7 @@ class Twitter {
    */
   constructor(config, storage, logger) {
     this.client = new TwitterClient(config);
-    this.listeners = [];
+    this.listeners = {};
     this.storage = storage;
     this.logger = logger;
 
@@ -39,24 +39,30 @@ class Twitter {
   listen(row) {
     const params = {};
 
-    if (row.account) {
-      params.follow = row.account;
+    if (row.filter.account) {
+      params.follow = row.filter.account;
     }
 
-    if (row.hashtags) {
-      params.track = row.hashtags.join(',').replace(/#/ig, '');
+    if (row.filter.hashtags) {
+      params.track = row.filter.hashtags.join(',').replace(/#/ig, '');
     }
 
     if (!params.follow && !params.track) {
-      return false;
+      throw new Errors.ArgumentError(`${row.id} is missing account to follow or hashtags to track`);
     }
 
-    const listener = this.client.stream('statuses/filter', params);
+    if (!(row.id in this.listeners)) {
+      const listener = this.client.stream('statuses/filter', params);
 
-    listener.on('data', this.onData.bind(this));
-    listener.on('error', this.error.bind(this));
+      listener.on('data', data => {
+        this.onData.call(this, row.id, data);
+      });
+      listener.on('error', this.error.bind(this));
 
-    this.listeners.push(listener);
+      this.listeners[row.id] = listener;
+
+      this.logger.info(`Added listener ${row.id} for ${row.internal} on ${row.network}`);
+    }
 
     return true;
   }
@@ -66,24 +72,27 @@ class Twitter {
     if (!isArray(data)) {
       data = [results];
     }
-    data.map(this.logger.info);
+    data.map(this.logger.info.bind(this.logger));
   }
 
   error(exception) {
     this.logger.error(exception);
   }
 
-  onData(data) {
+  onData(feed, data) {
     if (this.isTweet(data)) {
       const status = {
         id: data.id_str,
-        hashtags: data.entities.hashtags,
-        mentions: data.entities.user_mentions,
+        feed_id: feed,
+        date: data.created_at,
         text: data.text,
-        date: moment(data.created_at).toDate(),
+        meta: {
+          hashtags: data.entities.hashtags,
+          mentions: data.entities.user_mentions,
+        },
       };
 
-      this.storage.insert(status).then(this.log);
+      this.storage.insertStatus(status).return(true);
     }
   }
 }

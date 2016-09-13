@@ -1,14 +1,20 @@
 class Feed {
-  constructor(storage) {
+  constructor(storage, twitter) {
     this.storage = storage;
+    this.twitter = twitter;
   }
 
   register(data) {
-    return this.storage.registerFeed(data);
+    const { storage, twitter } = this;
+    return storage.registerFeed(data).then((result) => (twitter.init().return(result)));
   }
 
   list(data) {
     return this.storage.listFeeds(data);
+  }
+
+  read(data) {
+    return this.storage.readStatuses(data);
   }
 }
 
