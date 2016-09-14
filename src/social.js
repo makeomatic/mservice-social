@@ -21,7 +21,7 @@ class Social extends MService {
     const init = Promise.coroutine(function* initServices() {
       const storage = new StorageService(this.config.storage);
       const twitter = new TwitterService(this.config.twitter, storage, this.log);
-      const feed = new FeedService(storage, twitter);
+      const feed = new FeedService(storage, twitter, this.log);
 
 
       // sequentially initialize services

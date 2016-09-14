@@ -1,6 +1,5 @@
 const TwitterClient = require('twitter');
 const { isObject, isString, isArray, conforms } = require('lodash');
-const Errors = require('common-errors');
 
 /**
  * @property {TwitterClient} client
@@ -16,7 +15,7 @@ class Twitter {
    */
   constructor(config, storage, logger) {
     this.client = new TwitterClient(config);
-    this.listeners = {};
+    this.listener = null;
     this.storage = storage;
     this.logger = logger;
 
@@ -31,38 +30,41 @@ class Twitter {
     return this.storage
       .fetchFeeds({ network: 'twitter' })
       .bind(this)
-      .map(this.listen)
-      .then(this.log)
+      .then(this.listen)
       .catch(this.error);
   }
 
-  listen(row) {
+  listen(rows) {
+    const accounts = rows.reduce(function extractAccount(accum, value) {
+      if (value.filter.account && accum.indexOf(value.filter.account) < 0) {
+        accum.push(value.filter.account_id);
+      }
+      return accum;
+    }, []);
+
     const params = {};
 
-    if (row.filter.account) {
-      params.follow = row.filter.account;
+    if (accounts.length > 0) {
+      params.follow = accounts.join(',');
     }
 
-    if (row.filter.hashtags) {
-      params.track = row.filter.hashtags.join(',').replace(/#/ig, '');
+    if (!params.follow) {
+      return false;
     }
 
-    if (!params.follow && !params.track) {
-      throw new Errors.ArgumentError(`${row.id} is missing account to follow or hashtags to track`);
+    if (this.listener !== null) {
+      // remove old listener
+      this.listener.destroy();
+      this.listener = null;
     }
 
-    if (!(row.id in this.listeners)) {
-      const listener = this.client.stream('statuses/filter', params);
+    this.listener = this.client.stream('statuses/filter', params);
+    this.listener.on('data', data => {
+      this.onData.call(this, data);
+    });
+    this.listener.on('error', this.error.bind(this));
 
-      listener.on('data', data => {
-        this.onData.call(this, row.id, data);
-      });
-      listener.on('error', this.error.bind(this));
-
-      this.listeners[row.id] = listener;
-
-      this.logger.info(`Added listener ${row.id} for ${row.internal} on ${row.network}`);
-    }
+    this.logger.info(`Listening for ${accounts.length} accounts on ${rows[0].network}`);
 
     return true;
   }
@@ -79,14 +81,14 @@ class Twitter {
     this.logger.error(exception);
   }
 
-  onData(feed, data) {
+  onData(data) {
     if (this.isTweet(data)) {
       const status = {
         id: data.id_str,
-        feed_id: feed,
         date: data.created_at,
         text: data.text,
         meta: {
+          account: data.user.screen_name,
           hashtags: data.entities.hashtags,
           mentions: data.entities.user_mentions,
         },
@@ -94,6 +96,24 @@ class Twitter {
 
       this.storage.insertStatus(status).return(true);
     }
+  }
+
+  getUserId(screenName) {
+    return new Promise((resolve, reject) => {
+      this.client.get(
+        'users/lookup',
+        { screen_name: screenName.join(screenName) },
+        function lookupResult(error, tweets) {
+          if (error) {
+            return reject(error);
+          }
+
+          return resolve(tweets.reduce((acc, value) => {
+            acc.push(value.id_str);
+            return acc;
+          }, []));
+        });
+    });
   }
 }
 

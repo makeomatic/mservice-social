@@ -1,12 +1,41 @@
+const Promise = require('bluebird');
+const omit = require('lodash/omit');
+const clone = require('lodash/clone');
+
 class Feed {
-  constructor(storage, twitter) {
+  constructor(storage, twitter, logger) {
     this.storage = storage;
     this.twitter = twitter;
+    this.logger = logger;
   }
 
   register(data) {
-    const { storage, twitter } = this;
-    return storage.registerFeed(data).then((result) => (twitter.init().return(result)));
+    const { storage, twitter, logger } = this;
+    const process = Promise.coroutine(function* action() {
+      let accounts = data.filter.account;
+      const original = omit(data, 'filter');
+
+      if (!Array.isArray(accounts)) {
+        accounts = [accounts];
+      }
+
+      const ids = yield twitter.getUserId(accounts);
+
+      for (let i = 0; i < accounts.length; i += 1) {
+        const feed = clone(original);
+        feed.filter = {
+          account: accounts[i],
+          account_id: ids[i],
+        };
+        yield storage.registerFeed(feed);
+      }
+
+      yield twitter.init();
+      return accounts.length;
+    });
+    return process().then(size => {
+      logger.info(`Registered ${size} accounts`);
+    });
   }
 
   list(data) {

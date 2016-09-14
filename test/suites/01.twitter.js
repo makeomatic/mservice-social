@@ -17,7 +17,16 @@ describe('twitter', function testSuite() {
       internal: 'test@test.ru',
       network: 'twitter',
       filter: {
-        hashtags: ['twitter'],
+        account: [
+          'foxnews',
+          'moooris',
+          'alohaarleen',
+          'waynemansfield',
+          'davemalby',
+          'radioblogger',
+          'barefoot_exec',
+          'mike_wesely',
+        ],
       },
     },
     list: {
@@ -27,7 +36,7 @@ describe('twitter', function testSuite() {
     },
     read: {
       filter: {
-        internal: 'test@test.ru',
+        account: 'pixiv',
       },
     },
 
@@ -59,11 +68,11 @@ describe('twitter', function testSuite() {
   });
 
   it('should register feed', done => {
+    this.timeout(60000);
     request(uri.register, merge(payload.register, { token: this.adminToken }))
       .then(response => {
-        const { body, statusCode } = response;
+        const { statusCode } = response;
         expect(statusCode).to.be.equal(200);
-        expect(body.rowCount).to.be.equal(1);
         done();
       });
   });
@@ -73,18 +82,19 @@ describe('twitter', function testSuite() {
       .then(response => {
         const { body, statusCode } = response;
         expect(statusCode).to.be.equal(200);
-        expect(body.length).to.be.equal(1);
+        expect(body.length).not.to.be.equal(0);
         expect(body[0].id).to.be.equal(1);
         done();
       });
   });
 
   it('wait for some tweets to arrive', done => {
-    this.timeout(5000);
-    setTimeout(done, 3000);
+    this.timeout(60000);
+    setTimeout(done, 30000);
   });
 
   it('should have collected some tweets', done => {
+    this.timeout(5000);
     request(uri.read, merge(payload.read, { token: this.adminToken }))
       .then(response => {
         const { body, statusCode } = response;

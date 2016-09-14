@@ -7,8 +7,8 @@
       "description": "What to fetch, filters are cumulative (e.g. shows feed for both account id and mentions)",
       "type": "object",
       "properties": {
-        "internal": {
-          "description": "Internal ID to fetch feed for",
+        "account": {
+          "description": "Account ID to fetch feed for",
           "type": "string"
         },
         "mentions": {

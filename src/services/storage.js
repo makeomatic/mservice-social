@@ -22,7 +22,6 @@ class Storage {
     const statuses = this.client.schema
       .createTableIfNotExists('statuses', function createStatusesTable(table) {
         table.bigIncrements();
-        table.biginteger('feed_id');
         table.string('date');
         table.string('text');
         table.jsonb('meta');
@@ -53,8 +52,8 @@ class Storage {
 
   readStatuses(data) {
     return this.client('statuses')
-      .leftJoin('feeds', 'feeds.id', 'statuses.feed_id')
-      .where({ internal: data.filter.internal });
+      .select(knex.raw('meta->>\'account\' as account, *'))
+      .whereRaw('meta->>\'account\' = ?', [data.filter.account]);
   }
 }
 

@@ -16,15 +16,10 @@
       "type": "object",
       "properties": {
         "account": {
-          "description": "Read feed from this account",
-          "type": "string"
-        },
-        "hashtags": {
-          "description": "Array of hashtags to watch",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "oneOf": [
+            { "description": "Read feed from this account",  "type": "string" },
+            { "description": "Register a batch of accounts",  "type": "array", "items": { "type": "string" } }
+          ]
         }
       }
     },
