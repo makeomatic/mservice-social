@@ -59,7 +59,7 @@ class Twitter {
     }
 
     this.listener = this.client.stream('statuses/filter', params);
-    this.listener.on('data', data => {
+    this.listener.on('data', (data) => {
       this.onData.call(this, data);
     });
     this.listener.on('error', this.error.bind(this));

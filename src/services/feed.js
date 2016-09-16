@@ -12,13 +12,8 @@ class Feed {
   register(data) {
     const { storage, twitter, logger } = this;
     const process = Promise.coroutine(function* action() {
-      let accounts = data.filter.account;
+      const accounts = data.filter.account;
       const original = omit(data, 'filter');
-
-      if (!Array.isArray(accounts)) {
-        accounts = [accounts];
-      }
-
       const ids = yield twitter.getUserId(accounts);
 
       for (let i = 0; i < accounts.length; i += 1) {
@@ -33,7 +28,7 @@ class Feed {
       yield twitter.init();
       return accounts.length;
     });
-    return process().then(size => {
+    return process().then((size) => {
       logger.info(`Registered ${size} accounts`);
     });
   }

@@ -1,7 +1,7 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["internal", "network", "filter", "token"],
+  "required": [ "internal", "network", "filter", "token" ],
   "properties": {
     "internal": {
       "description": "Internal ID to assign this feed to",
@@ -14,13 +14,9 @@
     "filter": {
       "description": "What to fetch",
       "type": "object",
+      "required": [ "account" ],
       "properties": {
-        "account": {
-          "oneOf": [
-            { "description": "Read feed from this account",  "type": "string" },
-            { "description": "Register a batch of accounts",  "type": "array", "items": { "type": "string" } }
-          ]
-        }
+        "account": { "description": "Register a batch of accounts", "type": "array", "items": { "type": "string" } }
       }
     },
     "token": {
