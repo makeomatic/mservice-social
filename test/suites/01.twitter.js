@@ -18,14 +18,7 @@ describe('twitter', function testSuite() {
       network: 'twitter',
       filter: {
         account: [
-          'foxnews',
-          'moooris',
-          'alohaarleen',
-          'waynemansfield',
-          'davemalby',
-          'radioblogger',
-          'barefoot_exec',
-          'mike_wesely',
+          'sotona',
         ],
       },
     },
@@ -36,12 +29,14 @@ describe('twitter', function testSuite() {
     },
     read: {
       filter: {
-        account: 'pixiv',
+        account: 'sotona',
       },
     },
 
     registerFail: {},
   };
+
+  let tweetId;
 
   before('start service', () => {
     const service = this.service = new Social(global.SERVICES);
@@ -68,7 +63,6 @@ describe('twitter', function testSuite() {
   });
 
   it('should register feed', done => {
-    this.timeout(60000);
     request(uri.register, merge(payload.register, { token: this.adminToken }))
       .then(response => {
         const { statusCode } = response;
@@ -88,13 +82,18 @@ describe('twitter', function testSuite() {
       });
   });
 
-  it('wait for some tweets to arrive', done => {
-    this.timeout(60000);
-    setTimeout(done, 30000);
+  it('post tweet and wait for it to arrive', done => {
+    this.timeout(30000);
+    this.service.services.twitter.client.post(
+      'statuses/update',
+      { status: 'Test status' },
+      (error, tweet) => {
+        tweetId = tweet.id_str;
+        setTimeout(done, 20000);
+      });
   });
 
   it('should have collected some tweets', done => {
-    this.timeout(5000);
     request(uri.read, merge(payload.read, { token: this.adminToken }))
       .then(response => {
         const { body, statusCode } = response;
@@ -104,5 +103,10 @@ describe('twitter', function testSuite() {
       });
   });
 
+  after('delete tweet', (done) => {
+    this.service.services.twitter.client.post(`statuses/destroy/${tweetId}`, function() {
+      done();
+    });
+  });
   after('shutdown service', () => this.service.close());
 });

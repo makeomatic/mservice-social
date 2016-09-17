@@ -59,9 +59,7 @@ class Twitter {
     }
 
     this.listener = this.client.stream('statuses/filter', params);
-    this.listener.on('data', (data) => {
-      this.onData.call(this, data);
-    });
+    this.listener.on('data', this.onData.bind(this));
     this.listener.on('error', this.error.bind(this));
 
     this.logger.info(`Listening for ${accounts.length} accounts on ${rows[0].network}`);
@@ -82,6 +80,8 @@ class Twitter {
   }
 
   onData(data) {
+    this.logger.info(data);
+
     if (this.isTweet(data)) {
       const status = {
         id: data.id_str,
@@ -93,6 +93,8 @@ class Twitter {
           mentions: data.entities.user_mentions,
         },
       };
+
+      this.logger.info(status);
 
       this.storage.insertStatus(status).return(true);
     }

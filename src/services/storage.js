@@ -52,7 +52,7 @@ class Storage {
 
   readStatuses(data) {
     return this.client('statuses')
-      .select(knex.raw('meta->>\'account\' as account, *'))
+      .select(this.client.raw('meta->>\'account\' as account, *'))
       .whereRaw('meta->>\'account\' = ?', [data.filter.account]);
   }
 }
