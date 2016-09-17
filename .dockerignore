@@ -33,6 +33,8 @@ test
 Makefile
 .env
 src
+docs
+.idea
 .git
 
 # this is all that's still pretty useless

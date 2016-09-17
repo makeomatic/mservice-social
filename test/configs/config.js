@@ -14,10 +14,10 @@ global.SERVICES = {
     },
   },
   twitter: {
-    consumer_key: 'BvRnJ2LhgkoG4J3ziNc2VA',
-    consumer_secret: 'xuvxkQ9VfNGZCMg8YvgjxRP1vlS7zXxtD0kW514Ey8',
-    access_token_key: '15597072-FlpNCsJzCh9vAKyeC9isAlvwzGbuzVbFuNEhdBaSU',
-    access_token_secret: '2dM5PQKIr2sA54D1P92ucv3DRj8Ibb8xksh6HJvvFOeZt',
+    consumer_key: process.env.TWITTER_KEY,
+    consumer_secret: process.env.TWITTER_SECRET,
+    access_token_key: process.env.TWITTER_ACCESS_KEY,
+    access_token_secret: process.env.TWITTER_ACCESS_SECRET,
   },
   feed: {},
 };
