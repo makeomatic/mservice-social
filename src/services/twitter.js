@@ -80,8 +80,6 @@ class Twitter {
   }
 
   onData(data) {
-    this.logger.info(data);
-
     if (this.isTweet(data)) {
       const status = {
         id: data.id_str,
@@ -93,8 +91,6 @@ class Twitter {
           mentions: data.entities.user_mentions,
         },
       };
-
-      this.logger.info(status);
 
       this.storage.insertStatus(status).return(true);
     }

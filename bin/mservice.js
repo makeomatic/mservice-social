@@ -5,16 +5,16 @@ const dir = '../src';
 // accepts conf through .env file
 // suitable for configuring this in the docker env
 const configuration = require('ms-conf');
-const Chat = require(dir);
-const chat = new Chat(configuration.get('/'));
+const Social = require(dir);
+const social = new Social(configuration.get('/'));
 
-chat.connect()
+social.connect()
   .then(() => {
-    const address = chat.http.info;
-    chat.log.info(`connected on ${address.address}:${address.port}`);
+    const address = social.http.info;
+    social.log.info(`connected on ${address.address}:${address.port}`);
   })
   .catch(err => {
-    chat.log.fatal('Failed to start service', err);
+    social.log.fatal('Failed to start service', err);
     setImmediate(() => {
       throw err;
     });

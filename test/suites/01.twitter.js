@@ -82,14 +82,17 @@ describe('twitter', function testSuite() {
       });
   });
 
+  it('wait for stream to startup', done => {
+    setTimeout(done, 9000);
+  });
+
   it('post tweet and wait for it to arrive', done => {
-    this.timeout(30000);
     this.service.services.twitter.client.post(
       'statuses/update',
       { status: 'Test status' },
       (error, tweet) => {
         tweetId = tweet.id_str;
-        setTimeout(done, 20000);
+        setTimeout(done, 9000);
       });
   });
 
@@ -104,9 +107,7 @@ describe('twitter', function testSuite() {
   });
 
   after('delete tweet', (done) => {
-    this.service.services.twitter.client.post(`statuses/destroy/${tweetId}`, function() {
-      done();
-    });
+    this.service.services.twitter.client.post(`statuses/destroy/${tweetId}`, () => done());
   });
   after('shutdown service', () => this.service.close());
 });
