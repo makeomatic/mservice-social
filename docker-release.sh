@@ -12,5 +12,5 @@ if [ x"$BRANCH_NAME" == x"master" ] && [ x"$SEMAPHORE" == x"true" ]; then
   git config user.name "semaphore"
   git add -f ./docs
   git commit -m "docs($SEMAPHORE_BUILD_NUMBER): updated remote public documentation"
-  git push origin `git subtree split --prefix docs master`:gh-pages --force
+  git push origin `git subtree split --prefix docs master`:refs/heads/gh-pages --force
 fi
