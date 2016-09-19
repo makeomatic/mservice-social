@@ -85,5 +85,9 @@ services:
     environment:
       NODE_ENV: "test"
       DEBUG: ${DEBUG}
+      TWITTER_KEY: ${TWITTER_KEY}
+      TWITTER_SECRET: ${TWITTER_SECRET}
+      TWITTER_ACCESS_KEY: ${TWITTER_ACCESS_KEY}
+      TWITTER_ACCESS_SECRET: ${TWITTER_ACCESS_SECRET}
       SKIP_REBUILD: ${SKIP_REBUILD}
     command: tail -f /dev/null
