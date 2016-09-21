@@ -1,7 +1,7 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": [ "internal", "network", "filter", "token" ],
+  "required": [ "internal", "network", "filter" ],
   "properties": {
     "internal": {
       "description": "Internal ID to assign this feed to",
@@ -18,10 +18,6 @@
       "properties": {
         "account": { "description": "Register a batch of accounts", "type": "array", "items": { "type": "string" } }
       }
-    },
-    "token": {
-      "description": "Auth token",
-      "type": "string"
     }
   }
 }

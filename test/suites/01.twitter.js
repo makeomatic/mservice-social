@@ -7,8 +7,9 @@ const merge = require('lodash/merge');
 
 describe('twitter', function testSuite() {
   const uri = {
-    register: 'http://0.0.0.0:3000/api/social/feed/register',
-    list: 'http://0.0.0.0:3000/api/social/feed/list',
+    register: 'social.feed.register',
+    list: 'social.feed.list',
+    readAMQP: 'social.feed.read',
     read: 'http://0.0.0.0:3000/api/social/feed/read',
   };
 
@@ -43,39 +44,30 @@ describe('twitter', function testSuite() {
     return service.connect();
   });
 
-  before('login admin', () => this.service.amqp
-    .publishAndWait('users.login', {
-      username: 'test@test.ru',
-      password: 'megalongsuperpasswordfortest',
-      audience: '*.localhost',
-    }).tap(reply => {
-      this.adminToken = reply.jwt;
-    })
-  );
-
   it('should return error if request to register is not valid', done => {
-    request(uri.register, merge(payload.registerFail, { token: this.adminToken }))
+    this.service.amqp.publishAndWait(uri.register, payload.registerFail)
+      .reflect()
       .then(response => {
-        expect(response.statusCode).to.be.equals(400);
-        expect(response.body.name).to.be.equals('ValidationError');
+        expect(response.isRejected()).to.be.equals(true);
         done();
       });
   });
 
   it('should register feed', done => {
-    request(uri.register, merge(payload.register, { token: this.adminToken }))
+    this.service.amqp.publishAndWait(uri.register, payload.register)
+      .reflect()
       .then(response => {
-        const { statusCode } = response;
-        expect(statusCode).to.be.equal(200);
+        expect(response.isFulfilled()).to.be.equal(true);
         done();
       });
   });
 
   it('should return newly registered feed', done => {
-    request(uri.list, merge(payload.list, { token: this.adminToken }))
+    this.service.amqp.publishAndWait(uri.list, payload.list)
+      .reflect()
       .then(response => {
-        const { body, statusCode } = response;
-        expect(statusCode).to.be.equal(200);
+        expect(response.isFulfilled()).to.be.equal(true);
+        const body = response.value();
         expect(body.length).not.to.be.equal(0);
         expect(body[0].id).to.be.equal(1);
         done();
@@ -106,8 +98,24 @@ describe('twitter', function testSuite() {
       });
   });
 
+  it('confirm amqp request to read works', done => {
+    this.service.amqp.publishAndWait(uri.readAMQP, payload.read)
+      .reflect()
+      .then(response => {
+        expect(response.isFulfilled()).to.be.equal(true);
+        const body = response.value();
+        expect(body.length).to.be.not.equal(0);
+        done();
+      });
+  });
+
   after('delete tweet', (done) => {
-    this.service.services.twitter.client.post(`statuses/destroy/${tweetId}`, () => done());
+    this
+      .service
+      .services
+      .twitter
+      .client
+      .post(`statuses/destroy/${tweetId}`, () => done());
   });
   after('shutdown service', () => this.service.close());
 });

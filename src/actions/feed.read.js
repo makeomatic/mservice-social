@@ -1,6 +1,3 @@
-const omit = require('lodash/omit');
-const allowed = require('../allowed');
-
 /**
  * @api {http} <prefix>.feed.read Read feed by account with optional filters
  * @apiVersion 1.0.0
@@ -9,13 +6,10 @@ const allowed = require('../allowed');
  * @apiSchema {jsonschema=../../schemas/feed.read.json} apiParam
  */
 function FeedReadAction(request) {
-  const { params } = request;
-  return this.services.feed.read(omit(params, 'token'));
+  return this.services.feed.read(request.params);
 }
 
-FeedReadAction.allowed = allowed;
-FeedReadAction.auth = 'token';
 FeedReadAction.schema = 'feed.read';
-FeedReadAction.transports = ['http'];
+FeedReadAction.transports = ['http', 'amqp'];
 
 module.exports = FeedReadAction;

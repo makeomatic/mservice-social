@@ -1,7 +1,7 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["filter", "token"],
+  "required": [ "filter" ],
   "properties": {
     "filter": {
       "description": "Search clauses",
@@ -12,10 +12,6 @@
           "type": "string"
         }
       }
-    },
-    "token": {
-      "description": "Auth token",
-      "type": "string"
     }
   }
 }

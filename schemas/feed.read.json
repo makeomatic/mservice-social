@@ -1,7 +1,7 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["filter", "token"],
+  "required": [ "filter" ],
   "properties": {
     "filter": {
       "description": "What to fetch, filters are cumulative (e.g. shows feed for both account id and mentions)",
@@ -22,10 +22,6 @@
           "items": { "type": "string" }
         }
       }
-    },
-    "token": {
-      "description": "Auth token",
-      "type": "string"
     }
   }
 }
