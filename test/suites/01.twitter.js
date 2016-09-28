@@ -1,11 +1,11 @@
-const Social = require('../../src');
-
+const Promise = require('bluebird');
 const { expect } = require('chai');
-const request = require('./../helpers/request');
-
 const merge = require('lodash/merge');
 
 describe('twitter', function testSuite() {
+  const Social = require('../../src');
+  const request = require('../helpers/request');
+
   const uri = {
     register: 'social.feed.register',
     list: 'social.feed.list',
@@ -44,68 +44,63 @@ describe('twitter', function testSuite() {
     return service.connect();
   });
 
-  it('should return error if request to register is not valid', done => {
-    this.service.amqp.publishAndWait(uri.register, payload.registerFail)
+  it('should return error if request to register is not valid', () => {
+    return this.service.amqp.publishAndWait(uri.register, payload.registerFail)
       .reflect()
-      .then(response => {
+      .then((response) => {
         expect(response.isRejected()).to.be.equals(true);
-        done();
       });
   });
 
-  it('should register feed', done => {
-    this.service.amqp.publishAndWait(uri.register, payload.register)
+  it('should register feed', () => {
+    return this.service.amqp.publishAndWait(uri.register, payload.register)
       .reflect()
-      .then(response => {
+      .then((response) => {
         expect(response.isFulfilled()).to.be.equal(true);
-        done();
       });
   });
 
-  it('should return newly registered feed', done => {
-    this.service.amqp.publishAndWait(uri.list, payload.list)
+  it('should return newly registered feed', () => {
+    return this.service.amqp.publishAndWait(uri.list, payload.list)
       .reflect()
-      .then(response => {
+      .then((response) => {
         expect(response.isFulfilled()).to.be.equal(true);
         const body = response.value();
         expect(body.length).not.to.be.equal(0);
         expect(body[0].id).to.be.equal(1);
-        done();
       });
   });
 
-  it('wait for stream to startup', done => {
-    setTimeout(done, 9000);
-  });
+  // that long?
+  it('wait for stream to startup', () => Promise.delay(9000));
 
-  it('post tweet and wait for it to arrive', done => {
+  it('post tweet and wait for it to arrive', (done) => {
     this.service.services.twitter.client.post(
       'statuses/update',
       { status: 'Test status' },
       (error, tweet) => {
         tweetId = tweet.id_str;
+        // why so long?
         setTimeout(done, 9000);
       });
   });
 
-  it('should have collected some tweets', done => {
-    request(uri.read, merge(payload.read, { token: this.adminToken }))
-      .then(response => {
+  it('should have collected some tweets', () => {
+    return request(uri.read, merge(payload.read, { token: this.adminToken }))
+      .then((response) => {
         const { body, statusCode } = response;
         expect(statusCode).to.be.equal(200);
         expect(body.length).to.be.not.equal(0);
-        done();
       });
   });
 
-  it('confirm amqp request to read works', done => {
-    this.service.amqp.publishAndWait(uri.readAMQP, payload.read)
+  it('confirm amqp request to read works', () => {
+    return this.service.amqp.publishAndWait(uri.readAMQP, payload.read)
       .reflect()
-      .then(response => {
+      .then((response) => {
         expect(response.isFulfilled()).to.be.equal(true);
         const body = response.value();
         expect(body.length).to.be.not.equal(0);
-        done();
       });
   });
 
@@ -117,5 +112,6 @@ describe('twitter', function testSuite() {
       .client
       .post(`statuses/destroy/${tweetId}`, () => done());
   });
+
   after('shutdown service', () => this.service.close());
 });

@@ -22,12 +22,18 @@ class Feed {
           account: accounts[i],
           account_id: ids[i],
         };
+
+        // wait till storage is registered
         yield storage.registerFeed(feed);
       }
 
+      // update twitter feed
       yield twitter.init();
+
+      // return amount of accounts
       return accounts.length;
     });
+
     return process().then((size) => {
       logger.info(`Registered ${size} accounts`);
     });

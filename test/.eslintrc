@@ -2,6 +2,10 @@
   "plugins": [
     "mocha"
   ],
+  "rules": {
+    "import/no-extraneous-dependencies": 0,
+    "arrow-body-style": 0
+  },
   "env": {
     "mocha": true
   }
