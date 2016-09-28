@@ -51,9 +51,15 @@ class Storage {
   }
 
   readStatuses(data) {
+    const page = data.filter.page || 0;
+    const pageSize = data.filter.pageSize || 25;
+    const offset = page * pageSize;
+
     return this.client('statuses')
       .select(this.client.raw('meta->>\'account\' as account, *'))
-      .whereRaw('meta->>\'account\' = ?', [data.filter.account]);
+      .whereRaw('meta->>\'account\' = ?', [data.filter.account])
+      .limit(pageSize)
+      .offset(offset);
   }
 }
 

@@ -18,8 +18,9 @@ describe('twitter', function testSuite() {
       internal: 'test@test.ru',
       network: 'twitter',
       filter: {
-        account: [
-          'sotona',
+        accounts: [
+          { username: 'sotona' },
+          { username: 'pixiv' },
         ],
       },
     },

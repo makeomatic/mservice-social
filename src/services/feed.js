@@ -12,15 +12,15 @@ class Feed {
   register(data) {
     const { storage, twitter, logger } = this;
     const process = Promise.coroutine(function* action() {
-      const accounts = data.filter.account;
+      const accounts = data.filter.accounts;
       const original = omit(data, 'filter');
-      const ids = yield twitter.getUserId(accounts);
+      const expandedAccounts = yield twitter.fillUserIds(accounts);
 
       for (let i = 0; i < accounts.length; i += 1) {
         const feed = clone(original);
         feed.filter = {
-          account: accounts[i],
-          account_id: ids[i],
+          account_id: expandedAccounts[i].id,
+          account: expandedAccounts[i].username,
         };
 
         // wait till storage is registered

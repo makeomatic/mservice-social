@@ -14,9 +14,25 @@
     "filter": {
       "description": "What to fetch",
       "type": "object",
-      "required": [ "account" ],
+      "required": [ "accounts" ],
       "properties": {
-        "account": { "description": "Register a batch of accounts", "type": "array", "items": { "type": "string" } }
+        "accounts": {
+          "description": "Register a batch of accounts",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "For Twitter: id_str, this will save one roundtrip to rest api",
+                "type": "string"
+              },
+              "username": {
+                "description": "For Twitter: screen_name, required",
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     }
   }

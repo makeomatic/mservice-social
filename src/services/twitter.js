@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const TwitterClient = require('twitter');
-const { isObject, isString, isArray, conforms } = require('lodash');
+const { isObject, isString, isArray, conforms, merge } = require('lodash');
 
 /**
  * @property {TwitterClient} client
@@ -104,15 +104,24 @@ class Twitter {
     }
   }
 
-  getUserId(screenName) {
+  fillUserIds(original) {
     return Promise
-      .asCallback((next) => {
-        this.client.get('users/lookup', { screen_name: screenName.join(screenName) }, next);
+      .fromCallback((next) => {
+        const screenNames = original
+          .filter(element => (element.id === undefined))
+          .map(element => (element.username))
+          .join(',');
+        if (screenNames === '') {
+          next([]);
+        } else {
+          this.client.get('users/lookup', { screen_name: screenNames }, next);
+        }
       })
       .reduce((acc, value) => {
-        acc.push(value.id_str);
+        acc.push({ id: value.id_str, username: value.screen_name });
         return acc;
-      }, []);
+      }, [])
+      .then(accounts => (merge(original, accounts)));
   }
 }
 
