@@ -90,13 +90,13 @@ class Twitter {
   _onData(data) {
     if (this.isTweet(data)) {
       const status = {
-        id: data.id_str,
         date: data.created_at,
         text: data.text,
         meta: {
+          id_str: data.id_str,
           account: data.user.screen_name,
-          hashtags: data.entities.hashtags,
-          mentions: data.entities.user_mentions,
+          account_id: data.user.id_str,
+          entities: data.entities,
         },
       };
 

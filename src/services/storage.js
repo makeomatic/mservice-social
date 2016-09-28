@@ -53,13 +53,19 @@ class Storage {
   readStatuses(data) {
     const page = data.filter.page || 0;
     const pageSize = data.filter.pageSize || 25;
+    const pageCursor = data.filter.pageCursor || null;
     const offset = page * pageSize;
 
-    return this.client('statuses')
+    const query = this.client('statuses')
       .select(this.client.raw('meta->>\'account\' as account, *'))
       .whereRaw('meta->>\'account\' = ?', [data.filter.account])
       .limit(pageSize)
       .offset(offset);
+
+    if (pageCursor !== null) {
+      return query.where('id', '<', pageCursor);
+    }
+    return query;
   }
 }
 
