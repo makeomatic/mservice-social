@@ -1,0 +1,4 @@
+{
+  "id": "feed.register.response",
+  "$ref": "common.json#/definitions/tweetCollection"
+}
