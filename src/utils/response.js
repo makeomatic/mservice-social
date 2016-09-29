@@ -2,6 +2,7 @@ const omit = require('lodash/omit');
 
 const isfn = fn => typeof fn === 'function';
 const TYPE_TWEET = 'tweet';
+const TYPE_FEED = 'feed';
 
 function transform(object, type) {
   const response = {
@@ -55,4 +56,5 @@ module.exports = {
   successResponse,
   transform,
   TYPE_TWEET,
+  TYPE_FEED,
 };

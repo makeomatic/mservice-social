@@ -5,8 +5,26 @@
       "type": "string",
       "description": "64 bit tweet string id"
     },
+    "list": {
+      "description": "list of registered social feeds",
+      "type": "object",
+      "required": ["id", "type", "attributes"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "constant": "feed"
+        },
+        "attributes": {
+          "description": "feed properties",
+          "type": "object"
+        }
+      }
+    },
     "tweet": {
-      "description": "`message` object",
+      "description": "`tweet` object",
       "type": "object",
       "required": ["id", "type", "attributes"],
       "properties": {
@@ -88,6 +106,24 @@
         },
         "cursor": {
           "$ref": "common.json#/definitions/tweetId"
+        }
+      }
+    },
+    "listCollection": {
+      "additionalProperties": false,
+      "description": "Messages response",
+      "type": "object",
+      "required": ["meta", "data"],
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/collectionMeta"
+        },
+        "data": {
+          "description": "Collection of feeds",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/list"
+          }
         }
       }
     }
