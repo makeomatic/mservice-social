@@ -1,3 +1,5 @@
+const { collectionResponse, TYPE_TWEET } = require('../utils/response');
+
 /**
  * @api {http} <prefix>.feed.read Read feed by account with optional filters
  * @apiVersion 1.0.0
@@ -6,7 +8,11 @@
  * @apiSchema {jsonschema=../../schemas/feed.read.json} apiParam
  */
 function FeedReadAction(request) {
-  return this.services.feed.read(request.params);
+  return this
+    .services
+    .feed
+    .read(request.params)
+    .then(tweets => collectionResponse(tweets, TYPE_TWEET));
 }
 
 FeedReadAction.schema = 'feed.read';

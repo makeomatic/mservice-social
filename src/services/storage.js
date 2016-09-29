@@ -51,20 +51,25 @@ class Storage {
   }
 
   readStatuses(data) {
-    const page = data.filter.page || 0;
-    const pageSize = data.filter.pageSize || 25;
-    const pageCursor = data.filter.pageCursor || null;
+    const page = data.filter.page;
+    const pageSize = data.filter.pageSize;
+    const pageCursor = data.filter.pageCursor;
     const offset = page * pageSize;
+    const order = data.filter.order;
 
     const query = this.client('statuses')
       .select(this.client.raw('meta->>\'account\' as account, *'))
       .whereRaw('meta->>\'account\' = ?', [data.filter.account])
+      .orderBy('id', order)
       .limit(pageSize)
       .offset(offset);
 
-    if (pageCursor !== null) {
-      return query.where('id', '<', pageCursor);
+    if (pageCursor) {
+      return order === 'desc'
+        ? query.where('id', '<', pageCursor)
+        : query.where('id', '>', pageCursor);
     }
+
     return query;
   }
 }

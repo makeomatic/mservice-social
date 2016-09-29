@@ -23,15 +23,22 @@
         },
         "page": {
           "description": "Page number, 0 by default",
-          "type": "integer"
+          "type": "integer",
+          "default": 0
         },
         "pageSize": {
           "description": "Amount of items per page, 25 by default",
-          "type": "integer"
+          "type": "integer",
+          "default": 25
         },
         "pageCursor": {
           "description": "Pass biggest internal status id for consistent pagination",
           "type": "integer"
+        },
+        "order": {
+          "type": "string",
+          "enum": ["desc", "asc"],
+          "default": "desc"
         }
       }
     }

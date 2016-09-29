@@ -1,0 +1,66 @@
+{
+  "id": "common.json",
+  "definitions": {
+    "tweetId": {
+      "type": "string",
+      "description": "64 bit tweet string id"
+    },
+    "tweet": {
+      "description": "`message` object",
+      "type": "object",
+      "required": ["id", "type", "attributes"],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/tweetId"
+        },
+        "type": {
+          "type": "string",
+          "constant": "tweet"
+        },
+        "attributes": {
+          "description": "Tweet Properties",
+          "type": "object",
+          "properties": {
+
+          }
+        }
+      }
+    },
+    "tweetCollection": {
+      "additionalProperties": false,
+      "description": "Messages response",
+      "type": "object",
+      "required": ["meta", "data"],
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/collectionMeta"
+        },
+        "data": {
+          "description": "Collection of tweets",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/tweet"
+          }
+        }
+      }
+    },
+    "collectionMeta": {
+      "description": "Collection metadata",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count"],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "description": "Count of results"
+        },
+        "before": {
+          "$ref": "common.json#/definitions/tweetId"
+        },
+        "last": {
+          "$ref": "common.json#/definitions/tweetId"
+        }
+      }
+    }
+  }
+}
