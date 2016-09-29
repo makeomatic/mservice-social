@@ -1,5 +1,6 @@
+const Promise = require('bluebird');
 const TwitterClient = require('twitter');
-const { isObject, isString, isArray, conforms } = require('lodash');
+const { isObject, isString, isArray, conforms, merge } = require('lodash');
 
 /**
  * @property {TwitterClient} client
@@ -18,6 +19,10 @@ class Twitter {
     this.listener = null;
     this.storage = storage;
     this.logger = logger;
+
+    // cheaper than bind
+    this.onData = json => this._onData(json);
+    this.onError = err => this._onError(err);
 
     this.isTweet = conforms({
       entities: isObject,
@@ -52,18 +57,20 @@ class Twitter {
       return false;
     }
 
-    if (this.listener !== null) {
-      // remove old listener
-      this.listener.destroy();
-      this.listener = null;
+    const listener = this.listener;
+
+    // setup new listener while old is still active
+    this.listener = this.client.stream('statuses/filter', params);
+    this.listener.on('data', this.onData);
+    this.listener.on('error', this.onError);
+
+    // remove old listener
+    // minimizes chances we dont miss messages
+    if (listener !== null) {
+      listener.destroy();
     }
 
-    this.listener = this.client.stream('statuses/filter', params);
-    this.listener.on('data', this.onData.bind(this));
-    this.listener.on('error', this.error.bind(this));
-
     this.logger.info(`Listening for ${accounts.length} accounts on ${rows[0].network}`);
-
     return true;
   }
 
@@ -72,23 +79,24 @@ class Twitter {
     if (!isArray(data)) {
       data = [results];
     }
+
     data.map(this.logger.info.bind(this.logger));
   }
 
-  error(exception) {
+  _onError(exception) {
     this.logger.error(exception);
   }
 
-  onData(data) {
+  _onData(data) {
     if (this.isTweet(data)) {
       const status = {
-        id: data.id_str,
         date: data.created_at,
         text: data.text,
         meta: {
+          id_str: data.id_str,
           account: data.user.screen_name,
-          hashtags: data.entities.hashtags,
-          mentions: data.entities.user_mentions,
+          account_id: data.user.id_str,
+          entities: data.entities,
         },
       };
 
@@ -96,22 +104,24 @@ class Twitter {
     }
   }
 
-  getUserId(screenName) {
-    return new Promise((resolve, reject) => {
-      this.client.get(
-        'users/lookup',
-        { screen_name: screenName.join(screenName) },
-        function lookupResult(error, tweets) {
-          if (error) {
-            return reject(error);
-          }
-
-          return resolve(tweets.reduce((acc, value) => {
-            acc.push(value.id_str);
-            return acc;
-          }, []));
-        });
-    });
+  fillUserIds(original) {
+    return Promise
+      .fromCallback((next) => {
+        const screenNames = original
+          .filter(element => (element.id === undefined))
+          .map(element => (element.username))
+          .join(',');
+        if (screenNames === '') {
+          next([]);
+        } else {
+          this.client.get('users/lookup', { screen_name: screenNames }, next);
+        }
+      })
+      .reduce((acc, value) => {
+        acc.push({ id: value.id_str, username: value.screen_name });
+        return acc;
+      }, [])
+      .then(accounts => (merge(original, accounts)));
   }
 }
 

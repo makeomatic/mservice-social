@@ -51,9 +51,26 @@ class Storage {
   }
 
   readStatuses(data) {
-    return this.client('statuses')
+    const page = data.filter.page;
+    const pageSize = data.filter.pageSize;
+    const cursor = data.filter.cursor;
+    const offset = page * pageSize;
+    const order = data.filter.order;
+
+    const query = this.client('statuses')
       .select(this.client.raw('meta->>\'account\' as account, *'))
-      .whereRaw('meta->>\'account\' = ?', [data.filter.account]);
+      .whereRaw('meta->>\'account\' = ?', [data.filter.account])
+      .orderBy('id', order)
+      .limit(pageSize)
+      .offset(offset);
+
+    if (cursor) {
+      return order === 'desc'
+        ? query.where('id', '<', cursor)
+        : query.where('id', '>', cursor);
+    }
+
+    return query;
   }
 }
 
