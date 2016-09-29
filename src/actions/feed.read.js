@@ -8,12 +8,16 @@ const { collectionResponse, TYPE_TWEET } = require('../utils/response');
  * @apiSchema {jsonschema=../../schemas/feed.read.json} apiParam
  * @apiSchema {jsonschema=../../schemas/feed.read.response.json} apiSuccess
  */
-function FeedReadAction(request) {
+function FeedReadAction({ params }) {
+  const opts = {
+    before: params.cursor,
+  };
+
   return this
     .services
     .feed
-    .read(request.params)
-    .then(tweets => collectionResponse(tweets, TYPE_TWEET));
+    .read(params)
+    .then(tweets => collectionResponse(tweets, TYPE_TWEET, opts));
 }
 
 FeedReadAction.schema = 'feed.read';

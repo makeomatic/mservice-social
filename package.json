@@ -34,7 +34,6 @@
   "devDependencies": {
     "apidoc": "^0.16.1",
     "apidoc-plugin-schema": "0.0.7",
-    "chai": "^3.5.0",
     "chance": "^1.0.4",
     "codecov": "^1.0.1",
     "cz-conventional-changelog": "^1.2.0",

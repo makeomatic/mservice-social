@@ -1,5 +1,6 @@
 const omit = require('lodash/omit');
 
+const isfn = fn => typeof fn === 'function';
 const TYPE_TWEET = 'tweet';
 
 function transform(object, type) {
@@ -24,7 +25,9 @@ function collectionResponse(objects, type, options = {}) {
   };
 
   if (count) {
-    response.meta.last = objects[count - 1][cursor];
+    response.meta.cursor = isfn(cursor)
+      ? cursor(objects)
+      : cursor[count - 1][cursor];
   }
 
   if (before) {

@@ -53,7 +53,7 @@ class Storage {
   readStatuses(data) {
     const page = data.filter.page;
     const pageSize = data.filter.pageSize;
-    const pageCursor = data.filter.pageCursor;
+    const cursor = data.filter.cursor;
     const offset = page * pageSize;
     const order = data.filter.order;
 
@@ -64,10 +64,10 @@ class Storage {
       .limit(pageSize)
       .offset(offset);
 
-    if (pageCursor) {
+    if (cursor) {
       return order === 'desc'
-        ? query.where('id', '<', pageCursor)
-        : query.where('id', '>', pageCursor);
+        ? query.where('id', '<', cursor)
+        : query.where('id', '>', cursor);
     }
 
     return query;

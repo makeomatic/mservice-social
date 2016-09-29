@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const { expect } = require('chai');
+const assert = require('assert');
 const merge = require('lodash/merge');
 
 describe('twitter', function testSuite() {
@@ -49,7 +49,7 @@ describe('twitter', function testSuite() {
     return this.service.amqp.publishAndWait(uri.register, payload.registerFail)
       .reflect()
       .then((response) => {
-        expect(response.isRejected()).to.be.equals(true);
+        assert(response.isRejected());
       });
   });
 
@@ -57,7 +57,7 @@ describe('twitter', function testSuite() {
     return this.service.amqp.publishAndWait(uri.register, payload.register)
       .reflect()
       .then((response) => {
-        expect(response.isFulfilled()).to.be.equal(true);
+        assert(response.isFulfilled());
       });
   });
 
@@ -65,10 +65,10 @@ describe('twitter', function testSuite() {
     return this.service.amqp.publishAndWait(uri.list, payload.list)
       .reflect()
       .then((response) => {
-        expect(response.isFulfilled()).to.be.equal(true);
+        assert(response.isFulfilled());
         const body = response.value();
-        expect(body.length).not.to.be.equal(0);
-        expect(body[0].id).to.be.equal(1);
+        assert.notEqual(body.data.length, 0);
+        assert.equal(body.data[0].id, 1);
       });
   });
 
@@ -90,8 +90,8 @@ describe('twitter', function testSuite() {
     return request(uri.read, merge(payload.read, { token: this.adminToken }))
       .then((response) => {
         const { body, statusCode } = response;
-        expect(statusCode).to.be.equal(200);
-        expect(body.length).to.be.not.equal(0);
+        assert.equal(statusCode, 200);
+        assert.notEqual(body.data.length, 0);
       });
   });
 
@@ -99,9 +99,9 @@ describe('twitter', function testSuite() {
     return this.service.amqp.publishAndWait(uri.readAMQP, payload.read)
       .reflect()
       .then((response) => {
-        expect(response.isFulfilled()).to.be.equal(true);
+        assert(response.isFulfilled());
         const body = response.value();
-        expect(body.length).to.be.not.equal(0);
+        assert.notEqual(body.data.length, 0);
       });
   });
 

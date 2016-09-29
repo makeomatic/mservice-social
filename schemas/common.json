@@ -86,7 +86,7 @@
         "before": {
           "$ref": "common.json#/definitions/tweetId"
         },
-        "last": {
+        "cursor": {
           "$ref": "common.json#/definitions/tweetId"
         }
       }

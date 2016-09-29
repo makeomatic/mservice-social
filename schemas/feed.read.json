@@ -31,7 +31,7 @@
           "type": "integer",
           "default": 25
         },
-        "pageCursor": {
+        "cursor": {
           "description": "Pass biggest internal status id for consistent pagination",
           "type": "integer"
         },
