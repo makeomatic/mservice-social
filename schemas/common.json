@@ -11,15 +11,36 @@
       "required": ["id", "type", "attributes"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "internal auto-increment id"
         },
         "type": {
           "type": "string",
+          "description": "type of entity",
           "enum": ["feed"]
         },
         "attributes": {
           "description": "feed properties",
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "internal": {
+              "type": "string",
+              "description": "owner of the feed, in the future should ref organization"
+            },
+            "network": {
+              "type": "string",
+              "enum": ["twitter"],
+              "description": "network for which this feed is returned"
+            },
+            "network_id": {
+              "type": "string",
+              "description": "internal network id of the feed"
+            },
+            "filter": {
+              "type": "object",
+              "description": "filter, which is used when returning data from the feed"
+            }
+          }
         }
       }
     },
@@ -39,6 +60,9 @@
           "description": "Tweet Properties",
           "type": "object",
           "properties": {
+            "id": {
+              "$ref": "#/definitions/tweetId"
+            },
             "date": {
               "type": "string",
               "format": "date",
