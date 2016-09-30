@@ -21,6 +21,7 @@ describe('twitter', function testSuite() {
         accounts: [
           { username: 'sotona' },
           { username: 'pixiv' },
+          { id: '2533316504', username: 'v_aminev' },
         ],
       },
     },
@@ -62,7 +63,8 @@ describe('twitter', function testSuite() {
   });
 
   it('should return newly registered feed', () => {
-    return this.service.amqp.publishAndWait(uri.list, payload.list)
+    return this.service.amqp
+      .publishAndWait(uri.list, payload.list)
       .reflect()
       .then((response) => {
         assert(response.isFulfilled());

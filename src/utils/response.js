@@ -28,7 +28,7 @@ function collectionResponse(objects, type, options = {}) {
   if (count) {
     response.meta.cursor = isfn(cursor)
       ? cursor(objects)
-      : cursor[count - 1][cursor];
+      : objects[count - 1][cursor];
   }
 
   if (before) {

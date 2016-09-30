@@ -111,8 +111,9 @@ class Twitter {
           .filter(element => (element.id === undefined))
           .map(element => (element.username))
           .join(',');
+
         if (screenNames === '') {
-          next([]);
+          next(null, []);
         } else {
           this.client.get('users/lookup', { screen_name: screenNames }, next);
         }

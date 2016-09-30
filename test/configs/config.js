@@ -9,6 +9,8 @@ global.SERVICES = {
     },
   },
   storage: {
+    debug: true,
+    client: 'pg',
     connection: {
       host: 'pg',
       user: 'postgres',
