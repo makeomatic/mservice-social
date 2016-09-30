@@ -18,10 +18,12 @@ class Feed {
 
       for (let i = 0; i < accounts.length; i += 1) {
         const feed = clone(original);
-        feed.filter = {
-          account_id: expandedAccounts[i].id,
+
+        feed.network_id = expandedAccounts[i].id;
+        feed.filter = JSON.stringify({
+          account_id: feed.network_id,
           account: expandedAccounts[i].username,
-        };
+        });
 
         // wait till storage is registered
         yield storage.registerFeed(feed);

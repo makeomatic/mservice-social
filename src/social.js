@@ -23,7 +23,6 @@ class Social extends MService {
       const twitter = new TwitterService(this.config.twitter, storage, this.log);
       const feed = new FeedService(storage, twitter, this.log);
 
-
       // sequentially initialize services
       yield storage.init();
       yield twitter.init();
