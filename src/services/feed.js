@@ -27,6 +27,9 @@ class Feed {
 
         // wait till storage is registered
         yield storage.registerFeed(feed);
+
+        // syncs tweets
+        yield twitter.syncAccount(expandedAccounts[i].username);
       }
 
       // update twitter feed

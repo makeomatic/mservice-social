@@ -20,7 +20,6 @@ describe('twitter', function testSuite() {
       filter: {
         accounts: [
           { username: 'sotona' },
-          { username: 'pixiv' },
           { id: '2533316504', username: 'v_aminev' },
         ],
       },
@@ -55,10 +54,11 @@ describe('twitter', function testSuite() {
   });
 
   it('should register feed', () => {
-    return this.service.amqp.publishAndWait(uri.register, payload.register)
+    return this.service.amqp
+      .publishAndWait(uri.register, payload.register, { timeout: 55000 })
       .reflect()
       .then((response) => {
-        assert(response.isFulfilled());
+        assert.doesNotThrow(() => response.value());
       });
   });
 

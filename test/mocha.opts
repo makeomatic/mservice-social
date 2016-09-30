@@ -1,4 +1,4 @@
 --require ./test/configs/config.js
 --bail
---timeout 20000
+--timeout 60000
 -R spec
