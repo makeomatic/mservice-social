@@ -40,6 +40,13 @@ class Twitter {
   }
 
   listen(rows) {
+    if (this.reconnect && this.reconnect.isPending()) {
+      return null;
+    }
+
+    // cleanup
+    this.reconnect = null;
+
     const accounts = rows.reduce(function extractAccount(accum, value) {
       if (value.filter.account && accum.indexOf(value.filter.account) < 0) {
         accum.push(value.filter.account_id);
@@ -84,7 +91,11 @@ class Twitter {
   }
 
   _onError(exception) {
-    this.logger.error(exception);
+    this.logger.error('stream connection failed', exception);
+
+    // reconnect if we failed
+    if (this.listener) this.listener.destroy();
+    this.reconnect = Promise.bind(this).delay(500).then(this.init);
   }
 
   _onData(data) {
