@@ -9,7 +9,7 @@ global.SERVICES = {
     },
   },
   storage: {
-    debug: true,
+    debug: false,
     client: 'pg',
     connection: {
       host: 'pg',

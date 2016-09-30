@@ -40,6 +40,13 @@ class Twitter {
   }
 
   listen(rows) {
+    if (this.reconnect && this.reconnect.isPending()) {
+      return null;
+    }
+
+    // cleanup
+    this.reconnect = null;
+
     const accounts = rows.reduce(function extractAccount(accum, value) {
       if (value.filter.account && accum.indexOf(value.filter.account) < 0) {
         accum.push(value.filter.account_id);
@@ -84,20 +91,25 @@ class Twitter {
   }
 
   _onError(exception) {
-    this.logger.error(exception);
+    this.logger.error('stream connection failed', exception);
+
+    // reconnect if we failed
+    if (this.listener) this.listener.destroy();
+    this.reconnect = Promise.bind(this).delay(500).then(this.init);
   }
 
   _onData(data) {
     if (this.isTweet(data)) {
       const status = {
+        id: data.id_str,
         date: data.created_at,
         text: data.text,
-        meta: {
+        meta: JSON.stringify({
           id_str: data.id_str,
           account: data.user.screen_name,
           account_id: data.user.id_str,
           entities: data.entities,
-        },
+        }),
       };
 
       this.storage.insertStatus(status).return(true);
