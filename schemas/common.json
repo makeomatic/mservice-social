@@ -15,7 +15,7 @@
         },
         "type": {
           "type": "string",
-          "constant": "feed"
+          "enum": ["feed"]
         },
         "attributes": {
           "description": "feed properties",
@@ -33,7 +33,7 @@
         },
         "type": {
           "type": "string",
-          "constant": "tweet"
+          "enum": ["tweet"]
         },
         "attributes": {
           "description": "Tweet Properties",
@@ -102,10 +102,10 @@
           "description": "Count of results"
         },
         "before": {
-          "$ref": "common.json#/definitions/tweetId"
+          "$ref": "#/definitions/tweetId"
         },
         "cursor": {
-          "$ref": "common.json#/definitions/tweetId"
+          "$ref": "#/definitions/tweetId"
         }
       }
     },
