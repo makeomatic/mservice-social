@@ -25,7 +25,7 @@
     "ms-conf": "^2.1.0",
     "ms-socket.io-adapter-amqp": "^2.0.0",
     "ms-validation": "^3.0.0",
-    "mservice": "^4.0.2",
+    "mservice": "^4.1.0",
     "pg": "^6.1.0",
     "server-destroy": "^1.0.1",
     "twitter": "1.4.0",

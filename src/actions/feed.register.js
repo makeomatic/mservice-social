@@ -5,8 +5,8 @@
  * @apiGroup Feed
  * @apiSchema {jsonschema=../../schemas/feed.register.json} apiParam
  */
-function FeedRegisterAction(request) {
-  return this.services.feed.register(request.params);
+function FeedRegisterAction({ params }) {
+  return this.services.feed.register(params);
 }
 
 FeedRegisterAction.schema = 'feed.register';
