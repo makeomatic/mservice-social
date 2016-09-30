@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
 const TwitterClient = require('twitter');
+const BN = require('bn.js');
 const { isObject, isString, isArray, conforms, merge } = require('lodash');
 
 /**
@@ -100,20 +101,58 @@ class Twitter {
 
   _onData(data) {
     if (this.isTweet(data)) {
-      const status = {
-        id: data.id_str,
-        date: data.created_at,
-        text: data.text,
-        meta: JSON.stringify({
-          id_str: data.id_str,
-          account: data.user.screen_name,
-          account_id: data.user.id_str,
-          entities: data.entities,
-        }),
-      };
-
-      this.storage.insertStatus(status).return(true);
+      this.storage
+        .insertStatus(Twitter.serializeTweet(data))
+        .return(true);
     }
+  }
+
+  fetchTweets(cursor, account) {
+    this.logger.debug('fetching tweets for %s based on max_id %s', account, cursor);
+    const twitter = this.client;
+
+    return Promise.fromCallback(next => twitter.get('statuses/user_timeline', {
+      count: 200,
+      screen_name: account,
+      max_id: cursor,
+      trim_user: false,
+      exclude_replies: false,
+      include_rts: true,
+    }, next));
+  }
+
+  syncAccount(account) {
+    const storage = this.storage;
+
+    // recursively syncs account
+    // TODO: subject to rate limit
+    return this.storage.readStatuses({
+      filter: {
+        page: 0,
+        account,
+        pageSize: 1,
+        order: 'asc',
+      },
+    })
+    .bind(this)
+    .spread(function fetchedTweets(tweet) {
+      return this.fetchTweets(Twitter.cursor(tweet), account)
+        .then((tweets) => {
+          const length = tweets.length;
+          this.logger.debug('fetched %d tweets', length);
+
+          if (length === 0) {
+            return null;
+          }
+
+          return Promise
+            .bind(storage, tweets.map(Twitter.serializeTweet))
+            .map(storage.insertStatus)
+            .get(length - 1)
+            .bind(this)
+            .then(fetchedTweets);
+        });
+    });
   }
 
   fillUserIds(original) {
@@ -137,5 +176,30 @@ class Twitter {
       .then(accounts => (merge(original, accounts)));
   }
 }
+
+// static helpers
+Twitter.one = new BN('1', 10);
+Twitter.cursor = (tweet) => {
+  const cursor = tweet && (tweet.id || tweet.id_str);
+
+  // no tweet / cursor
+  if (!cursor) {
+    return undefined;
+  }
+
+  return new BN(cursor, 10).sub(Twitter.one).toString(10);
+};
+
+Twitter.serializeTweet = data => ({
+  id: data.id_str,
+  date: data.created_at,
+  text: data.text,
+  meta: JSON.stringify({
+    id_str: data.id_str,
+    account: data.user.screen_name,
+    account_id: data.user.id_str,
+    entities: data.entities,
+  }),
+});
 
 module.exports = Twitter;
