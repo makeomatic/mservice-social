@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "internal": {
+      "description": "Internal ID to use in combination with network",
+      "type": "string"
+    },
+    "network": {
+      "description": "Social network to use in combination with internal",
+      "type": "string"
+    },
+    "id": {
+      "description": "Or exact feed ID",
+      "type": "number"
+    },
+    "keep_data": {
+      "description": "If true, feed will be removed and not synced anymore, but old data will be left available",
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

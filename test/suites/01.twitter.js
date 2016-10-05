@@ -10,6 +10,7 @@ describe('twitter', function testSuite() {
     register: 'social.feed.register',
     list: 'social.feed.list',
     readAMQP: 'social.feed.read',
+    remove: 'social.feed.remove',
     read: 'http://0.0.0.0:3000/api/social/feed/read',
   };
 
@@ -33,6 +34,10 @@ describe('twitter', function testSuite() {
       filter: {
         account: 'sotona',
       },
+    },
+    remove: {
+      internal: 'test@test.ru',
+      network: 'twitter',
     },
 
     registerFail: {},
@@ -104,6 +109,14 @@ describe('twitter', function testSuite() {
         assert(response.isFulfilled());
         const body = response.value();
         assert.notEqual(body.data.length, 0);
+      });
+  });
+
+  it('remove feed', () => {
+    return this.service.amqp.publishAndWait(uri.remove, payload.remove)
+      .reflect()
+      .then((response) => {
+        assert(response.isFulfilled());
       });
   });
 

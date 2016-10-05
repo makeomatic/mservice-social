@@ -51,6 +51,24 @@ class Feed {
   read(data) {
     return this.storage.readStatuses(data);
   }
+
+  remove(data) {
+    const { storage, twitter } = this;
+    const process = Promise.coroutine(function* action() {
+      const feed = yield storage.listFeeds({ filter: data });
+      if (feed.length === 0) {
+        return;
+      }
+      const { filter: { account } } = feed[0];
+      yield storage.removeFeed(data);
+      if (!data.keep_data) {
+        yield storage.removeStatuses({ account });
+      }
+      yield twitter.init();
+    });
+
+    return process();
+  }
 }
 
 module.exports = Feed;

@@ -23,12 +23,14 @@ class Storage {
     client.upsertItem = function upsertItem(tableName, conflictTarget, itemData) {
       const targets = conflictTarget.split(', ');
       const exclusions = Object.keys(itemData)
-           .filter(c => targets.indexOf(c) === -1)
-           .map(c => client.raw('?? = EXCLUDED.??', [c, c]).toString())
-           .join(', ');
+        .filter(c => targets.indexOf(c) === -1)
+        .map(c => client.raw('?? = EXCLUDED.??', [c, c]).toString())
+        .join(', ');
 
       const insertString = client(tableName).insert(itemData).toString();
-      const conflictString = client.raw(` ON CONFLICT (${conflictTarget}) DO UPDATE SET ${exclusions} RETURNING *;`).toString();
+      const conflictString = client
+        .raw(` ON CONFLICT (${conflictTarget}) DO UPDATE SET ${exclusions} RETURNING *;`)
+        .toString();
       const query = (insertString + conflictString).replace(/\?/g, '\\?');
 
       return client.raw(query).then(result => result.rows[0]);
@@ -77,11 +79,28 @@ class Storage {
   }
 
   listFeeds(data) {
-    let query = this.client('feeds');
+    const query = this.client('feeds');
     if (data.filter.id) {
-      query = query.where({ internal: data.filter.internal });
+      query.where({ id: data.filter.id });
+    } else {
+      if (data.filter.internal) {
+        query.where({ internal: data.filter.internal });
+      }
+      if (data.filter.network) {
+        query.where({ network: data.filter.network });
+      }
     }
     return query;
+  }
+
+  removeFeed(data) {
+    const query = this.client('feeds');
+    if (data.id) {
+      query.where({ id: data.id });
+    } else {
+      query.where({ internal: data.internal, network: data.network });
+    }
+    return query.del();
   }
 
   insertStatus(data) {
@@ -109,6 +128,10 @@ class Storage {
     }
 
     return query;
+  }
+
+  removeStatuses(data) {
+    return this.client('statuses').whereRaw('meta->>\'account\' = ?', [data.account]).del();
   }
 }
 
