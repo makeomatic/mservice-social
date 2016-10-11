@@ -190,16 +190,26 @@ Twitter.cursor = (tweet) => {
   return new BN(cursor, 10).sub(Twitter.one).toString(10);
 };
 
-Twitter.serializeTweet = data => ({
-  id: data.id_str,
-  date: data.created_at,
-  text: data.text,
-  meta: JSON.stringify({
-    id_str: data.id_str,
-    account: data.user.screen_name,
-    account_id: data.user.id_str,
-    entities: data.entities,
-  }),
-});
+Twitter.serializeTweet = (data, noSerialize) => {
+  const tweet = {
+    id: data.id_str,
+    date: data.created_at,
+    text: data.text,
+    meta: {
+      id_str: data.id_str,
+      account: data.user.screen_name,
+      account_id: data.user.id_str,
+      entities: data.entities,
+      retweeted: data.retweeted,
+      retweeted_status: Twitter.serializeTweet(data.retweeted_status, true),
+    },
+  };
+
+  if (!noSerialize) {
+    tweet.meta = JSON.stringify(tweet.meta);
+  }
+
+  return tweet;
+};
 
 module.exports = Twitter;
