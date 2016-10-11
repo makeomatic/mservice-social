@@ -194,10 +194,6 @@ Twitter.cursor = (tweet) => {
 };
 
 Twitter.serializeTweet = (data, noSerialize) => {
-  if (!data) {
-    return null;
-  }
-
   const tweet = {
     id: data.id_str,
     date: data.created_at,
@@ -209,8 +205,7 @@ Twitter.serializeTweet = (data, noSerialize) => {
     account: data.user.screen_name,
     account_id: data.user.id_str,
     entities: data.entities,
-    retweeted: data.retweeted || false,
-    retweeted_status: data.retweeted && Twitter.serializeTweet(data.retweeted_status, true),
+    retweeted_status: data.retweeted_status && Twitter.serializeTweet(data.retweeted_status, true),
   };
 
   tweet.meta = noSerialize !== true
