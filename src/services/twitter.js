@@ -24,12 +24,6 @@ class Twitter {
     // cheaper than bind
     this.onData = json => this._onData(json);
     this.onError = err => this._onError(err);
-
-    this.isTweet = conforms({
-      entities: isObject,
-      id_str: isString,
-      text: isString,
-    });
   }
 
   init() {
@@ -100,7 +94,7 @@ class Twitter {
   }
 
   _onData(data) {
-    if (this.isTweet(data)) {
+    if (Twitter.isTweet(data)) {
       this.storage
         .insertStatus(Twitter.serializeTweet(data))
         .return(true);
@@ -177,8 +171,17 @@ class Twitter {
   }
 }
 
+// isTweet checker
+Twitter.isTweet = conforms({
+  entities: isObject,
+  id_str: isString,
+  text: isString,
+});
+
 // static helpers
 Twitter.one = new BN('1', 10);
+
+// cursor extractor
 Twitter.cursor = (tweet) => {
   const cursor = tweet && (tweet.id || tweet.id_str);
 
@@ -195,19 +198,20 @@ Twitter.serializeTweet = (data, noSerialize) => {
     id: data.id_str,
     date: data.created_at,
     text: data.text,
-    meta: {
-      id_str: data.id_str,
-      account: data.user.screen_name,
-      account_id: data.user.id_str,
-      entities: data.entities,
-      retweeted: data.retweeted || false,
-      retweeted_status: data.retweeted && Twitter.serializeTweet(data.retweeted_status, true),
-    },
   };
 
-  if (!noSerialize) {
-    tweet.meta = JSON.stringify(tweet.meta);
-  }
+  const meta = {
+    id_str: data.id_str,
+    account: data.user.screen_name,
+    account_id: data.user.id_str,
+    entities: data.entities,
+    retweeted: data.retweeted || false,
+    retweeted_status: data.retweeted && Twitter.serializeTweet(data.retweeted_status, true),
+  };
+
+  tweet.meta = noSerialize !== true
+    ? JSON.stringify(meta)
+    : meta;
 
   return tweet;
 };
