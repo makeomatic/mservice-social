@@ -200,8 +200,8 @@ Twitter.serializeTweet = (data, noSerialize) => {
       account: data.user.screen_name,
       account_id: data.user.id_str,
       entities: data.entities,
-      retweeted: data.retweeted,
-      retweeted_status: Twitter.serializeTweet(data.retweeted_status, true),
+      retweeted: data.retweeted || false,
+      retweeted_status: data.retweeted && Twitter.serializeTweet(data.retweeted_status, true),
     },
   };
 
