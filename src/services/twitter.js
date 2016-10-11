@@ -194,6 +194,10 @@ Twitter.cursor = (tweet) => {
 };
 
 Twitter.serializeTweet = (data, noSerialize) => {
+  if (!data) {
+    return null;
+  }
+
   const tweet = {
     id: data.id_str,
     date: data.created_at,
