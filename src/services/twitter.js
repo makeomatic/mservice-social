@@ -193,9 +193,10 @@ Twitter.cursor = (tweet) => {
   return new BN(cursor, 10).sub(Twitter.one).toString(10);
 };
 
-Twitter.serializeTweet = (data, noSerialize) => {
+Twitter.serializeTweet = (data, noSerialize, original) => {
   if (!data) {
-    return null;
+    console.log('%j', original);
+    throw new Error('no data supplied');
   }
 
   const tweet = {
@@ -210,7 +211,7 @@ Twitter.serializeTweet = (data, noSerialize) => {
     account_id: data.user.id_str,
     entities: data.entities,
     retweeted: data.retweeted || false,
-    retweeted_status: data.retweeted && Twitter.serializeTweet(data.retweeted_status, true),
+    retweeted_status: data.retweeted && Twitter.serializeTweet(data.retweeted_status, true, data),
   };
 
   tweet.meta = noSerialize !== true
