@@ -23,6 +23,7 @@
     "knex": "^0.12.6",
     "lodash": "^4.16.4",
     "moment": "^2.15.2",
+    "ms-amqp-transport": "^4.0.0",
     "ms-conf": "^2.3.0",
     "ms-socket.io-adapter-amqp": "^2.0.0",
     "ms-validation": "^3.0.0",
@@ -30,7 +31,8 @@
     "pg": "^6.1.0",
     "server-destroy": "^1.0.1",
     "twitter": "1.4.0",
-    "uid2": "0.0.3"
+    "uid2": "0.0.3",
+    "yargs": "^6.3.0"
   },
   "devDependencies": {
     "apidoc": "^0.16.1",
