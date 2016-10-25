@@ -1,8 +1,7 @@
 const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
-const noop = require('lodash/noop');
-const { isObject, isString, conforms, merge } = require('lodash');
+const { isObject, isString, conforms, merge, noop } = require('lodash');
 
 function extractAccount(accum, value) {
   const accountId = value.filter.account_id;
@@ -33,6 +32,7 @@ class Twitter {
     // cheaper than bind
     this.onData = json => this._onData(json);
     this.onError = err => this._onError(err);
+    this.onEnd = () => this._onEnd();
   }
 
   init() {
