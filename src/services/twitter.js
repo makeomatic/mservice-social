@@ -174,7 +174,7 @@ class Twitter {
     .bind(this)
     .spread(function fetchedTweets(tweet) {
       return this.fetchTweets(
-        Twitter.cursor(tweet),
+        Twitter.cursor(tweet, order),
         account,
         order === 'asc' ? 'max_id' : 'since_id'
       )
@@ -229,12 +229,16 @@ Twitter.isTweet = conforms({
 Twitter.one = new BN('1', 10);
 
 // cursor extractor
-Twitter.cursor = (tweet) => {
+Twitter.cursor = (tweet, order = 'asc') => {
   const cursor = tweet && (tweet.id || tweet.id_str);
 
   // no tweet / cursor
   if (!cursor) {
     return undefined;
+  }
+
+  if (order === 'desc') {
+    return cursor;
   }
 
   return new BN(cursor, 10).sub(Twitter.one).toString(10);
