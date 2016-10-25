@@ -76,7 +76,7 @@ class Twitter {
     const receive = listener.receive;
     listener.receive = (chunk) => {
       this.resetTimeout();
-      receive.call(this.listener, chunk);
+      receive.call(listener, chunk);
     };
 
     // init new timeout
