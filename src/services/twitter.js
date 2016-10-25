@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
+const noop = require('lodash/noop');
 const { isObject, isString, isArray, conforms, merge } = require('lodash');
 
 function extractAccount(accum, value) {
@@ -85,6 +86,7 @@ class Twitter {
     // remove old listener
     // minimizes chances we dont miss messages
     if (oldListener !== null) {
+      oldListener.receive = noop;
       oldListener.removeAllListeners();
       oldListener.destroy();
     }
