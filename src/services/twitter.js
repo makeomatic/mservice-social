@@ -2,12 +2,12 @@ const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
 const noop = require('lodash/noop');
-const { isObject, isString, isArray, conforms, merge } = require('lodash');
+const { isObject, isString, conforms, merge } = require('lodash');
 
 function extractAccount(accum, value) {
   const accountId = value.filter.account_id;
-  if (accountId && accum.indexOf(accountId) < 0) {
-    accum.push(accountId);
+  if (accountId && accum.indexOf(value.filter) < 0) {
+    accum.push(value.filter);
   }
   return accum;
 }
@@ -40,8 +40,8 @@ class Twitter {
       .fetchFeeds({ network: 'twitter' })
       .bind(this)
       .reduce(extractAccount, [])
-      .tap(accounts => Promise.map(accounts, accountId => (
-        this.syncAccount(accountId, 'desc'))
+      .tap(accounts => Promise.map(accounts, twAccount => (
+        this.syncAccount(twAccount.account, 'desc'))
       ))
       .then(this.listen)
       .catch(this.onError);
@@ -58,7 +58,9 @@ class Twitter {
 
     const params = {};
     if (accounts.length > 0) {
-      params.follow = accounts.join(',');
+      params.follow = accounts
+        .map(twAccount => twAccount.account_id)
+        .join(',');
     }
 
     if (!params.follow) {
@@ -94,15 +96,6 @@ class Twitter {
 
     this.logger.info('Listening for %d accounts on %s. Account list: %s', accounts.length, params.follow);
     return true;
-  }
-
-  log(results) {
-    let data = results;
-    if (!isArray(data)) {
-      data = [results];
-    }
-
-    (this.logger.trace.bind(this.logger));
   }
 
   resetTimeout() {
