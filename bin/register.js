@@ -12,11 +12,12 @@ const argv = yargs
   })
   .required('internal', 'supply owner username')
   .required('network', 'supply network, <twitter>')
+  .required('account', 'supply account, stringified JSON')
   .argv;
 
 if (!argv.account) throw new Error('must supply twitter account');
 
-const route = `${config.router.prefix}.feed.register`;
+const route = `${config.router.routes.prefix}.feed.register`;
 
 AMQPTransport
   .connect(config.amqp.transport.connection)
