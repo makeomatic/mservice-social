@@ -30,8 +30,11 @@ class Twitter {
     return this.storage
       .fetchFeeds({ network: 'twitter' })
       .bind(this)
+      .tap(rows => Promise.map(rows, row => (
+        this.syncAccount(row.filter.account_id, 'desc'))
+      ))
       .then(this.listen)
-      .catch(this.error);
+      .catch(this.onError);
   }
 
   listen(rows) {
@@ -43,8 +46,9 @@ class Twitter {
     this.reconnect = null;
 
     const accounts = rows.reduce(function extractAccount(accum, value) {
-      if (value.filter.account && accum.indexOf(value.filter.account) < 0) {
-        accum.push(value.filter.account_id);
+      const accountId = value.filter.account_id;
+      if (accountId && accum.indexOf(accountId) < 0) {
+        accum.push(accountId);
       }
       return accum;
     }, []);
@@ -72,7 +76,7 @@ class Twitter {
       listener.destroy();
     }
 
-    this.logger.info(`Listening for ${accounts.length} accounts on ${rows[0].network}`);
+    this.logger.info('Listening for %d accounts on %s. Account list: %s', accounts.length, rows[0].network, params.follow);
     return true;
   }
 
@@ -101,51 +105,55 @@ class Twitter {
     }
   }
 
-  fetchTweets(cursor, account) {
+  fetchTweets(cursor, account, cursorField = 'max_id') {
     this.logger.debug('fetching tweets for %s based on max_id %s', account, cursor);
     const twitter = this.client;
 
     return Promise.fromCallback(next => twitter.get('statuses/user_timeline', {
       count: 200,
       screen_name: account,
-      max_id: cursor,
       trim_user: false,
       exclude_replies: false,
       include_rts: true,
+      [cursorField]: cursor,
     }, next));
   }
 
-  syncAccount(account) {
+  syncAccount(account, order = 'asc') {
     const storage = this.storage;
 
     // recursively syncs account
     // TODO: subject to rate limit
-    return this.storage.readStatuses({
+    return storage.readStatuses({
       filter: {
         page: 0,
         account,
         pageSize: 1,
-        order: 'asc',
+        order,
       },
     })
     .bind(this)
     .spread(function fetchedTweets(tweet) {
-      return this.fetchTweets(Twitter.cursor(tweet), account)
-        .then((tweets) => {
-          const length = tweets.length;
-          this.logger.debug('fetched %d tweets', length);
+      return this.fetchTweets(
+        Twitter.cursor(tweet),
+        account,
+        order === 'asc' ? 'max_id' : 'since_id'
+      )
+      .then((tweets) => {
+        const length = tweets.length;
+        this.logger.debug('fetched %d tweets', length);
 
-          if (length === 0) {
-            return null;
-          }
+        if (length === 0) {
+          return null;
+        }
 
-          return Promise
-            .bind(storage, tweets.map(Twitter.serializeTweet))
-            .map(storage.insertStatus)
-            .get(length - 1)
-            .bind(this)
-            .then(fetchedTweets);
-        });
+        return Promise
+          .bind(storage, tweets.map(Twitter.serializeTweet))
+          .map(storage.insertStatus)
+          .get(order === 'asc' ? length - 1 : 0)
+          .bind(this)
+          .then(fetchedTweets);
+      });
     });
   }
 

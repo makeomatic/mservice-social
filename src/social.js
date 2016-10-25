@@ -17,7 +17,9 @@ class Social extends MService {
    */
   constructor(config = {}) {
     super(_.merge({}, defaultConfig, config));
+  }
 
+  connect() {
     const init = Promise.coroutine(function* initServices() {
       const storage = new StorageService(this.config.storage);
       const twitter = new TwitterService(this.config.twitter, storage, this.log);
@@ -34,7 +36,8 @@ class Social extends MService {
       };
     }).bind(this);
 
-    init();
+    // connect on init
+    return super.connect().then(init);
   }
 }
 
