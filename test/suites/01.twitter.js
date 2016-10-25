@@ -99,6 +99,7 @@ describe('twitter', function testSuite() {
         const { body, statusCode } = response;
         assert.equal(statusCode, 200);
         assert.notEqual(body.data.length, 0);
+        assert.equal(body.data[0].id, tweetId);
       });
   });
 

@@ -59,11 +59,14 @@ class Feed {
       if (feed.length === 0) {
         return;
       }
+
       const { filter: { account } } = feed[0];
       yield storage.removeFeed(data);
+
       if (!data.keep_data) {
         yield storage.removeStatuses({ account });
       }
+
       yield twitter.init();
     });
 
