@@ -49,6 +49,7 @@ class Twitter {
 
   listen(accounts) {
     if (this.reconnect && this.reconnect.isPending()) {
+      this.logger.warn('reconnect is pending... skipping');
       return null;
     }
 
@@ -101,7 +102,7 @@ class Twitter {
       data = [results];
     }
 
-    data.map(this.logger.trace.bind(this.logger));
+    (this.logger.trace.bind(this.logger));
   }
 
   resetTimeout() {
@@ -151,7 +152,7 @@ class Twitter {
   }
 
   fetchTweets(cursor, account, cursorField = 'max_id') {
-    this.logger.debug('fetching tweets for %s based on max_id %s', account, cursor);
+    this.logger.debug('fetching tweets for %s based on %s %s', account, cursorField, cursor);
     const twitter = this.client;
 
     return Promise.fromCallback(next => twitter.get('statuses/user_timeline', {
