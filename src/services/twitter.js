@@ -76,6 +76,10 @@ class Twitter {
     listener.on('error', this.onError);
     listener.on('end', this.onEnd);
 
+    // TODO: do this!
+    // add 'delete' handler
+    // listener.on('delete', this.onDelete);
+
     // remap stream receiver to add 90 sec timeout
     const receive = listener.receive;
     listener.receive = (chunk) => {
@@ -114,6 +118,10 @@ class Twitter {
       this.listener.removeAllListeners();
       this.listener.destroy();
       this.listener = null;
+    }
+
+    if (this.timeout) {
+      clearTimeout(this.timeout);
     }
 
     // schedule reconnect
