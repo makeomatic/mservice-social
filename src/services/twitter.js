@@ -1,13 +1,16 @@
 const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
-const { isObject, isString, conforms, merge, noop } = require('lodash');
+const { isObject, isString, conforms, merge, noop, find } = require('lodash');
 
 function extractAccount(accum, value) {
   const accountId = value.filter.account_id;
-  if (accountId && accum.indexOf(value.filter) < 0) {
+
+  // if we have accountId & we dont have it yet
+  if (accountId && !find(accum, { account_id: accountId })) {
     accum.push(value.filter);
   }
+
   return accum;
 }
 
