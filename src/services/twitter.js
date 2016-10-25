@@ -3,6 +3,14 @@ const TwitterClient = require('twitter');
 const BN = require('bn.js');
 const { isObject, isString, isArray, conforms, merge } = require('lodash');
 
+function extractAccount(accum, value) {
+  const accountId = value.filter.account_id;
+  if (accountId && accum.indexOf(accountId) < 0) {
+    accum.push(accountId);
+  }
+  return accum;
+}
+
 /**
  * @property {TwitterClient} client
  * @property {array} listeners
@@ -30,14 +38,15 @@ class Twitter {
     return this.storage
       .fetchFeeds({ network: 'twitter' })
       .bind(this)
-      .tap(rows => Promise.map(rows, row => (
-        this.syncAccount(row.filter.account_id, 'desc'))
+      .reduce(extractAccount, [])
+      .tap(accounts => Promise.map(accounts, accountId => (
+        this.syncAccount(accountId, 'desc'))
       ))
       .then(this.listen)
       .catch(this.onError);
   }
 
-  listen(rows) {
+  listen(accounts) {
     if (this.reconnect && this.reconnect.isPending()) {
       return null;
     }
@@ -45,16 +54,7 @@ class Twitter {
     // cleanup
     this.reconnect = null;
 
-    const accounts = rows.reduce(function extractAccount(accum, value) {
-      const accountId = value.filter.account_id;
-      if (accountId && accum.indexOf(accountId) < 0) {
-        accum.push(accountId);
-      }
-      return accum;
-    }, []);
-
     const params = {};
-
     if (accounts.length > 0) {
       params.follow = accounts.join(',');
     }
@@ -63,20 +63,33 @@ class Twitter {
       return false;
     }
 
-    const listener = this.listener;
+    const oldListener = this.listener;
 
     // setup new listener while old is still active
-    this.listener = this.client.stream('statuses/filter', params);
-    this.listener.on('data', this.onData);
-    this.listener.on('error', this.onError);
+    const listener = this.listener = this.client.stream('statuses/filter', params);
+
+    listener.on('data', this.onData);
+    listener.on('error', this.onError);
+    listener.on('end', this.onEnd);
+
+    // remap stream receiver to add 90 sec timeout
+    const receive = listener.receive;
+    listener.receive = (chunk) => {
+      this.resetTimeout();
+      receive.call(this.listener, chunk);
+    };
+
+    // init new timeout
+    this.resetTimeout();
 
     // remove old listener
     // minimizes chances we dont miss messages
-    if (listener !== null) {
-      listener.destroy();
+    if (oldListener !== null) {
+      oldListener.removeAllListeners();
+      oldListener.destroy();
     }
 
-    this.logger.info('Listening for %d accounts on %s. Account list: %s', accounts.length, rows[0].network, params.follow);
+    this.logger.info('Listening for %d accounts on %s. Account list: %s', accounts.length, params.follow);
     return true;
   }
 
@@ -86,15 +99,45 @@ class Twitter {
       data = [results];
     }
 
-    data.map(this.logger.info.bind(this.logger));
+    data.map(this.logger.trace.bind(this.logger));
+  }
+
+  resetTimeout() {
+    // reset old timeout
+    if (this.timeout) clearTimeout(this.timeout);
+
+    // set new timeout
+    this.timeout = setTimeout(() => {
+      this.listener.emit('error', new Error('timed out, no data in 90 seconds'));
+    }, 90000);
+  }
+
+  _destroyAndReconnect() {
+    // reconnect if we failed
+    if (this.listener) {
+      this.listener.removeAllListeners();
+      this.listener.destroy();
+      this.listener = null;
+    }
+
+    // schedule reconnect
+    if (this.reconnect) {
+      this.logger.warn('reconnect was scheduled, skipping...');
+      return;
+    }
+
+    this.logger.warn('scheduled reconnect in 1000ms');
+    this.reconnect = Promise.bind(this).delay(1000).then(this.init);
   }
 
   _onError(exception) {
     this.logger.error('stream connection failed', exception);
+    this._destroyAndReconnect();
+  }
 
-    // reconnect if we failed
-    if (this.listener) this.listener.destroy();
-    this.reconnect = Promise.bind(this).delay(500).then(this.init);
+  _onEnd() {
+    this.logger.warn('stream connection closed');
+    this._destroyAndReconnect();
   }
 
   _onData(data) {
