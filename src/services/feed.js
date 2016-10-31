@@ -33,7 +33,7 @@ class Feed {
       }
 
       // update twitter feed
-      yield twitter.connect();
+      twitter.connect();
 
       // return amount of accounts
       return accounts.length;
@@ -67,7 +67,7 @@ class Feed {
         yield storage.removeStatuses({ account });
       }
 
-      yield twitter.connect();
+      twitter.connect();
     });
 
     return process();

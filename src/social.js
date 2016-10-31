@@ -27,7 +27,7 @@ class Social extends MService {
 
       // sequentially initialize services
       yield storage.init();
-      yield twitter.connect();
+      yield twitter.init();
 
       this.services = {
         storage,
