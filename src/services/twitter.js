@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
-const { isObject, isString, conforms, merge, noop, find } = require('lodash');
+const { isObject, isString, conforms, merge, find } = require('lodash');
 
 function extractAccount(accum, value) {
   const accountId = value.filter.account_id;
@@ -39,6 +39,8 @@ class Twitter {
   }
 
   init() {
+    this.reconnect = null;
+
     return this.storage
       .fetchFeeds({ network: 'twitter' })
       .bind(this)
@@ -51,14 +53,6 @@ class Twitter {
   }
 
   listen(accounts) {
-    if (this.reconnect && this.reconnect.isPending()) {
-      this.logger.warn('reconnect is pending... skipping');
-      return null;
-    }
-
-    // cleanup
-    this.reconnect = null;
-
     const params = {};
     if (accounts.length > 0) {
       params.follow = accounts
@@ -70,7 +64,8 @@ class Twitter {
       return false;
     }
 
-    const oldListener = this.listener;
+    // destroy old listener if we had it
+    this.destroy();
 
     // setup new listener while old is still active
     const listener = this.listener = this.client.stream('statuses/filter', params);
@@ -90,16 +85,8 @@ class Twitter {
       receive.call(listener, chunk);
     };
 
-    // init new timeout
+    // init new reset timer
     this.resetTimeout();
-
-    // remove old listener
-    // minimizes chances we dont miss messages
-    if (oldListener !== null) {
-      oldListener.receive = noop;
-      oldListener.removeAllListeners();
-      oldListener.destroy();
-    }
 
     this.logger.info('Listening for %d accounts on %s. Account list: %s', accounts.length, params.follow);
     return true;
@@ -115,7 +102,18 @@ class Twitter {
     }, 90000);
   }
 
-  _destroyAndReconnect() {
+  connect() {
+    // schedule reconnect
+    if (this.reconnect) {
+      this.logger.warn('reconnect was scheduled, skipping...');
+      return;
+    }
+
+    this.logger.warn('scheduled reconnect in 1000ms');
+    this.reconnect = Promise.bind(this).delay(1000).then(this.init);
+  }
+
+  destroy() {
     // reconnect if we failed
     if (this.listener) {
       this.listener.removeAllListeners();
@@ -126,15 +124,11 @@ class Twitter {
     if (this.timeout) {
       clearTimeout(this.timeout);
     }
+  }
 
-    // schedule reconnect
-    if (this.reconnect) {
-      this.logger.warn('reconnect was scheduled, skipping...');
-      return;
-    }
-
-    this.logger.warn('scheduled reconnect in 1000ms');
-    this.reconnect = Promise.bind(this).delay(1000).then(this.init);
+  _destroyAndReconnect() {
+    this.destroy();
+    this.connect();
   }
 
   _onError(exception) {
@@ -149,6 +143,7 @@ class Twitter {
 
   _onData(data) {
     if (Twitter.isTweet(data)) {
+      this.logger.debug('inserting tweet', data);
       this.storage
         .insertStatus(Twitter.serializeTweet(data))
         .return(true);
