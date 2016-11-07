@@ -37,5 +37,5 @@ module.exports = {
       firstName: 'Foo',
       lastName: 'Bar',
     },
-  ]
+  ],
 };

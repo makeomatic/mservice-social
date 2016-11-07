@@ -21,7 +21,7 @@ class Social extends MService {
 
   connect() {
     const init = Promise.coroutine(function* initServices() {
-      const storage = new StorageService(this.config.storage);
+      const storage = new StorageService(this.knex);
       const twitter = new TwitterService(this.config.twitter, storage, this.log);
       const feed = new FeedService(storage, twitter, this.log);
 
