@@ -1,14 +1,8 @@
-const knex = require('knex');
 const Promise = require('bluebird');
 
 class Storage {
-  constructor(config) {
-    const client = this.client = knex({
-      client: 'pg',
-      debug: config.debug,
-      connection: config.connection,
-      searchPath: 'public,social',
-    });
+  constructor(knex) {
+    const client = this.client = knex;
 
     /**
      * Perform an "Upsert" using the "INSERT ... ON CONFLICT ... " syntax in PostgreSQL 9.5

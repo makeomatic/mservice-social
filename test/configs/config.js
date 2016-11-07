@@ -8,15 +8,6 @@ global.SERVICES = {
       },
     },
   },
-  storage: {
-    debug: false,
-    client: 'pg',
-    connection: {
-      host: 'pg',
-      user: 'postgres',
-      password: '',
-    },
-  },
   twitter: {
     consumer_key: process.env.TWITTER_KEY,
     consumer_secret: process.env.TWITTER_SECRET,
