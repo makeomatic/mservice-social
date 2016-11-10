@@ -1,20 +1,35 @@
 const Promise = require('bluebird');
-const omit = require('lodash/omit');
-const clone = require('lodash/clone');
+const { NotSupportedError } = require('common-errors');
+const { omit, clone, keys } = require('lodash');
 
 class Feed {
-  constructor(storage, twitter, logger) {
+  constructor(storage, networks, logger) {
     this.storage = storage;
-    this.twitter = twitter;
+    this.networks = networks;
     this.logger = logger;
   }
 
+  _hasNetwork(network) {
+    if (this._networkList === undefined) {
+      this._networkList = keys(this.networks);
+    }
+
+    return this._networkList.indexOf(network) >= 0;
+  }
+
   register(data) {
-    const { storage, twitter, logger } = this;
+    if (!this._hasNetwork(data.network)) {
+      throw new NotSupportedError(`${data.network} is not currently supported`);
+    }
+
+    const { storage, networks, logger } = this;
+    const network = networks[data.network];
+
     const process = Promise.coroutine(function* action() {
       const accounts = data.filter.accounts;
       const original = omit(data, 'filter');
-      const expandedAccounts = yield twitter.fillUserIds(accounts);
+      // must return array of account objects: { id, username }
+      const expandedAccounts = yield network.expandAccounts(accounts);
 
       for (let i = 0; i < accounts.length; i += 1) {
         const feed = clone(original);
@@ -28,12 +43,12 @@ class Feed {
         // wait till storage is registered
         yield storage.registerFeed(feed);
 
-        // syncs tweets
-        yield twitter.syncAccount(expandedAccounts[i].username);
+        // sync feed
+        yield network.syncAccount(expandedAccounts[i].username);
       }
 
-      // update twitter feed
-      twitter.connect();
+      // start listening
+      network.refresh();
 
       // return amount of accounts
       return accounts.length;

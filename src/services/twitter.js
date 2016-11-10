@@ -88,7 +88,11 @@ class Twitter {
     // init new reset timer
     this.resetTimeout();
 
-    this.logger.info('Listening for %d accounts on %s. Account list: %s', accounts.length, params.follow);
+    this.logger.info(
+      'Listening for %d accounts on %s. Account list: %s',
+      accounts.length,
+      params.follow // eslint-disable-line
+    );
     return true;
   }
 
@@ -102,7 +106,7 @@ class Twitter {
     }, 90000);
   }
 
-  connect() {
+  refresh() {
     // schedule reconnect
     if (this.reconnect) {
       this.logger.warn('reconnect was scheduled, skipping...');
@@ -128,7 +132,7 @@ class Twitter {
 
   _destroyAndReconnect() {
     this.destroy();
-    this.connect();
+    this.refresh();
   }
 
   _onError(exception) {
@@ -202,7 +206,7 @@ class Twitter {
     });
   }
 
-  fillUserIds(original) {
+  expandAccounts(original) {
     return Promise
       .fromCallback((next) => {
         const screenNames = original

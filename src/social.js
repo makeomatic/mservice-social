@@ -5,6 +5,7 @@ const path = require('path');
 
 const StorageService = require('./services/storage');
 const TwitterService = require('./services/twitter');
+const FacebookService = require('./services/facebook');
 const FeedService = require('./services/feed');
 
 const defaultConfig = globFiles(path.resolve(__dirname, 'configs'));
@@ -23,15 +24,18 @@ class Social extends MService {
     const init = Promise.coroutine(function* initServices() {
       const storage = new StorageService(this.knex);
       const twitter = new TwitterService(this.config.twitter, storage, this.log);
-      const feed = new FeedService(storage, twitter, this.log);
+      const facebook = new FacebookService(this.config.facebook, storage, this.log);
+      const feed = new FeedService(storage, { twitter, facebook }, this.log);
 
       // sequentially initialize services
       yield storage.init();
       yield twitter.init();
+      yield facebook.init();
 
       this.services = {
         storage,
         twitter,
+        facebook,
         feed,
       };
     }).bind(this);
