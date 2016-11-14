@@ -46,7 +46,7 @@ class Twitter {
       .bind(this)
       .reduce(extractAccount, [])
       .tap(accounts => Promise.map(accounts, twAccount => (
-        this.syncAccount(twAccount.account, 'desc')
+        this.syncAccount(twAccount, 'desc')
       )))
       .then(this.listen)
       .catch(this.onError);
@@ -110,11 +110,13 @@ class Twitter {
     // schedule reconnect
     if (this.reconnect) {
       this.logger.warn('reconnect was scheduled, skipping...');
-      return;
+      return Promise.resolve();
     }
 
     this.logger.warn('scheduled reconnect in 1000ms');
     this.reconnect = Promise.bind(this).delay(1000).then(this.init);
+
+    return this.reconnect;
   }
 
   destroy() {
@@ -168,8 +170,9 @@ class Twitter {
     }, next));
   }
 
-  syncAccount(account, order = 'asc') {
+  syncAccount(_account, order = 'asc') {
     const storage = this.storage;
+    const { account } = _account;
 
     // recursively syncs account
     // TODO: subject to rate limit

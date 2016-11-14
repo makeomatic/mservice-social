@@ -110,10 +110,13 @@ class Storage {
 
     const query = this.client('statuses')
       .select(this.client.raw('meta->>\'account\' as account, *'))
-      .whereRaw('meta->>\'account\' = ?', [data.filter.account])
       .orderBy('id', order)
       .limit(pageSize)
       .offset(offset);
+
+    if (data.filter.account) {
+      query.whereRaw('meta->>\'account\' = ?', [data.filter.account]);
+    }
 
     if (cursor) {
       return order === 'desc'

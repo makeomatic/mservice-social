@@ -19,7 +19,11 @@ describe('facebook', function testSuite() {
       network: 'facebook',
       filter: {
         accounts: [
-          { id: 'fuwaneko' },
+          {
+            id: 'fuwaneko',
+            // eslint-disable-next-line
+            access_token: process.env.FACEBOOK_TEST_TOKEN
+          },
         ],
       },
     },

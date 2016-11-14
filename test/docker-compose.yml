@@ -75,7 +75,7 @@ services:
 
   tester:
     container_name: tester
-    image: makeomatic/node:6.2.2-tester
+    image: makeomatic/node:7.1.0-tester
     links:
       - postgres
       - rabbitmq

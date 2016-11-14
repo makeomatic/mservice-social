@@ -10,8 +10,6 @@ const FeedService = require('./services/feed');
 
 const defaultConfig = globFiles(path.resolve(__dirname, 'configs'));
 
-const Promise = require('bluebird');
-
 class Social extends MService {
   /**
    * @param config
@@ -20,28 +18,26 @@ class Social extends MService {
     super(_.merge({}, defaultConfig, config));
   }
 
-  connect() {
-    const init = Promise.coroutine(function* initServices() {
-      const storage = new StorageService(this.knex);
-      const twitter = new TwitterService(this.config.twitter, storage, this.log);
-      const facebook = new FacebookService(this.config.facebook, storage, this.log);
-      const feed = new FeedService(storage, { twitter, facebook }, this.log);
-
-      // sequentially initialize services
-      yield storage.init();
-      yield twitter.init();
-      yield facebook.init();
-
-      this.services = {
-        storage,
-        twitter,
-        facebook,
-        feed,
-      };
-    }).bind(this);
-
+  async connect() {
     // connect on init
-    return super.connect().then(init);
+    await super.connect();
+
+    const storage = new StorageService(this.knex);
+    const twitter = new TwitterService(this.config.twitter, storage, this.log);
+    const facebook = new FacebookService(this.config.facebook, storage, this.log);
+    const feed = new FeedService(storage, { twitter, facebook }, this.log);
+
+    // sequentially initialize services
+    await storage.init();
+    await twitter.init();
+    await facebook.init();
+
+    this.services = {
+      storage,
+      twitter,
+      facebook,
+      feed,
+    };
   }
 }
 
