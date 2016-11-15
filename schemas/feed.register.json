@@ -29,6 +29,10 @@
               "username": {
                 "description": "For Twitter: screen_name, required",
                 "type": "string"
+              },
+              "token": {
+                "type": "string",
+                "description": "User token if present (required for `instagram`)"
               }
             }
           }

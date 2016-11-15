@@ -1,67 +1,6 @@
-const Promise = require('bluebird');
-
 class Storage {
   constructor(knex) {
-    const client = this.client = knex;
-
-    /**
-     * Perform an "Upsert" using the "INSERT ... ON CONFLICT ... " syntax in PostgreSQL 9.5
-     * @link http://www.postgresql.org/docs/9.5/static/sql-insert.html
-     * @author https://github.com/plurch
-     *
-     * @param {string} tableName - The name of the database table
-     * @param {string} conflictTarget - The column in the table which has a unique index constraint
-     * @param {Object} itemData - a hash of properties to be inserted/updated into the row
-     * @returns {Promise} - A Promise which resolves to the inserted/updated row
-     */
-    client.upsertItem = function upsertItem(tableName, conflictTarget, itemData) {
-      const targets = conflictTarget.split(', ');
-      const exclusions = Object.keys(itemData)
-        .filter(c => targets.indexOf(c) === -1)
-        .map(c => client.raw('?? = EXCLUDED.??', [c, c]).toString())
-        .join(', ');
-
-      const insertString = client(tableName).insert(itemData).toString();
-      const conflictString = client
-        .raw(` ON CONFLICT (${conflictTarget}) DO UPDATE SET ${exclusions} RETURNING *;`)
-        .toString();
-      const query = (insertString + conflictString).replace(/\?/g, '\\?');
-
-      return client.raw(query).then(result => result.rows[0]);
-    };
-  }
-
-  init() {
-    const client = this.client;
-    const feeds = client.schema.hasTable('feeds').then((exists) => {
-      if (exists) return null;
-
-      return client.schema.createTable('feeds', (table) => {
-        table.increments();
-        table.string('internal');
-        table.string('network');
-        table.string('network_id');
-
-        // contains filter settings
-        table.jsonb('filter');
-
-        // make sure that each account can only have a unique internal + network + id component
-        table.unique(['internal', 'network', 'network_id']);
-      });
-    });
-
-    const statuses = client.schema.hasTable('statuses').then((exists) => {
-      if (exists) return null;
-
-      return client.schema.createTable('statuses', (table) => {
-        table.bigInteger('id').primary();
-        table.string('date');
-        table.string('text');
-        table.jsonb('meta');
-      });
-    });
-
-    return Promise.all([feeds, statuses]);
+    this.client = knex;
   }
 
   fetchFeeds(where) {
