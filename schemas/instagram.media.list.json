@@ -1,0 +1,13 @@
+{
+  "id": "instagram.media.list",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    }
+  }
+}

@@ -1,5 +1,8 @@
 const { NotSupportedError } = require('common-errors');
 const { omit, clone, keys } = require('lodash');
+const Promise = require('bluebird');
+const instagramRegisterStrategy = require('./feed/register/instagram');
+const twitterRegisterStrategy = require('./feed/register/twitter');
 
 class Feed {
   constructor(storage, networks, logger) {
