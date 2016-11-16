@@ -3,7 +3,7 @@
  * @apiVersion 1.0.0
  * @apiName instagram.webhook
  * @apiGroup Instagram
- * @apiSchema {jsonschema=../../schemas/instagram.webhook.json} apiParam
+ * @apiSchema {jsonschema=../../schemas/webhook.json} apiParam
  */
 function webhookAction({ params }) {
   const instagramService = this.services.instagram;
@@ -15,7 +15,7 @@ function webhookAction({ params }) {
   return instagramService.saveMedia(params);
 }
 
-webhookAction.schema = 'instagram.webhook';
-webhookAction.transports = ['amqp'];
+webhookAction.schema = 'webhook';
+webhookAction.transports = ['http'];
 
 module.exports = webhookAction;

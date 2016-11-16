@@ -1,4 +1,4 @@
-const { collectionResponse, TYPE_TWEET } = require('../utils/response');
+const { collectionResponse, TYPE_TWEET } = require('../../utils/response');
 
 /**
  * @api {http} <prefix>.feed.read Read feed by account with optional filters

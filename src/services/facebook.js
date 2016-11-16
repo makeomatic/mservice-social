@@ -5,8 +5,11 @@ const get = Promise.promisify(fb.get);
 const url = require('url');
 const moment = require('moment-timezone');
 
+const { NotPermittedError } = require('common-errors');
+
 class FacebookService {
   constructor(config, storage, logger) {
+    this.config = config;
     this.storage = storage;
     this.logger = logger;
   }
@@ -89,6 +92,21 @@ class FacebookService {
       logger.error(e);
     }
     logger.info(`Account ${account.username}-facebook sync finished.`);
+  }
+
+  async verifySubscription(data) {
+    const { subscriptions } = this.config;
+    const { 'hub.challenge': challenge, 'hub.verify_token': verifyToken } = data;
+
+    if (subscriptions.map(subscription => subscription.verifyToken).includes(verifyToken)) {
+      return challenge;
+    }
+
+    throw new NotPermittedError(`Verify token ${verifyToken} is invalid`);
+  }
+
+  async saveStatus(data) {
+
   }
 }
 

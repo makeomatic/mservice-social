@@ -36,9 +36,10 @@ class Social extends MService {
     }
     const feed = await new services.Feed(storage, networks, this.log);
 
-    // expose only feed to actions
     this.services = {
       feed,
+      instagram: networks.instagram,
+      facebook: networks.facebook,
     };
   }
 }

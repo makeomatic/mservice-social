@@ -1,4 +1,4 @@
-const { collectionResponse, TYPE_FEED } = require('../utils/response');
+const { collectionResponse, TYPE_FEED } = require('../../utils/response');
 
 /**
  * @api {http} <prefix>.feed.list List feeds registered in the system
