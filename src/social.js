@@ -28,22 +28,16 @@ class Social extends MService {
     await super.connect();
 
     const storage = await new services.Storage(this.knex);
-    const twitter = await new services.Twitter(this.config.twitter, storage, this.log);
-    const facebook = await new services.Facebook(this.config.facebook, storage, this.log);
-    const instagram = await new services.Instagram(this.config.instagram, this.knex, this.log);
-    const feed = await new services.Feed(storage, { twitter, facebook, instagram }, this.log);
+    const networks = {};
+    networks.twitter = await new services.Twitter(this.config.twitter, storage, this.log);
+    networks.facebook = await new services.Facebook(this.config.facebook, storage, this.log);
+    if (this.config.instagram.enabled) {
+      networks.instagram = await new services.Instagram(this.config.instagram, this.knex, this.log);
+    }
+    const feed = await new services.Feed(storage, networks, this.log);
 
-    // sequentially initialize services
-    await storage.init();
-    await twitter.init();
-    await facebook.init();
-    await instagram.init();
-
+    // expose only feed to actions
     this.services = {
-      storage,
-      twitter,
-      facebook,
-      instagram,
       feed,
     };
   }

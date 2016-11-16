@@ -41,6 +41,7 @@ class Storage {
   }
 
   readStatuses(data) {
+    const network = data.filter.network;
     const page = data.filter.page;
     const pageSize = data.filter.pageSize;
     const cursor = data.filter.cursor;
@@ -49,6 +50,7 @@ class Storage {
 
     const query = this.client('statuses')
       .select(this.client.raw('meta->>\'account\' as account, *'))
+      .where('network', network)
       .orderBy('id', order)
       .limit(pageSize)
       .offset(offset);
@@ -67,7 +69,10 @@ class Storage {
   }
 
   removeStatuses(data) {
-    return this.client('statuses').whereRaw('meta->>\'account\' = ?', [data.account]).del();
+    return this.client('statuses')
+      .where('network', data.network)
+      .whereRaw('meta->>\'account\' = ?', [data.account])
+      .del();
   }
 }
 

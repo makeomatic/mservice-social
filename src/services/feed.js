@@ -1,8 +1,5 @@
 const { NotSupportedError } = require('common-errors');
 const { omit, clone, keys } = require('lodash');
-const Promise = require('bluebird');
-const instagramRegisterStrategy = require('./feed/register/instagram');
-const twitterRegisterStrategy = require('./feed/register/twitter');
 
 class Feed {
   constructor(storage, networks, logger) {
@@ -36,7 +33,7 @@ class Feed {
       const feed = clone(original);
 
       feed.network_id = expandedAccounts[i].id;
-      feed.filter = JSON.stringify({
+      feed.meta = JSON.stringify({
         account_id: feed.network_id,
         account: expandedAccounts[i].username,
       });
@@ -52,7 +49,9 @@ class Feed {
     await network.refresh();
 
     // log that we finished
-    logger.info(`Registered ${accounts.length} accounts`);
+    logger.info(`Registered ${expandedAccounts.length} accounts`);
+
+    return expandedAccounts;
   }
 
   list(data) {
@@ -70,11 +69,11 @@ class Feed {
       return;
     }
 
-    const { filter: { account } } = feed[0];
+    const { meta: { account } } = feed[0];
     await storage.removeFeed(data);
 
     if (!data.keep_data) {
-      await storage.removeStatuses({ account });
+      await storage.removeStatuses({ account, network: data.network });
     }
 
     if (data.network && networks[data.network]) {

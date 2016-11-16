@@ -6,7 +6,12 @@
     "filter": {
       "description": "What to fetch, filters are cumulative (e.g. shows statuses for account id that have mentions)",
       "type": "object",
+      "required": [ "network" ],
       "properties": {
+        "network": {
+          "description": "Network name",
+          "type": "string"
+        },
         "account": {
           "description": "Account ID (for twitter — username) to fetch feed for",
           "type": "string"

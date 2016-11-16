@@ -20,7 +20,8 @@ describe('facebook', function testSuite() {
       filter: {
         accounts: [
           {
-            id: 'fuwaneko',
+            id: '10211243484107909',
+            username: 'fuwaneko',
             // eslint-disable-next-line
             access_token: process.env.FACEBOOK_TEST_TOKEN
           },
@@ -35,6 +36,7 @@ describe('facebook', function testSuite() {
     read: {
       filter: {
         account: 'fuwaneko',
+        network: 'facebook',
       },
     },
     remove: {
@@ -44,8 +46,6 @@ describe('facebook', function testSuite() {
 
     registerFail: {},
   };
-
-  let tweetId;
 
   before('start service', () => {
     const service = this.service = new Social(global.SERVICES);
@@ -87,7 +87,6 @@ describe('facebook', function testSuite() {
         const { body, statusCode } = response;
         assert.equal(statusCode, 200);
         assert.notEqual(body.data.length, 0);
-        assert.equal(body.data[0].id, tweetId);
       });
   });
 

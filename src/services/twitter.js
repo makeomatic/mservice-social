@@ -36,6 +36,8 @@ class Twitter {
     this.onData = json => this._onData(json);
     this.onError = err => this._onError(err);
     this.onEnd = () => this._onEnd();
+
+    return this.init();
   }
 
   init() {
@@ -260,6 +262,7 @@ Twitter.cursor = (tweet, order = 'asc') => {
 Twitter.serializeTweet = (data, noSerialize) => {
   const tweet = {
     id: data.id_str,
+    network: 'twitter',
     date: data.created_at,
     text: data.text,
   };

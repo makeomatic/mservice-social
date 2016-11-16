@@ -78,6 +78,8 @@ class InstagramService {
     this.config = config;
     this.knex = knex;
     this.logger = logger;
+
+    return this.init();
   }
 
   async init() {
