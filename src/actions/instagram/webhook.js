@@ -8,7 +8,7 @@ const { SERVICE_FEED, SERVICE_INSTAGRAM, NETWORK_INSTAGRAM } = require('../..');
  * @apiVersion 1.0.0
  * @apiName instagram.webhook
  * @apiGroup Instagram
- * @apiSchema {jsonschema=../../schemas/instagram.webhook.json} apiParam
+ * @apiSchema {jsonschema=../../../schemas/instagram.webhook.json} apiParam
  */
 function webhookAction({ params }) {
   const feedService = this.getService(SERVICE_FEED);

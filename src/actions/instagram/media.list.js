@@ -3,7 +3,7 @@
  * @apiVersion 1.0.0
  * @apiName instagram.media.list
  * @apiGroup Instagram
- * @apiSchema {jsonschema=../../schemas/instagram.media.list.json} apiParam
+ * @apiSchema {jsonschema=../../../schemas/instagram.media.list.json} apiParam
  */
 function instagramMediaListAction({ params }) {
   const instagramService = this.getService('instagram');
