@@ -1,7 +1,7 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": [ "internal", "network", "filter" ],
+  "required": ["internal", "network", "filter"],
   "properties": {
     "internal": {
       "description": "Internal ID to assign this feed to",
@@ -9,35 +9,45 @@
     },
     "network": {
       "description": "Social network to fetch feed from",
-      "type": "string"
+      "type": "string",
+      "enum": ["twitter", "instagram", "facebook"]
     },
     "filter": {
-      "description": "What to fetch",
-      "type": "object",
-      "required": [ "accounts" ],
-      "properties": {
-        "accounts": {
-          "description": "Register a batch of accounts",
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "For Twitter: id_str, this will save one roundtrip to rest api",
-                "type": "string"
-              },
-              "username": {
-                "description": "For Twitter: screen_name, required",
-                "type": "string"
-              },
-              "token": {
-                "type": "string",
-                "description": "User token if present (required for `instagram`)"
-              }
-            }
+      "type": "object"
+    }
+  },
+  "switch": [
+    {
+      "if": {
+        "properties": {
+          "network": {
+            "constant": "instagram"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "filter": {
+            "$ref": "instagram.json#/definitions/registerFeedFilter"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "network": {
+            "constant": "twitter"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "filter": {
+            "$ref": "twitter.json#/definitions/registerFeedFilter"
           }
         }
       }
     }
-  }
+  ]
 }

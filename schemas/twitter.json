@@ -1,0 +1,34 @@
+{
+  "id": "twitter.json",
+  "definitions": {
+    "registerFeedFilter": {
+      "additionalProperties": false,
+      "description": "What to fetch",
+      "type": "object",
+      "anyOf": [
+        { "required": ["accounts"] }
+      ],
+      "properties": {
+        "accounts": {
+          "description": "Register a batch of accounts",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["username"],
+            "properties": {
+              "id": {
+                "description": "User identificator",
+                "type": "string"
+              },
+              "username": {
+                "description": "User name",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

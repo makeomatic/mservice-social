@@ -148,19 +148,4 @@ describe('instagram', function testSuite() {
         mock.restore();
       });
   });
-
-  it('should be able to a list of media', () => {
-    const params = {
-      username: 'perchik',
-    };
-
-    return this.service.amqp
-      .publishAndWait('social.instagram.media.list', params)
-      .reflect()
-      .then((response) => {
-        const data = response.value();
-
-        assert.equal(data.length > 0, true);
-      });
-  });
 });

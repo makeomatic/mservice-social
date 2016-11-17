@@ -4,6 +4,7 @@ const getMediaUrl = require('./instagram/get-media-url');
 const mapKeys = require('lodash/mapKeys');
 const Promise = require('bluebird');
 const request = require('request-promise');
+const ServiceMedia = require('./instagram/media');
 const snakeCase = require('lodash/snakeCase');
 
 const subscriptionUrl = 'https://api.instagram.com/v1/subscriptions/';
@@ -65,6 +66,7 @@ class InstagramService {
     this.config = config;
     this.knex = knex;
     this.logger = logger;
+    this.media = new ServiceMedia(knex);
   }
 
   syncMediaHistory() {
@@ -121,20 +123,7 @@ class InstagramService {
   }
 
   mediaList(params) {
-    const { id, username } = params;
-    const query = this
-      .knex('instagram_media')
-      .orderBy('id', 'desc');
-
-    if (id) {
-      return query.where('user_id', id);
-    }
-
-    if (username) {
-      return query.where('username', username);
-    }
-
-    throw new Errors.ArgumentError();
+    return this.media.list(params);
   }
 
   subscribe() {
