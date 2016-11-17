@@ -1,5 +1,6 @@
 const BigNumber = require('bn.js');
 const Errors = require('common-errors');
+const getMediaUrl = require('./instagram/get-media-url');
 const mapKeys = require('lodash/mapKeys');
 const Promise = require('bluebird');
 const request = require('request-promise');
@@ -14,7 +15,7 @@ const subscribeMapper = (clientId, clientSecret) => (subscription) => {
   return request.post({ url: subscriptionUrl, formData });
 };
 
-const getMediaUrl = (id, token) =>
+const getMediaListUrl = (id, token) =>
   `https://api.instagram.com/v1/users/${id}/media/recent?access_token=${token}&count=200`;
 
 function getFilteredMedia(data, lastId) {
@@ -79,7 +80,7 @@ class InstagramService {
   }
 
   syncUserMediaHistory(id, token, lastId) {
-    const url = getMediaUrl(id, token);
+    const url = getMediaListUrl(id, token);
 
     return Promise
       .bind(this, [url, lastId])
@@ -92,6 +93,14 @@ class InstagramService {
       .where('user_id', userId)
       .orderBy('id', 'desc')
       .first('id');
+  }
+
+  fetchMedia(id, accessToken) {
+    const options = { url: getMediaUrl(id, accessToken), json: true };
+
+    return request
+      .get(options)
+      .then(response => response.data);
   }
 
   saveMedia(media) {

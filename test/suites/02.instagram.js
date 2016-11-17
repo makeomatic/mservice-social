@@ -66,41 +66,6 @@ describe('instagram', function testSuite() {
       });
   });
 
-  it('should be able to return error if invalid verification token', () => {
-    const params = {
-      'hub.mode': 'subscribe',
-      'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
-      'hub.verify_token': 'invalid-verify-token',
-    };
-
-    return this.service.amqp
-      .publishAndWait('social.instagram.webhook', params)
-      .reflect()
-      .then((response) => {
-        const error = response.error();
-
-        assert.equal(error.message, 'An attempt was made to perform an operation that' +
-          ' is not permitted: Verify token invalid-verify-token is invalid');
-      });
-  });
-
-  it('should be able to verify subscription', () => {
-    const params = {
-      'hub.mode': 'subscribe',
-      'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
-      'hub.verify_token': 'your-verify-token',
-    };
-
-    return this.service.amqp
-      .publishAndWait('social.instagram.webhook', params)
-      .reflect()
-      .then((response) => {
-        const data = response.value();
-
-        assert.equal(data, '15f7d1a91c1f40f8a748fd134752feb3');
-      });
-  });
-
   it('should be able to register feed', () => {
     const params = {
       internal: 'foo@instagram.com',
@@ -195,7 +160,7 @@ describe('instagram', function testSuite() {
       .then((response) => {
         const data = response.value();
 
-        assert.equal(data.length, 3);
+        assert.equal(data[0].network_id, 'instagram');
       });
   });
 });

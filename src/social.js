@@ -29,14 +29,21 @@ class Social extends MService {
     const { instagram: instagramConfig, twitter: twitterConfig } = this.config;
     const storage = new StorageService(this.knex);
     const twitter = new TwitterService(twitterConfig, storage, this.log);
-    const feed = new FeedService(storage, twitter, this.log);
+    const feed = new FeedService(storage, twitter, this.log, this.knex);
 
     if (instagramConfig.enabled) {
       const instagram = new InstagramService(instagramConfig, this.knex, this.log);
 
-      this.addConnector(ConnectorsTypes.transport, () => instagram.subscribe());
-      this.addConnector(ConnectorsTypes.transport, () => instagram.syncMediaHistory());
-      this.addService('instagram', instagram);
+      if (instagramConfig.subscribeOnStart) {
+        this.addConnector(ConnectorsTypes.transport, () => instagram.subscribe());
+      }
+
+      if (instagramConfig.syncMediaOnStart) {
+        this.addConnector(ConnectorsTypes.transport, () => instagram.syncMediaHistory());
+      }
+
+      this.addService(Social.SERVICE_INSTAGRAM, instagram);
+      // @TODO
       feed.instagram = instagram;
     }
 
@@ -62,5 +69,14 @@ class Social extends MService {
     return this.services[name];
   }
 }
+
+Social.NETWORK_INSTAGRAM = 'instagram';
+Social.NETWORK_FACEBOOK = 'facebook';
+Social.NETWORK_TWITTER = 'twitter';
+
+Social.SERVICE_INSTAGRAM = 'instagram';
+Social.SERVICE_FACEBOOK = 'facebook';
+Social.SERVICE_FEED = 'feed';
+Social.SERVICE_TWITTER = 'twitter';
 
 module.exports = Social;

@@ -4,10 +4,18 @@ const instagramRegisterStrategy = require('./feed/register/instagram');
 const twitterRegisterStrategy = require('./feed/register/twitter');
 
 class Feed {
-  constructor(storage, twitter, logger) {
+  constructor(storage, twitter, logger, knex) {
     this.storage = storage;
     this.twitter = twitter;
     this.logger = logger;
+    this.knex = knex;
+  }
+
+  getByNetworkId(network, networkId) {
+    return this.knex(Feed.FEED_TABLE)
+      .where('network', network)
+      .where('network_id', networkId)
+      .first();
   }
 
   register(data) {
@@ -53,5 +61,7 @@ class Feed {
     return process();
   }
 }
+
+Feed.FEED_TABLE = 'feeds';
 
 module.exports = Feed;

@@ -12,6 +12,14 @@
           "type": "boolean",
           "default": false
         },
+        "syncMediaOnStart": {
+          "type": "boolean",
+          "default": true
+        },
+        "subscribeOnStart": {
+          "type": "boolean",
+          "default": true
+        },
         "client": {
           "type": "object",
           "required": ["id", "secret"],
