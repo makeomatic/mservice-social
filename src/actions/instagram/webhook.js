@@ -1,4 +1,3 @@
-const is = require('is');
 const Errors = require('common-errors');
 const Promise = require('bluebird');
 const values = require('lodash/values');

@@ -1,4 +1,4 @@
-module.exports = (userId) => ({
+module.exports = userId => ({
   changed_aspect: 'media',
   object: 'user',
   object_id: userId,

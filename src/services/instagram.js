@@ -95,7 +95,7 @@ class InstagramService {
       .first('id');
   }
 
-  fetchMedia(id, accessToken) {
+  fetchMedia(id, accessToken) { // eslint-disable-line class-methods-use-this
     const options = { url: getMediaUrl(id, accessToken), json: true };
 
     return request

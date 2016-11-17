@@ -1,6 +1,6 @@
-module.exports = (userId) => ({
+module.exports = userId => ({
   meta: {
-    code: 200
+    code: 200,
   },
   data: {
     attribution: null,
