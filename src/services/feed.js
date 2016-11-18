@@ -1,47 +1,35 @@
+const Errors = require('common-errors');
 const Promise = require('bluebird');
-const omit = require('lodash/omit');
-const clone = require('lodash/clone');
+const instagramRegisterStrategy = require('./feed/register/instagram');
+const twitterRegisterStrategy = require('./feed/register/twitter');
 
 class Feed {
-  constructor(storage, twitter, logger) {
+  constructor(storage, twitter, logger, knex) {
     this.storage = storage;
     this.twitter = twitter;
     this.logger = logger;
+    this.knex = knex;
+  }
+
+  getByNetworkId(network, networkId) {
+    return this.knex(Feed.FEED_TABLE)
+      .where('network', network)
+      .where('network_id', networkId)
+      .first();
   }
 
   register(data) {
-    const { storage, twitter, logger } = this;
-    const process = Promise.coroutine(function* action() {
-      const accounts = data.filter.accounts;
-      const original = omit(data, 'filter');
-      const expandedAccounts = yield twitter.fillUserIds(accounts);
+    const promise = Promise.bind(this, data);
 
-      for (let i = 0; i < accounts.length; i += 1) {
-        const feed = clone(original);
+    if (data.network === 'twitter') {
+      return promise.then(twitterRegisterStrategy);
+    }
 
-        feed.network_id = expandedAccounts[i].id;
-        feed.filter = JSON.stringify({
-          account_id: feed.network_id,
-          account: expandedAccounts[i].username,
-        });
+    if (data.network === 'instagram') {
+      return promise.then(instagramRegisterStrategy);
+    }
 
-        // wait till storage is registered
-        yield storage.registerFeed(feed);
-
-        // syncs tweets
-        yield twitter.syncAccount(expandedAccounts[i].username);
-      }
-
-      // update twitter feed
-      twitter.connect();
-
-      // return amount of accounts
-      return accounts.length;
-    });
-
-    return process().then((size) => {
-      logger.info(`Registered ${size} accounts`);
-    });
+    throw new Errors.NotImplementedError(`'feed.register' for '${data.network}'`);
   }
 
   list(data) {
@@ -60,7 +48,7 @@ class Feed {
         return;
       }
 
-      const { filter: { account } } = feed[0];
+      const { meta: { account } } = feed[0];
       yield storage.removeFeed(data);
 
       if (!data.keep_data) {
@@ -73,5 +61,7 @@ class Feed {
     return process();
   }
 }
+
+Feed.FEED_TABLE = 'feeds';
 
 module.exports = Feed;

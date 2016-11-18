@@ -6,7 +6,9 @@
  * @apiSchema {jsonschema=../../schemas/feed.register.json} apiParam
  */
 function FeedRegisterAction({ params }) {
-  return this.services.feed.register(params);
+  return this.services.feed
+    .register(params)
+    .then(({ length }) => ({ accounts: length }));
 }
 
 FeedRegisterAction.schema = 'feed.register';

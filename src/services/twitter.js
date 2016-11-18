@@ -4,11 +4,11 @@ const BN = require('bn.js');
 const { isObject, isString, conforms, merge, find } = require('lodash');
 
 function extractAccount(accum, value) {
-  const accountId = value.filter.account_id;
+  const accountId = value.meta.account_id;
 
   // if we have accountId & we dont have it yet
   if (accountId && !find(accum, { account_id: accountId })) {
-    accum.push(value.filter);
+    accum.push(value.meta);
   }
 
   return accum;

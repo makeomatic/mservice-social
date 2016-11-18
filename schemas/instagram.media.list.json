@@ -1,0 +1,43 @@
+{
+  "id": "instagram.media.list",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "default": {},
+      "description": "Filter of query, at least one required",
+      "properties": {
+        "accountId": {
+          "$ref": "instagram.json#/definitions/accountId"
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Pagination options",
+      "default": {},
+      "properties": {
+        "cursor": {
+          "type": "string",
+          "description": "Cursor for pagination"
+        },
+        "size": {
+          "type": "integer",
+          "maximum": 100,
+          "minimum": 1,
+          "default": 20,
+          "description": "Number of results"
+        }
+      }
+    },
+    "sort": {
+      "type": "string",
+      "description": "Field for sorting",
+      "enum": ["id", "-id"],
+      "default": "-id"
+    }
+  }
+}
