@@ -36,6 +36,7 @@ class Feed {
       feed.meta = JSON.stringify({
         account_id: feed.network_id,
         account: expandedAccounts[i].username,
+        access_token: expandedAccounts[i].access_token,
       });
 
       // wait till storage is registered

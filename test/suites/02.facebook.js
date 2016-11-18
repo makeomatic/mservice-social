@@ -1,5 +1,9 @@
 const assert = require('assert');
 const merge = require('lodash/merge');
+const fb = require('fbgraph');
+const Promise = require('bluebird');
+
+const post = Promise.promisify(fb.post);
 
 describe('facebook', function testSuite() {
   const Social = require('../../src');
@@ -10,6 +14,7 @@ describe('facebook', function testSuite() {
     list: 'social.feed.list',
     readAMQP: 'social.feed.read',
     remove: 'social.feed.remove',
+    webhook: 'http://0.0.0.0:3000/api/social/facebook/webhook',
     read: 'http://0.0.0.0:3000/api/social/feed/read',
   };
 
@@ -20,10 +25,9 @@ describe('facebook', function testSuite() {
       filter: {
         accounts: [
           {
-            id: '10211243484107909',
-            username: 'fuwaneko',
-            // eslint-disable-next-line
-            access_token: process.env.FACEBOOK_TEST_TOKEN
+            id: process.env.FACEBOOK_TEST_ACCOUNT,
+            username: process.env.FACEBOOK_TEST_ACCOUNT_NAME,
+            access_token: process.env.FACEBOOK_TEST_TOKEN,
           },
         ],
       },
@@ -35,7 +39,7 @@ describe('facebook', function testSuite() {
     },
     read: {
       filter: {
-        account: 'fuwaneko',
+        account: process.env.FACEBOOK_TEST_ACCOUNT_NAME,
         network: 'facebook',
       },
     },
@@ -46,6 +50,17 @@ describe('facebook', function testSuite() {
 
     registerFail: {},
   };
+
+  const webhookParams = {
+    entry: [{
+      changed_fields: ['feed'],
+      id: process.env.FACEBOOK_TEST_ACCOUNT,
+      time: Date.now(),
+    }],
+    object: 'user',
+  };
+
+  let postCount;
 
   before('start service', () => {
     const service = this.service = new Social(global.SERVICES);
@@ -87,6 +102,7 @@ describe('facebook', function testSuite() {
         const { body, statusCode } = response;
         assert.equal(statusCode, 200);
         assert.notEqual(body.data.length, 0);
+        postCount = body.data.length;
       });
   });
 
@@ -97,6 +113,32 @@ describe('facebook', function testSuite() {
         assert(response.isFulfilled());
         const body = response.value();
         assert.notEqual(body.data.length, 0);
+      });
+  });
+
+  it('post something on facebook', () => {
+    const params = {
+      message: `Test message from ${Date.now()}`,
+    };
+    return post(`/me/feed?access_token=${process.env.FACEBOOK_TEST_TOKEN}`, params);
+  });
+
+  it('manually call webhook', () => {
+    return request(uri.webhook, webhookParams)
+      .then((response) => {
+        const { body, statusCode } = response;
+        assert.equal(statusCode, 200);
+        assert.notEqual(body.data, 0);
+      });
+  });
+
+  it('should have more statuses than before', () => {
+    return request(uri.read, merge(payload.read, { token: this.adminToken }))
+      .then((response) => {
+        const { body, statusCode } = response;
+        assert.equal(statusCode, 200);
+        assert.notEqual(body.data.length, 0);
+        assert.notEqual(body.data.length, postCount);
       });
   });
 

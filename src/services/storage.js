@@ -7,6 +7,18 @@ class Storage {
     return this.client.select().from('feeds').where(where);
   }
 
+  getFeedByAccountId(accountId, network) {
+    return this.client.select().from('feeds')
+      .where('network', network)
+      .whereRaw('meta->>\'account_id\' = ?', [accountId])
+      .then((feeds) => {
+        if (feeds.length === 0) {
+          return null;
+        }
+        return feeds[0];
+      });
+  }
+
   registerFeed(data) {
     return this.client.upsertItem('feeds', 'internal, network, network_id', data);
   }
@@ -73,6 +85,20 @@ class Storage {
       .where('network', data.network)
       .whereRaw('meta->>\'account\' = ?', [data.account])
       .del();
+  }
+
+  getLatestStatusByAccountId(accountId, network) {
+    return this.client.select().from('statuses')
+      .where('network', network)
+      .whereRaw('meta->>\'account_id\' = ?', [accountId])
+      .limit(1)
+      .orderBy('date', 'desc')
+      .then((statuses) => {
+        if (statuses.length === 0) {
+          return null;
+        }
+        return statuses[0];
+      });
   }
 }
 

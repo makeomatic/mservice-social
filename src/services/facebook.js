@@ -14,19 +14,16 @@ class FacebookService {
     this.logger = logger;
   }
 
-  refresh() {}
+  refresh() {
+  }
 
   expandAccounts(accounts) {
     return accounts; // don't need to do anything
   }
 
   async syncAccount(account) {
-    const { storage, logger } = this;
+    const { logger } = this;
     logger.info(`Syncing ${account.username}-facebook`);
-    let since;
-    let until;
-    let size = -1;
-    let pagingToken = '';
     try {
       // get the latest post
       const latest = await get(`${account.id}/feed`, {
@@ -41,57 +38,76 @@ class FacebookService {
       }
 
       // start with latest post
-      until = moment(latest.data[0].created_time).valueOf() / 1000;
-      since = moment(latest.data[0].created_time).subtract(90, 'days').valueOf() / 1000;
+      const until = moment(latest.data[0].created_time).valueOf() / 1000;
+      const since = moment(latest.data[0].created_time).subtract(90, 'days').valueOf() / 1000;
 
       // now get all posts we can
-      while (size !== 0) {
-        const params = {
-          fields: ['attachments', 'message', 'story', 'created_time', 'comments'].join(','),
-          access_token: account.access_token,
-          since,
-          until,
-        };
-        if (pagingToken !== '') {
-          params.__paging_token = pagingToken;
-        }
-        const response = await get(`${account.id}/feed`, params);
-
-        response.data.forEach(function saveStatus(inStatus) {
-          const meta = {
-            id_str: inStatus.id,
-            account: account.username,
-            account_id: account.id,
-            attachments: inStatus.attachments,
-            comments: inStatus.comments,
-            story: inStatus.story,
-          };
-          const outStatus = {
-            id: inStatus.id,
-            network: 'facebook',
-            date: inStatus.created_time,
-            text: inStatus.message || inStatus.story,
-            meta: JSON.stringify(meta),
-          };
-          storage.insertStatus(outStatus);
-        });
-
-        // paging exists only when where are results, so it's okay to just skip it
-        // size will stop the cycle
-        if (response.paging) {
-          const query = url.parse(response.paging.next, true).query;
-          since = query.since;
-          until = query.until;
-          pagingToken = query.__paging_token;
-        }
-        size = response.data.length;
-
-        logger.info(`Got ${size} statuses from ${account.username}-facebook`);
-      }
+      await this.fetch(since, until, account);
     } catch (e) {
       logger.error(e);
     }
     logger.info(`Account ${account.username}-facebook sync finished.`);
+  }
+
+  /**
+   * Fetches all statuses between since and until dates.
+   * @param _since Start date
+   * @param _until End date
+   * @param account Account info { access_token, id/account_id }
+   */
+  async fetch(_since, _until, account) {
+    let since = _since;
+    let until = _until;
+    let size = -1;
+    let pagingToken = '';
+    let count = 0;
+    const { storage, logger } = this;
+    while (size !== 0) {
+      const params = {
+        fields: ['attachments', 'message', 'story', 'created_time', 'comments'].join(','),
+        access_token: account.access_token,
+        since,
+        until,
+      };
+      if (pagingToken !== '') {
+        params.__paging_token = pagingToken;
+      }
+      const response = await get(`${account.id || account.account_id}/feed`, params);
+
+      response.data.forEach(function saveStatus(inStatus) {
+        const meta = {
+          id_str: inStatus.id,
+          account: account.username || account.account,
+          account_id: account.id || account.account_id,
+          attachments: inStatus.attachments,
+          comments: inStatus.comments,
+          story: inStatus.story,
+        };
+        const outStatus = {
+          id: inStatus.id,
+          network: 'facebook',
+          date: inStatus.created_time,
+          text: inStatus.message || inStatus.story,
+          meta: JSON.stringify(meta),
+        };
+        storage.insertStatus(outStatus);
+      });
+
+      // paging exists only when where are results, so it's okay to just skip it
+      // size will stop the cycle
+      if (response.paging) {
+        const query = url.parse(response.paging.next, true).query;
+        since = query.since;
+        until = query.until;
+        pagingToken = query.__paging_token;
+      }
+      size = response.data.length;
+
+      count += size;
+
+      logger.info(`Got ${size} statuses from ${account.username || account.account}-facebook`);
+    }
+    return count;
   }
 
   async verifySubscription(data) {
@@ -106,7 +122,17 @@ class FacebookService {
   }
 
   async saveStatus(data) {
-
+    const { storage } = this;
+    // get user id whose feed we need to fetch
+    const accountIds = data.entry.map(entry => (entry.id));
+    const statuses = accountIds.map(async (accountId) => {
+      const feed = await storage.getFeedByAccountId(accountId, 'facebook');
+      const ourLatest = await storage.getLatestStatusByAccountId(accountId, 'facebook');
+      const { meta: account } = feed;
+      const { date: since } = ourLatest;
+      return await this.fetch(since, Date.now(), account);
+    }, this);
+    return Promise.reduce(statuses, (total, synced) => (total + synced), 0);
   }
 }
 
