@@ -7,6 +7,13 @@ const sinon = require('sinon');
 const Social = require('../../src');
 const subcriptionRequest = require('../fixtures/instagram/subscription-request');
 
+const http = request.defaults({
+  uri: 'http://localhost:3000/api/social/instagram/webhook',
+  simple: false,
+  resolveWithFullResponse: true,
+  json: true,
+});
+
 const config = {
   instagram: {
     enabled: true,
@@ -32,7 +39,21 @@ describe('instagram.webhook', function testSuite() {
   before('start up service', () => service.connect());
   after('shutdown service', () => service.close());
 
-  it('should be able to return error if invalid verification token', () => {
+  it('http: should be able to return error if invalid verification token', () => {
+    const params = {
+      'hub.mode': 'subscribe',
+      'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
+      'hub.verify_token': 'invalid-verify-token',
+    };
+
+    return http({ qs: params }).then((response) => {
+      assert.equal(response.statusCode, 403);
+      assert.equal(response.body.message, 'An attempt was made to perform an operation that' +
+        ' is not permitted: Verify token invalid-verify-token is invalid');
+    });
+  });
+
+  it('amqp: should be able to return error if invalid verification token', () => {
     const params = {
       'hub.mode': 'subscribe',
       'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
@@ -50,7 +71,7 @@ describe('instagram.webhook', function testSuite() {
       });
   });
 
-  it('should be able to verify subscription', () => {
+  it('amqp: should be able to verify subscription', () => {
     const params = {
       'hub.mode': 'subscribe',
       'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
@@ -67,7 +88,21 @@ describe('instagram.webhook', function testSuite() {
       });
   });
 
-  it('should be able to return error if recive media from unknown user', () => {
+  it('http: should be able to verify subscription', () => {
+    const params = {
+      'hub.mode': 'subscribe',
+      'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
+      'hub.verify_token': 'your-verify-token',
+    };
+
+    return http({ qs: params })
+      .then((response) => {
+        assert.equal(response.statusCode, 200);
+        assert.equal(response.body, '15f7d1a91c1f40f8a748fd134752feb3');
+      });
+  });
+
+  it('amqp: should be able to return error if receives media from unknown user', () => {
     const userId = Date.now().toString();
     const params = { 0: subcriptionRequest(userId) };
 
@@ -79,6 +114,20 @@ describe('instagram.webhook', function testSuite() {
 
         assert.equal(error.message, `Not Found: "Feed for user #${userId}"`);
       });
+  });
+
+  it('http: should be able to return error if receives media from unknown user', () => {
+    const userId = Date.now().toString();
+    const params = { 0: subcriptionRequest(userId) };
+
+    return http({
+      method: 'post',
+      body: params,
+    })
+    .then((response) => {
+      assert.equal(response.statusCode, 404);
+      assert.equal(response.body.message, `Not Found: "Feed for user #${userId}"`);
+    });
   });
 
   it('should be able to save media', () => {
