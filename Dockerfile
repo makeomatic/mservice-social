@@ -21,7 +21,9 @@ RUN \
   && rm -rf \
     /tmp/* \
     /root/.node-gyp \
-    /root/.npm
+    /root/.npm \
+    /etc/apk/cache/* \
+    /var/cache/apk/*
 
 COPY . /src
 RUN  chown -R node /src
