@@ -15,10 +15,6 @@ function webhookAction({ params, query, method }) {
     return webhookAction.verify.call(this, query);
   }
 
-  if (method === 'post') {
-    return webhookAction.hook.call(this, params);
-  }
-
   if (method === 'amqp' && params['hub.mode'] === 'subscribe') {
     return webhookAction.verify.call(this, params);
   }

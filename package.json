@@ -28,7 +28,7 @@
     "ms-conf": "^2.3.0",
     "ms-socket.io-adapter-amqp": "^2.0.0",
     "ms-validation": "^3.0.0",
-    "mservice": "^4.5.0",
+    "mservice": "^4.6.0",
     "pg": "^6.1.0",
     "request": "^2.79.0",
     "request-promise": "^4.1.1",
