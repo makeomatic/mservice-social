@@ -3,6 +3,7 @@ const merge = require('lodash/merge');
 const fb = require('fbgraph');
 const Promise = require('bluebird');
 
+const get = Promise.promisify(fb.get);
 const post = Promise.promisify(fb.post);
 
 describe('facebook', function testSuite() {
@@ -27,7 +28,7 @@ describe('facebook', function testSuite() {
           {
             id: process.env.FACEBOOK_TEST_ACCOUNT,
             username: process.env.FACEBOOK_TEST_ACCOUNT_NAME,
-            access_token: process.env.FACEBOOK_TEST_TOKEN,
+            // access_token: process.env.FACEBOOK_TEST_TOKEN,
           },
         ],
       },
@@ -61,10 +62,20 @@ describe('facebook', function testSuite() {
   };
 
   let postCount;
+  let accessToken;
 
   before('start service', () => {
     const service = this.service = new Social(global.SERVICES);
     return service.connect();
+  });
+
+  before('acquire test user access_token', () => {
+    const params = { access_token: process.env.FACEBOOK_TOKEN };
+    return get(`${process.env.FACEBOOK_ID}/accounts/test-users`, params)
+      .then((response) => {
+        accessToken = response.data[0].access_token;
+        payload.register.filter.accounts[0].access_token = accessToken;
+      });
   });
 
   it('should return error if request to register is not valid', () => {
@@ -120,7 +131,7 @@ describe('facebook', function testSuite() {
     const params = {
       message: `Test message from ${Date.now()}`,
     };
-    return post(`/me/feed?access_token=${process.env.FACEBOOK_TEST_TOKEN}`, params);
+    return post(`/me/feed?access_token=${accessToken}`, params);
   });
 
   it('manually call webhook', () => {
