@@ -46,7 +46,7 @@ class Twitter {
       .bind(this)
       .reduce(extractAccount, [])
       .tap(accounts => Promise.map(accounts, twAccount => (
-        this.syncAccount(twAccount.account, 'desc'))
+        this.syncAccount(twAccount.account, 'desc')),
       ))
       .then(this.listen)
       .catch(this.onError);
@@ -182,7 +182,7 @@ class Twitter {
       return this.fetchTweets(
         Twitter.cursor(tweet, order),
         account,
-        order === 'asc' ? 'max_id' : 'since_id'
+        order === 'asc' ? 'max_id' : 'since_id',
       )
       .then((tweets) => {
         const length = tweets.length;
