@@ -70,19 +70,20 @@ function validateAccount(account) {
     throw new Errors.ValidationError('Instagram account username must be present');
   }
 
-  if (account.token === undefined) {
+  if (account.access_token === undefined) {
     throw new Errors.ValidationError('Instagram account token must be present');
   }
 }
 
 class InstagramService {
-  constructor(config, knex, logger) {
+  constructor(config, feed) {
     this.config = config;
-    this.knex = knex;
-    this.logger = logger;
+    this.knex = feed.db;
+    this.logger = feed.logger;
+    this.name = 'instagram';
 
-    this.media = new ServiceMedia(knex);
-    return this.init();
+    this.media = new ServiceMedia(this.knex);
+    return this.init().then(() => this);
   }
 
   async init() {
@@ -96,8 +97,8 @@ class InstagramService {
   }
 
   syncAccount(account) {
-    const { id, token } = account;
-    return this.syncUserMediaHistory(id, token);
+    const { account_id: id, access_token } = account;
+    return this.syncUserMediaHistory(id, access_token);
   }
 
   refresh() {}
@@ -111,7 +112,7 @@ class InstagramService {
         .getLastMediaId(feed.network_id)
         .then(result => Object.assign({ lastId: result.id }, feed))
       ))
-      .map(feed => this.syncUserMediaHistory(feed.network_id, feed.meta.token, feed.lastId));
+      .map(feed => this.syncUserMediaHistory(feed.network_id, feed.meta.access_token, feed.lastId));
   }
 
   syncUserMediaHistory(id, token, lastId) {

@@ -1,10 +1,6 @@
 {
-  "id": "instagram.json",
+  "id": "facebook.json",
   "definitions": {
-    "accountId": {
-      "type": "string",
-      "description": "Identificator of `instagram` account"
-    },
     "registerFeedFilter": {
       "additionalProperties": false,
       "description": "What to fetch",
@@ -19,18 +15,19 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "username", "access_token"],
+            "required": ["id", "access_token"],
             "properties": {
               "id": {
-                "$ref": "#/definitions/accountId"
+                "description": "User/page identificator",
+                "type": "string"
               },
               "username": {
-                "description": "User name",
+                "description": "User/page name (for display purposes)",
                 "type": "string"
               },
               "access_token": {
                 "type": "string",
-                "description": "User token"
+                "description": "User/page token"
               }
             }
           }
