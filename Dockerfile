@@ -12,7 +12,8 @@ RUN \
     python \
     git \
     curl \
-  && apk add openssl \
+  && apk add openssl ca-certificates \
+  && update-ca-certificates \
   && npm install --production \
   && npm dedupe \
   && apk del \
