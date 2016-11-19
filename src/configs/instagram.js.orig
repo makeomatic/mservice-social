@@ -1,8 +1,11 @@
 module.exports = {
   instagram: {
     enabled: false,
+<<<<<<< HEAD
+=======
     syncMediaOnStart: true,
     subscribeOnStart: true,
+>>>>>>> master
     // client: {
     //   id: 'client-id',
     //   secret: 'client-secret',

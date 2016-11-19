@@ -1,11 +1,36 @@
 const { NotSupportedError } = require('common-errors');
-const { omit, clone, keys } = require('lodash');
+const { omit, clone, keys, filter, map, reduce, compact } = require('lodash');
+const { all } = require('bluebird');
+
+const services = require('./');
 
 class Feed {
-  constructor(storage, networks, logger) {
-    this.storage = storage;
-    this.networks = networks;
-    this.logger = logger;
+  constructor(mservice) {
+    this.logger = mservice.logger;
+    this.config = mservice.config;
+    this.db = mservice.knex;
+
+    this.tables = {
+      feeds: 'feeds',
+      statuses: 'statuses',
+    };
+
+    return this.init().then(() => this);
+  }
+
+  async init() {
+    this.enabledNetworks = filter(this.config.networks, network => network.enabled);
+    this.networks = map(
+      this.enabledNetworks,
+      async network => await new services[network.name](network, this)
+    );
+
+    return all(this.networks).tap((networks) => {
+      this.networks = reduce(compact(networks), (accum, network) => {
+        accum[network.name] = network;
+        return accum;
+      }, {});
+    });
   }
 
   _hasNetwork(network) {
@@ -81,6 +106,108 @@ class Feed {
       await networks[data.network].refresh();
     }
   }
+
+  /* Database functions */
+
+  fetchFeeds(where) {
+    return this.db.select().from(this.tables.feeds).where(where);
+  }
+
+  getFeedByAccountId(accountId, network) {
+    return this.db.select().from(this.tables.feeds)
+      .where('network', network)
+      .whereRaw('meta->>\'account_id\' = ?', [accountId])
+      .then((feeds) => {
+        if (feeds.length === 0) {
+          return null;
+        }
+        return feeds[0];
+      });
+  }
+
+  registerFeed(data) {
+    return this.db.upsertItem(this.tables.feeds, 'internal, network, network_id', data);
+  }
+
+  listFeeds(data) {
+    const query = this.db(this.tables.feeds);
+    if (data.filter.id) {
+      query.where({ id: data.filter.id });
+    } else {
+      if (data.filter.internal) {
+        query.where({ internal: data.filter.internal });
+      }
+      if (data.filter.network) {
+        query.where({ network: data.filter.network });
+      }
+    }
+    return query;
+  }
+
+  removeFeed(data) {
+    const query = this.db(this.tables.feeds);
+    if (data.id) {
+      query.where({ id: data.id });
+    } else {
+      query.where({ internal: data.internal, network: data.network });
+    }
+    return query.del();
+  }
+
+  insertStatus(data) {
+    return this.db.upsertItem(this.tables.statuses, 'id', data);
+  }
+
+  readStatuses(data) {
+    const network = data.filter.network;
+    const page = data.filter.page;
+    const pageSize = data.filter.pageSize;
+    const cursor = data.filter.cursor;
+    const offset = page * pageSize;
+    const order = data.filter.order;
+
+    const query = this.db(this.tables.statuses)
+      .select(this.db.raw('meta->>\'account\' as account, *'))
+      .where('network', network)
+      .orderBy('id', order)
+      .limit(pageSize)
+      .offset(offset);
+
+    if (data.filter.account) {
+      query.whereRaw('meta->>\'account\' = ?', [data.filter.account]);
+    }
+
+    if (cursor) {
+      return order === 'desc'
+        ? query.where('id', '<', cursor)
+        : query.where('id', '>', cursor);
+    }
+
+    return query;
+  }
+
+  removeStatuses(data) {
+    return this.db(this.tables.statuses)
+      .where('network', data.network)
+      .whereRaw('meta->>\'account\' = ?', [data.account])
+      .del();
+  }
+
+  getLatestStatusByAccountId(accountId, network) {
+    return this.db.select().from(this.tables.statuses)
+      .where('network', network)
+      .whereRaw('meta->>\'account_id\' = ?', [accountId])
+      .limit(1)
+      .orderBy('date', 'desc')
+      .then((statuses) => {
+        if (statuses.length === 0) {
+          return null;
+        }
+        return statuses[0];
+      });
+  }
 }
+
+Feed.FEED_TABLE = 'feeds';
 
 module.exports = Feed;

@@ -12,6 +12,7 @@ class FacebookService {
     this.config = config;
     this.storage = storage;
     this.logger = logger;
+    this.name = 'facebook';
   }
 
   refresh() {

@@ -3,7 +3,7 @@
  * @apiVersion 1.0.0
  * @apiName facebook.webhook
  * @apiGroup Facebook
- * @apiSchema {jsonschema=../../schemas/webhook.json} apiParam
+ * @apiSchema {jsonschema=../../../schemas/webhook.json} apiParam
  */
 function webhookAction({ params }) {
   const facebookService = this.services.facebook;

@@ -5,8 +5,8 @@ const { collectionResponse, TYPE_TWEET } = require('../../utils/response');
  * @apiVersion 1.0.0
  * @apiName feed.read
  * @apiGroup Feed
- * @apiSchema {jsonschema=../../schemas/feed.read.json} apiParam
- * @apiSchema {jsonschema=../../schemas/feed.read.response.json} apiSuccess
+ * @apiSchema {jsonschema=../../../schemas/feed.read.json} apiParam
+ * @apiSchema {jsonschema=../../../schemas/feed.read.response.json} apiSuccess
  */
 function FeedReadAction({ params }) {
   const opts = {

@@ -3,6 +3,7 @@ const omit = require('lodash/omit');
 const isfn = fn => typeof fn === 'function';
 const TYPE_TWEET = 'tweet';
 const TYPE_FEED = 'feed';
+const TYPE_INSTAGRAM_MEDIA = 'instagramMedia';
 
 function transform(object, type) {
   const response = {
@@ -57,4 +58,5 @@ module.exports = {
   transform,
   TYPE_TWEET,
   TYPE_FEED,
+  TYPE_INSTAGRAM_MEDIA,
 };

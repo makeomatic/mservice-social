@@ -31,6 +31,7 @@ class Twitter {
     this.listener = null;
     this.storage = storage;
     this.logger = logger;
+    this.name = 'twitter';
 
     // cheaper than bind
     this.onData = json => this._onData(json);

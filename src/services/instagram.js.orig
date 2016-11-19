@@ -1,10 +1,16 @@
 const BigNumber = require('bn.js');
 const Errors = require('common-errors');
+<<<<<<< HEAD
+const mapKeys = require('lodash/mapKeys');
+const Promise = require('bluebird');
+const request = require('request-promise');
+=======
 const getMediaUrl = require('./instagram/get-media-url');
 const mapKeys = require('lodash/mapKeys');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const ServiceMedia = require('./instagram/media');
+>>>>>>> master
 const snakeCase = require('lodash/snakeCase');
 
 const subscriptionUrl = 'https://api.instagram.com/v1/subscriptions/';
@@ -16,7 +22,11 @@ const subscribeMapper = (clientId, clientSecret) => (subscription) => {
   return request.post({ url: subscriptionUrl, formData });
 };
 
+<<<<<<< HEAD
+const getMediaUrl = (id, token) =>
+=======
 const getMediaListUrl = (id, token) =>
+>>>>>>> master
   `https://api.instagram.com/v1/users/${id}/media/recent?access_token=${token}&count=200`;
 
 function getFilteredMedia(data, lastId) {
@@ -61,6 +71,7 @@ function syncMedia(url, lastId) {
     });
 }
 
+<<<<<<< HEAD
 function validateAccount(account) {
   if (account.id === undefined) {
     throw new Errors.ValidationError('Instagram account id must be present');
@@ -75,13 +86,15 @@ function validateAccount(account) {
   }
 }
 
+=======
+>>>>>>> master
 class InstagramService {
   constructor(config, knex, logger) {
     this.config = config;
     this.knex = knex;
     this.logger = logger;
+<<<<<<< HEAD
 
-    this.media = new ServiceMedia(knex);
     return this.init();
   }
 
@@ -102,6 +115,11 @@ class InstagramService {
 
   refresh() {}
 
+=======
+    this.media = new ServiceMedia(knex);
+  }
+
+>>>>>>> master
   syncMediaHistory() {
     return this
       .knex('feeds')
@@ -115,7 +133,11 @@ class InstagramService {
   }
 
   syncUserMediaHistory(id, token, lastId) {
+<<<<<<< HEAD
+    const url = getMediaUrl(id, token);
+=======
     const url = getMediaListUrl(id, token);
+>>>>>>> master
 
     return Promise
       .bind(this, [url, lastId])
@@ -130,6 +152,8 @@ class InstagramService {
       .first('id');
   }
 
+<<<<<<< HEAD
+=======
   fetchMedia(id, accessToken) { // eslint-disable-line class-methods-use-this
     const options = { url: getMediaUrl(id, accessToken), json: true };
 
@@ -138,6 +162,7 @@ class InstagramService {
       .then(response => response.data);
   }
 
+>>>>>>> master
   saveMedia(media) {
     const { knex, logger } = this;
     const { id, user: { id: userId, username } } = media;
@@ -156,7 +181,24 @@ class InstagramService {
   }
 
   mediaList(params) {
+<<<<<<< HEAD
+    const { id, username } = params;
+    const query = this
+      .knex('instagram_media')
+      .orderBy('id', 'desc');
+
+    if (id) {
+      return query.where('user_id', id);
+    }
+
+    if (username) {
+      return query.where('username', username);
+    }
+
+    throw new Errors.ArgumentError();
+=======
     return this.media.list(params);
+>>>>>>> master
   }
 
   subscribe() {

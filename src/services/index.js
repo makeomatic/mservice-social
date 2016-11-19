@@ -1,13 +1,9 @@
-const Storage = require('./storage');
-const Twitter = require('./twitter');
-const Facebook = require('./facebook');
-const Instagram = require('./instagram');
-const Feed = require('./feed');
+const twitter = require('./twitter');
+const facebook = require('./facebook');
+const instagram = require('./instagram');
 
 module.exports = exports = {
-  Storage,
-  Twitter,
-  Facebook,
-  Instagram,
-  Feed,
+  twitter,
+  facebook,
+  instagram,
 };
