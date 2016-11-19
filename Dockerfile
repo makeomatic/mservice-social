@@ -12,7 +12,7 @@ RUN \
     python \
     git \
     curl \
-    openssl \
+  && apk add openssl \
   && npm install --production \
   && npm dedupe \
   && apk del \
