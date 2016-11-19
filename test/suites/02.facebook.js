@@ -36,6 +36,7 @@ describe('facebook', function testSuite() {
     list: {
       filter: {
         internal: 'test@test.ru',
+        network: 'facebook',
       },
     },
     read: {
@@ -103,7 +104,6 @@ describe('facebook', function testSuite() {
         assert(response.isFulfilled());
         const body = response.value();
         assert.notEqual(body.data.length, 0);
-        assert.equal(body.data[0].id, 1);
       });
   });
 

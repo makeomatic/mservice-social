@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
-const { isObject, isString, conforms, merge, find } = require('lodash');
+const { isObject, isString, conforms, merge, find, reduce, map } = require('lodash');
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
@@ -14,17 +14,10 @@ function extractAccount(accum, value) {
   return accum;
 }
 
-/**
- * @property {TwitterClient} client
- * @property {array} listeners
- * @property {Knex} knex
- * @property {Logger} logger
- */
 class Twitter {
   /**
    * @param {object} config
-   * @param {StorageService} storage
-   * @param {Logger} logger
+   * @param {object} feed
    */
   constructor(config, feed) {
     this.client = new TwitterClient(config);
@@ -38,21 +31,21 @@ class Twitter {
     this.onError = err => this._onError(err);
     this.onEnd = () => this._onEnd();
 
-    return this.init();
+    return this.init().then(() => this);
   }
 
-  init() {
+  async init() {
     this.reconnect = null;
 
-    return this.feed
-      .fetchFeeds({ network: 'twitter' })
-      .bind(this)
-      .reduce(extractAccount, [])
-      .tap(accounts => Promise.map(accounts, twAccount => (
-        this.syncAccount(twAccount, 'desc')
-      )))
-      .then(this.listen)
-      .catch(this.onError);
+    try {
+      const feeds = await this.feed.list({ filter: { network: 'twitter' } });
+      const accounts = reduce(feeds, extractAccount, []);
+      const sync = map(accounts, async account => await this.syncAccount(account, 'desc'));
+      return Promise.all(sync).then(() => this.listen(accounts));
+    } catch (exception) {
+      this.logger.error('stream connection failed', exception);
+      return this._destroyAndReconnect();
+    }
   }
 
   listen(accounts) {
@@ -137,7 +130,7 @@ class Twitter {
 
   _destroyAndReconnect() {
     this.destroy();
-    this.refresh();
+    return this.refresh();
   }
 
   _onError(exception) {
@@ -162,54 +155,48 @@ class Twitter {
   fetchTweets(cursor, account, cursorField = 'max_id') {
     this.logger.debug('fetching tweets for %s based on %s %s', account, cursorField, cursor);
     const twitter = this.client;
-
-    return Promise.fromCallback(next => twitter.get('statuses/user_timeline', {
+    const params = {
       count: 200,
       screen_name: account,
       trim_user: false,
       exclude_replies: false,
       include_rts: true,
-      [cursorField]: cursor,
-    }, next));
+    };
+    if (cursor) {
+      params[cursorField] = cursor;
+    }
+
+    return Promise.fromCallback(next => twitter.get('statuses/user_timeline', params, next));
   }
 
-  syncAccount(_account, order = 'asc') {
+  async syncAccount(_account, order = 'asc') {
     const feed = this.feed;
     const { account } = _account;
-
-    // recursively syncs account
-    // TODO: subject to rate limit
-    return feed.readStatuses({
+    let [latest] = await feed.statuses({
       filter: {
+        network: this.name,
         page: 0,
         account,
         pageSize: 1,
         order,
       },
-    })
-    .bind(this)
-    .spread(function fetchedTweets(tweet) {
-      return this.fetchTweets(
-        Twitter.cursor(tweet, order),
-        account,
-        order === 'asc' ? 'max_id' : 'since_id' // eslint-disable-line
-      )
-      .then((tweets) => {
-        const length = tweets.length;
-        this.logger.debug('fetched %d tweets', length);
-
-        if (length === 0) {
-          return null;
-        }
-
-        return Promise
-          .bind(feed, tweets.map(Twitter.serializeTweet))
-          .map(feed.insertStatus)
-          .get(order === 'asc' ? length - 1 : 0)
-          .bind(this)
-          .then(fetchedTweets);
-      });
     });
+
+    // TODO: subject to rate limit
+    let size = -1;
+    while (size !== 0) {
+      const inTweets = await this.fetchTweets(
+        Twitter.cursor(latest, order),
+        account,
+        order === 'asc' ? 'max_id' : 'since_id'
+      );
+
+      const outTweets = map(inTweets, Twitter.serializeTweet);
+      const insert = map(outTweets, async tweet => await feed.insertStatus(tweet));
+
+      size = inTweets.length;
+      latest = await Promise.all(insert).get(order === 'asc' ? size - 1 : 0);
+    }
   }
 
   expandAccounts(original) {

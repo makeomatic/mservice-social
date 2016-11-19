@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const assert = require('assert');
-const merge = require('lodash/merge');
+const { map, merge } = require('lodash');
 
 describe('twitter', function testSuite() {
   const Social = require('../../src');
@@ -20,7 +20,7 @@ describe('twitter', function testSuite() {
       network: 'twitter',
       filter: {
         accounts: [
-          { username: 'sotona' },
+          { username: 'HainekoT' },
           { id: '2533316504', username: 'v_aminev' },
         ],
       },
@@ -28,11 +28,13 @@ describe('twitter', function testSuite() {
     list: {
       filter: {
         internal: 'test@test.ru',
+        network: 'twitter',
       },
     },
     read: {
       filter: {
-        account: 'sotona',
+        account: 'HainekoT',
+        network: 'twitter',
       },
     },
     remove: {
@@ -74,8 +76,10 @@ describe('twitter', function testSuite() {
       .then((response) => {
         assert(response.isFulfilled());
         const body = response.value();
-        assert.notEqual(body.data.length, 0);
-        assert.equal(body.data[0].id, 1);
+        const ids = map(body.data, feed => feed.id);
+        assert.equal(ids.length, 2);
+        assert.notEqual(ids.indexOf(1), -1);
+        assert.notEqual(ids.indexOf(2), -1);
       });
   });
 
@@ -83,9 +87,9 @@ describe('twitter', function testSuite() {
   it('wait for stream to startup', () => Promise.delay(9000));
 
   it('post tweet and wait for it to arrive', (done) => {
-    this.service.services.twitter.client.post(
+    this.service.services.feed.getNetwork('twitter').client.post(
       'statuses/update',
-      { status: 'Test status' },
+      { status: `Test status ${Date.now()}` },
       (error, tweet) => {
         tweetId = tweet.id_str;
         // why so long?
@@ -121,14 +125,14 @@ describe('twitter', function testSuite() {
       });
   });
 
-  after('delete tweet', (done) => {
+  /* after('delete tweet', (done) => {
     this
       .service
       .services
       .twitter
       .client
       .post(`statuses/destroy/${tweetId}`, () => done());
-  });
+  });*/
 
   after('shutdown service', () => this.service.close());
 });

@@ -22,19 +22,20 @@ class FacebookService {
     return accounts; // don't need to do anything
   }
 
-  async syncAccount(account) {
+  async syncAccount(_account) {
     const { logger } = this;
-    logger.info(`Syncing ${account.username}-facebook`);
+    const { account, account_id: id, access_token } = _account;
+    logger.info(`Syncing ${account}-facebook`);
     try {
       // get the latest post
-      const latest = await get(`${account.id}/feed`, {
+      const latest = await get(`${id}/feed`, {
         fields: 'created_time',
-        access_token: account.access_token,
+        access_token,
         limit: 1,
       });
 
       if (latest.data.length === 0) {
-        logger.info(`Account ${account.username}-facebook sync finished, no posts found.`);
+        logger.info(`Account ${account}-facebook sync finished, no posts found.`);
         return;
       }
 
@@ -43,11 +44,11 @@ class FacebookService {
       const since = moment(latest.data[0].created_time).subtract(90, 'days').valueOf() / 1000;
 
       // now get all posts we can
-      await this.fetch(since, until, account);
+      await this.fetch(since, until, _account);
     } catch (e) {
       logger.error(e);
     }
-    logger.info(`Account ${account.username}-facebook sync finished.`);
+    logger.info(`Account ${account}-facebook sync finished.`);
   }
 
   /**
@@ -56,30 +57,31 @@ class FacebookService {
    * @param _until End date
    * @param account Account info { access_token, id/account_id }
    */
-  async fetch(_since, _until, account) {
+  async fetch(_since, _until, _account) {
     let since = _since;
     let until = _until;
     let size = -1;
     let pagingToken = '';
     let count = 0;
     const { feed, logger } = this;
+    const { account, account_id: id, access_token } = _account;
     while (size !== 0) {
       const params = {
         fields: ['attachments', 'message', 'story', 'created_time', 'comments'].join(','),
-        access_token: account.access_token,
+        access_token,
         since,
         until,
       };
       if (pagingToken !== '') {
         params.__paging_token = pagingToken;
       }
-      const response = await get(`${account.id || account.account_id}/feed`, params);
+      const response = await get(`${id}/feed`, params);
 
       response.data.forEach(function saveStatus(inStatus) {
         const meta = {
           id_str: inStatus.id,
-          account: account.username || account.account,
-          account_id: account.id || account.account_id,
+          account,
+          account_id: id,
           attachments: inStatus.attachments,
           comments: inStatus.comments,
           story: inStatus.story,
@@ -106,7 +108,7 @@ class FacebookService {
 
       count += size;
 
-      logger.info(`Got ${size} statuses from ${account.username || account.account}-facebook`);
+      logger.info(`Got ${size} statuses from ${account}-facebook`);
     }
     return count;
   }
@@ -127,7 +129,7 @@ class FacebookService {
     // get user id whose feed we need to fetch
     const accountIds = data.entry.map(entry => (entry.id));
     const statuses = accountIds.map(async (accountId) => {
-      const ourFeed = await feed.getFeedByAccountId(accountId, 'facebook');
+      const ourFeed = await feed.getByAccountId(accountId, 'facebook');
       const ourLatest = await feed.getLatestStatusByAccountId(accountId, 'facebook');
       const { meta: account } = ourFeed;
       const { date: since } = ourLatest;

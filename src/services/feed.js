@@ -37,28 +37,11 @@ class Feed {
       });
   }
 
-  _hasNetwork(network) {
-    if (this._networkList === undefined) {
-      this._networkList = keys(this.networks);
-    }
-
-    return this._networkList.indexOf(network) >= 0;
-  }
-
-  getNetwork(network) {
-    if (keys(this.networks).indexOf(network) >= 0) {
-      return this.networks[network];
-    }
-    return null;
-  }
-
   async register(data) {
-    if (!this._hasNetwork(data.network)) {
-      throw new NotSupportedError(`${data.network} is not currently supported`);
+    const network = this.getNetwork(data.network);
+    if (network === null) {
+      throw new NotSupportedError(`${data.network} is not currently supported or disabled`);
     }
-
-    const { networks, logger } = this;
-    const network = networks[data.network];
 
     const accounts = data.filter.accounts;
     const original = omit(data, 'filter');
@@ -67,41 +50,72 @@ class Feed {
 
     for (let i = 0; i < accounts.length; i += 1) {
       const feed = clone(original);
-
-      feed.network_id = expandedAccounts[i].id;
-      feed.meta = JSON.stringify({
-        account_id: feed.network_id,
+      const expandedAccount = {
+        account_id: expandedAccounts[i].id,
         account: expandedAccounts[i].username,
         access_token: expandedAccounts[i].access_token,
-      });
+      };
+
+      feed.network_id = expandedAccount.account_id;
+      feed.meta = JSON.stringify(expandedAccount);
 
       // wait till storage is registered
       await this.registerFeed(feed);
 
       // sync feed
-      await network.syncAccount(expandedAccounts[i]);
+      await network.syncAccount(expandedAccount);
     }
 
     // start listening
     await network.refresh();
 
     // log that we finished
-    logger.info(`Registered ${expandedAccounts.length} accounts`);
+    this.logger.info(`Registered ${expandedAccounts.length} accounts`);
 
     return expandedAccounts;
   }
 
-  list(data) {
-    return this.listFeeds(data);
+  async list({ filter: { id, internal, network } }) {
+    const query = this.db(this.tables.feeds);
+    if (id) {
+      query.where({ id });
+    } else {
+      if (internal) {
+        query.where({ internal });
+      }
+      if (network) {
+        query.where({ network });
+      }
+    }
+    return query;
   }
 
-  read(data) {
-    return this.readStatuses(data);
+  async statuses({ filter: { network, account, page, pageSize, cursor, order } }) {
+    const offset = page * pageSize;
+
+    const query = this.db(this.tables.statuses)
+      .select(this.db.raw('meta->>\'account\' as account, *'))
+      .where('network', network)
+      .orderBy('id', order)
+      .limit(pageSize)
+      .offset(offset);
+
+    if (account) {
+      query.whereRaw('meta->>\'account\' = ?', [account]);
+    }
+
+    if (cursor) {
+      return order === 'desc'
+        ? query.where('id', '<', cursor)
+        : query.where('id', '>', cursor);
+    }
+
+    return query;
   }
 
   async remove(data) {
     const { networks } = this;
-    const feed = await this.listFeeds({ filter: data });
+    const feed = await this.list({ filter: data });
     if (feed.length === 0) {
       return;
     }
@@ -120,11 +134,7 @@ class Feed {
 
   /* Database functions */
 
-  fetchFeeds(where) {
-    return this.db.select().from(this.tables.feeds).where(where);
-  }
-
-  getFeedByAccountId(accountId, network) {
+  getByAccountId(accountId, network) {
     return this.db.select().from(this.tables.feeds)
       .where('network', network)
       .whereRaw('meta->>\'account_id\' = ?', [accountId])
@@ -140,21 +150,6 @@ class Feed {
     return this.db.upsertItem(this.tables.feeds, 'internal, network, network_id', data);
   }
 
-  listFeeds(data) {
-    const query = this.db(this.tables.feeds);
-    if (data.filter.id) {
-      query.where({ id: data.filter.id });
-    } else {
-      if (data.filter.internal) {
-        query.where({ internal: data.filter.internal });
-      }
-      if (data.filter.network) {
-        query.where({ network: data.filter.network });
-      }
-    }
-    return query;
-  }
-
   removeFeed(data) {
     const query = this.db(this.tables.feeds);
     if (data.id) {
@@ -167,34 +162,6 @@ class Feed {
 
   insertStatus(data) {
     return this.db.upsertItem(this.tables.statuses, 'id', data);
-  }
-
-  readStatuses(data) {
-    const network = data.filter.network;
-    const page = data.filter.page;
-    const pageSize = data.filter.pageSize;
-    const cursor = data.filter.cursor;
-    const offset = page * pageSize;
-    const order = data.filter.order;
-
-    const query = this.db(this.tables.statuses)
-      .select(this.db.raw('meta->>\'account\' as account, *'))
-      .where('network', network)
-      .orderBy('id', order)
-      .limit(pageSize)
-      .offset(offset);
-
-    if (data.filter.account) {
-      query.whereRaw('meta->>\'account\' = ?', [data.filter.account]);
-    }
-
-    if (cursor) {
-      return order === 'desc'
-        ? query.where('id', '<', cursor)
-        : query.where('id', '>', cursor);
-    }
-
-    return query;
   }
 
   removeStatuses(data) {
@@ -216,6 +183,15 @@ class Feed {
         }
         return statuses[0];
       });
+  }
+
+  /* Utilities */
+
+  getNetwork(network) {
+    if (keys(this.networks).indexOf(network) >= 0) {
+      return this.networks[network];
+    }
+    return null;
   }
 }
 
