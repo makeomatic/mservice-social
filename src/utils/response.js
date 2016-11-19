@@ -18,10 +18,12 @@ function transform(object, type) {
 function collectionResponse(objects, type, options = {}) {
   const { before } = options;
   const count = objects.length;
+  const total = parseInt(objects[0].total, 10) || 0;
   const cursor = options.cursor || 'id';
   const response = {
     meta: {
       count,
+      total,
     },
     data: objects.map(object => transform(object, type)),
   };

@@ -92,9 +92,10 @@ class Feed {
 
   async statuses({ filter: { network, account, page, pageSize, cursor, order } }) {
     const offset = page * pageSize;
+    const rawSelect = `meta->>'account' as account, *, (select count(id) from ${this.tables.statuses}) as total`;
 
     const query = this.db(this.tables.statuses)
-      .select(this.db.raw('meta->>\'account\' as account, *'))
+      .select(this.db.raw(rawSelect))
       .where('network', network)
       .orderBy('id', order)
       .limit(pageSize)

@@ -31,7 +31,7 @@ class Twitter {
     this.onError = err => this._onError(err);
     this.onEnd = () => this._onEnd();
 
-    return this.init().then(() => this);
+    return this.init().then(() => this.logger.info('Twitter initialized')).then(() => this);
   }
 
   async init() {

@@ -7,36 +7,66 @@ const moment = require('moment-timezone');
 
 const { NotPermittedError } = require('common-errors');
 
+const { find, map, reduce } = require('lodash');
+
+function extractAccount(accum, value) {
+  const accountId = value.meta.account_id;
+
+  // if we have accountId & we dont have it yet
+  if (accountId && !find(accum, { account_id: accountId })) {
+    accum.push(value.meta);
+  }
+
+  return accum;
+}
+
 class FacebookService {
   constructor(config, feed) {
     this.config = config;
     this.feed = feed;
     this.logger = feed.logger;
     this.name = 'facebook';
+    return this.init().then(() => this.logger.info('Facebook initialized')).then(() => this);
+  }
+
+  async init() {
+    const feeds = await this.feed.list({ filter: { network: 'twitter' } });
+    const accounts = reduce(feeds, extractAccount, []);
+    const sync = map(accounts, async account => await this.syncAccount(account, false));
+    return Promise.all(sync);
   }
 
   refresh() {
+    // TODO: something here?
   }
 
   expandAccounts(accounts) {
     return accounts; // don't need to do anything
   }
 
-  async syncAccount(_account) {
-    const { logger } = this;
+  async syncAccount(_account, fresh = true) {
+    const { feed, logger } = this;
     const { account, account_id: id, access_token } = _account;
     logger.info(`Syncing ${account}-facebook`);
     try {
       // get the latest post
-      const latest = await get(`${id}/feed`, {
-        fields: 'created_time',
-        access_token,
-        limit: 1,
-      });
+      let latest;
 
-      if (latest.data.length === 0) {
-        logger.info(`Account ${account}-facebook sync finished, no posts found.`);
-        return;
+      if (!fresh) {
+        latest = await feed.getLatestStatusByAccountId(id, 'facebook');
+      }
+
+      if (fresh || latest === null) {
+        latest = await get(`${id}/feed`, {
+          fields: 'created_time',
+          access_token,
+          limit: 1,
+        });
+
+        if (latest.data.length === 0) {
+          logger.info(`Account ${account}-facebook sync finished, no posts found.`);
+          return;
+        }
       }
 
       // start with latest post

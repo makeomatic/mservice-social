@@ -113,7 +113,7 @@ describe('facebook', function testSuite() {
         const { body, statusCode } = response;
         assert.equal(statusCode, 200);
         assert.notEqual(body.data.length, 0);
-        postCount = body.data.length;
+        postCount = body.meta.total;
       });
   });
 
@@ -148,8 +148,8 @@ describe('facebook', function testSuite() {
       .then((response) => {
         const { body, statusCode } = response;
         assert.equal(statusCode, 200);
-        assert.notEqual(body.data.length, 0);
-        assert.notEqual(body.data.length, postCount);
+        assert.notEqual(body.meta.total, 0);
+        assert.notEqual(body.meta.total, postCount);
       });
   });
 

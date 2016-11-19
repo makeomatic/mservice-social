@@ -1,7 +1,6 @@
 const Errors = require('common-errors');
 const Promise = require('bluebird');
 const values = require('lodash/values');
-const { NETWORK_INSTAGRAM } = require('../..');
 
 /**
  * @api {http} <prefix>.instagram.webhook Verify subscription, save media from instagram
@@ -28,7 +27,7 @@ function webhookAction({ params, query, method }) {
  * @return {Promise}
  */
 webhookAction.verify = function verify(query) {
-  return this.services.instagram.verifySubcription(query);
+  return this.services.feed.getNetwork('instagram').verifySubcription(query);
 };
 
 /**
@@ -38,20 +37,20 @@ webhookAction.verify = function verify(query) {
  */
 webhookAction.hook = function hook(params) {
   const feedService = this.services.feed;
-  const instagramService = this.services.instagram;
+  const instagramService = feedService.getNetwork('instagram');
   const rawMediaData = values(params);
 
   return Promise.map(rawMediaData, (subscription) => {
     const { object_id: networkId, data: { media_id: mediaId } } = subscription;
 
     return feedService
-      .getByNetworkId(NETWORK_INSTAGRAM, networkId)
+      .getByAccountId(networkId, 'instagram')
       .tap((feed) => {
         if (feed) return;
 
         throw new Errors.NotFoundError(`Feed for user #${networkId}`);
       })
-      .then(feed => instagramService.fetchMedia(mediaId, feed.meta.token));
+      .then(feed => instagramService.fetchMedia(mediaId, feed.meta.access_token));
   })
   .map(media => instagramService.saveMedia(media))
   .then(({ length }) => ({ media: length }));

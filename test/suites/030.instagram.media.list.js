@@ -5,11 +5,12 @@ const Social = require('../../src');
 
 const accountId = Date.now().toString();
 const config = {
-  instagram: {
+  networks: [{
+    name: 'instagram',
     enabled: true,
     syncMediaOnStart: false,
     subscribeOnStart: false,
-  },
+  }],
 };
 const service = new Social(config);
 
@@ -17,7 +18,7 @@ describe('instagram.media.list', function testSuite() {
   before('start up service', () => service.connect());
 
   before('create instagram media', () => {
-    const instagram = service.getService(Social.SERVICE_INSTAGRAM);
+    const instagram = service.services.feed.getNetwork('instagram');
     const ids = ['1111111111111111111', '1111111111111111112', '1111111111111111113'];
 
     return Promise.map(ids, id => instagram.saveMedia(istagramMediaFactory(id, accountId)));

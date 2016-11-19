@@ -83,12 +83,16 @@ class InstagramService {
     this.name = 'instagram';
 
     this.media = new ServiceMedia(this.knex);
-    return this.init().then(() => this);
+    return this.init().then(() => this.logger.info('Instagram initialized')).then(() => this);
   }
 
   async init() {
-    await this.subscribe();
-    await this.syncMediaHistory();
+    if (this.config.syncMediaOnStart) {
+      await this.syncMediaHistory();
+    }
+    if (this.config.subscribeOnStart) {
+      await this.subscribe();
+    }
   }
 
   expandAccounts(accounts) {
@@ -108,10 +112,12 @@ class InstagramService {
       .knex('feeds')
       .where('network', 'instagram')
       .select(['network_id', 'meta'])
+      .tap('feed', feed => this.logger.info(feed))
       .map(feed => (this
         .getLastMediaId(feed.network_id)
         .then(result => Object.assign({ lastId: result.id }, feed))
       ))
+      .tap('feed processed', feed => this.logger.info(feed))
       .map(feed => this.syncUserMediaHistory(feed.network_id, feed.meta.access_token, feed.lastId));
   }
 
