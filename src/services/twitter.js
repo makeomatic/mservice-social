@@ -26,11 +26,11 @@ class Twitter {
    * @param {StorageService} storage
    * @param {Logger} logger
    */
-  constructor(config, storage, logger) {
+  constructor(config, feed) {
     this.client = new TwitterClient(config);
     this.listener = null;
-    this.storage = storage;
-    this.logger = logger;
+    this.feed = feed;
+    this.logger = feed.logger;
     this.name = 'twitter';
 
     // cheaper than bind
@@ -44,7 +44,7 @@ class Twitter {
   init() {
     this.reconnect = null;
 
-    return this.storage
+    return this.feed
       .fetchFeeds({ network: 'twitter' })
       .bind(this)
       .reduce(extractAccount, [])
@@ -153,7 +153,7 @@ class Twitter {
   _onData(data) {
     if (Twitter.isTweet(data)) {
       this.logger.debug('inserting tweet', data);
-      this.storage
+      this.feed
         .insertStatus(Twitter.serializeTweet(data))
         .return(true);
     }
@@ -174,12 +174,12 @@ class Twitter {
   }
 
   syncAccount(_account, order = 'asc') {
-    const storage = this.storage;
+    const feed = this.feed;
     const { account } = _account;
 
     // recursively syncs account
     // TODO: subject to rate limit
-    return storage.readStatuses({
+    return feed.readStatuses({
       filter: {
         page: 0,
         account,
@@ -203,8 +203,8 @@ class Twitter {
         }
 
         return Promise
-          .bind(storage, tweets.map(Twitter.serializeTweet))
-          .map(storage.insertStatus)
+          .bind(feed, tweets.map(Twitter.serializeTweet))
+          .map(feed.insertStatus)
           .get(order === 'asc' ? length - 1 : 0)
           .bind(this)
           .then(fetchedTweets);

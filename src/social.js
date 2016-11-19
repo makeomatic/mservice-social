@@ -29,7 +29,6 @@ class Social extends MService {
     this.services = {
       feed: await new Feed(this),
     };
-    this.log.info(this.services);
   }
 }
 

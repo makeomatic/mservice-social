@@ -8,10 +8,10 @@ const moment = require('moment-timezone');
 const { NotPermittedError } = require('common-errors');
 
 class FacebookService {
-  constructor(config, storage, logger) {
+  constructor(config, feed) {
     this.config = config;
-    this.storage = storage;
-    this.logger = logger;
+    this.feed = feed;
+    this.logger = feed.logger;
     this.name = 'facebook';
   }
 
@@ -62,7 +62,7 @@ class FacebookService {
     let size = -1;
     let pagingToken = '';
     let count = 0;
-    const { storage, logger } = this;
+    const { feed, logger } = this;
     while (size !== 0) {
       const params = {
         fields: ['attachments', 'message', 'story', 'created_time', 'comments'].join(','),
@@ -91,7 +91,7 @@ class FacebookService {
           text: inStatus.message || inStatus.story,
           meta: JSON.stringify(meta),
         };
-        storage.insertStatus(outStatus);
+        feed.insertStatus(outStatus);
       });
 
       // paging exists only when where are results, so it's okay to just skip it
@@ -123,13 +123,13 @@ class FacebookService {
   }
 
   async saveStatus(data) {
-    const { storage } = this;
+    const { feed } = this;
     // get user id whose feed we need to fetch
     const accountIds = data.entry.map(entry => (entry.id));
     const statuses = accountIds.map(async (accountId) => {
-      const feed = await storage.getFeedByAccountId(accountId, 'facebook');
-      const ourLatest = await storage.getLatestStatusByAccountId(accountId, 'facebook');
-      const { meta: account } = feed;
+      const ourFeed = await feed.getFeedByAccountId(accountId, 'facebook');
+      const ourLatest = await feed.getLatestStatusByAccountId(accountId, 'facebook');
+      const { meta: account } = ourFeed;
       const { date: since } = ourLatest;
       return await this.fetch(since, Date.now(), account);
     }, this);

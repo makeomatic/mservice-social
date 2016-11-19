@@ -1,3 +1,4 @@
+const { NotSupportedError } = require('common-errors');
 /**
  * @api {http} <prefix>.facebook.webhook Verify subscription, get feed updates from facebook
  * @apiVersion 1.0.0
@@ -6,13 +7,17 @@
  * @apiSchema {jsonschema=../../../schemas/webhook.json} apiParam
  */
 function webhookAction({ params }) {
-  const facebookService = this.services.facebook;
+  const feedService = this.services.feed;
+  const facebookService = feedService.getNetwork('facebook');
 
-  if (params['hub.mode'] === 'subscribe') {
-    return facebookService.verifySubcription(params);
+  if (facebookService) {
+    if (params['hub.mode'] === 'subscribe') {
+      return facebookService.verifySubcription(params);
+    }
+
+    return facebookService.saveStatus(params);
   }
-
-  return facebookService.saveStatus(params);
+  throw new NotSupportedError('Facebook service disabled');
 }
 
 webhookAction.schema = 'webhook';

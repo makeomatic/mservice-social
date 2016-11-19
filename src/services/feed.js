@@ -6,7 +6,7 @@ const services = require('./');
 
 class Feed {
   constructor(mservice) {
-    this.logger = mservice.logger;
+    this.logger = mservice.log;
     this.config = mservice.config;
     this.db = mservice.knex;
 
@@ -15,7 +15,9 @@ class Feed {
       statuses: 'statuses',
     };
 
-    return this.init().then(() => this);
+    return this.init()
+      .then(networks => this.logger.info(`Feed service initialized, enabled networks: ${keys(networks).join(', ')}`))
+      .then(() => this);
   }
 
   async init() {
@@ -25,12 +27,14 @@ class Feed {
       async network => await new services[network.name](network, this)
     );
 
-    return all(this.networks).tap((networks) => {
-      this.networks = reduce(compact(networks), (accum, network) => {
-        accum[network.name] = network;
-        return accum;
-      }, {});
-    });
+    return all(this.networks)
+      .then((networks) => {
+        this.networks = reduce(compact(networks), (accum, network) => {
+          accum[network.name] = network;
+          return accum;
+        }, {});
+        return this.networks;
+      });
   }
 
   _hasNetwork(network) {
@@ -41,12 +45,19 @@ class Feed {
     return this._networkList.indexOf(network) >= 0;
   }
 
+  getNetwork(network) {
+    if (keys(this.networks).indexOf(network) >= 0) {
+      return this.networks[network];
+    }
+    return null;
+  }
+
   async register(data) {
     if (!this._hasNetwork(data.network)) {
       throw new NotSupportedError(`${data.network} is not currently supported`);
     }
 
-    const { storage, networks, logger } = this;
+    const { networks, logger } = this;
     const network = networks[data.network];
 
     const accounts = data.filter.accounts;
@@ -65,7 +76,7 @@ class Feed {
       });
 
       // wait till storage is registered
-      await storage.registerFeed(feed);
+      await this.registerFeed(feed);
 
       // sync feed
       await network.syncAccount(expandedAccounts[i]);
@@ -81,25 +92,25 @@ class Feed {
   }
 
   list(data) {
-    return this.storage.listFeeds(data);
+    return this.listFeeds(data);
   }
 
   read(data) {
-    return this.storage.readStatuses(data);
+    return this.readStatuses(data);
   }
 
   async remove(data) {
-    const { storage, networks } = this;
-    const feed = await storage.listFeeds({ filter: data });
+    const { networks } = this;
+    const feed = await this.listFeeds({ filter: data });
     if (feed.length === 0) {
       return;
     }
 
     const { meta: { account } } = feed[0];
-    await storage.removeFeed(data);
+    await this.removeFeed(data);
 
     if (!data.keep_data) {
-      await storage.removeStatuses({ account, network: data.network });
+      await this.removeStatuses({ account, network: data.network });
     }
 
     if (data.network && networks[data.network]) {
