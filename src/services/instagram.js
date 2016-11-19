@@ -76,7 +76,7 @@ class InstagramService {
       .select(['network_id', 'meta'])
       .map(feed => (this
         .getLastMediaId(feed.network_id)
-        .then(result => Object.assign({ lastId: result.id }, feed))
+        .then(result => Object.assign({ lastId: (result ? result.id : null) }, feed))
       ))
       .map(feed => this.syncUserMediaHistory(feed.network_id, feed.meta.token, feed.lastId));
   }
