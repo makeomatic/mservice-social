@@ -116,9 +116,7 @@ class InstagramService {
       meta: JSON.stringify(media),
     };
 
-    return knex
-      .insert(data, 'id')
-      .into('instagram_media')
+    return knex.upsertItem('instagram_media', 'id', data)
       .then(mediaId => logger.info(`Save instagram media #${mediaId}`));
   }
 
