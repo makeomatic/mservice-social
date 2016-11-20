@@ -11,7 +11,7 @@ const { collectionResponse, TYPE_INSTAGRAM_MEDIA } = require('../../utils/respon
 function instagramMediaListAction({ params, method }) {
   const instagramService = this.getService('instagram');
 
-  if (method !== 'post' || method !== 'amqp') {
+  if (method !== 'post' && method !== 'amqp') {
     throw new Errors.NotImplementedError('media list is only available through HTTP Post or AMQP');
   }
 
