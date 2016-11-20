@@ -20,7 +20,7 @@ describe('twitter', function testSuite() {
       network: 'twitter',
       filter: {
         accounts: [
-          { username: 'sotona' },
+          { username: 'HainekoT' },
           { id: '2533316504', username: 'v_aminev' },
         ],
       },
@@ -32,7 +32,7 @@ describe('twitter', function testSuite() {
     },
     read: {
       filter: {
-        account: 'sotona',
+        account: 'HainekoT',
       },
     },
     remove: {
