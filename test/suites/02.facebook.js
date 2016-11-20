@@ -1,8 +1,12 @@
-const Promise = require('bluebird');
 const assert = require('assert');
-const { map, merge } = require('lodash');
+const merge = require('lodash/merge');
+const fb = require('fbgraph');
+const Promise = require('bluebird');
 
-describe('twitter', function testSuite() {
+const get = Promise.promisify(fb.get);
+const post = Promise.promisify(fb.post);
+
+describe('facebook', function testSuite() {
   const Social = require('../../src');
   const request = require('../helpers/request');
 
@@ -11,45 +15,68 @@ describe('twitter', function testSuite() {
     list: 'social.feed.list',
     readAMQP: 'social.feed.read',
     remove: 'social.feed.remove',
+    webhook: 'http://0.0.0.0:3000/api/social/facebook/webhook',
     read: 'http://0.0.0.0:3000/api/social/feed/read',
   };
 
   const payload = {
     register: {
       internal: 'test@test.ru',
-      network: 'twitter',
+      network: 'facebook',
       filter: {
         accounts: [
-          { username: 'HainekoT' },
-          { id: '2533316504', username: 'v_aminev' },
+          {
+            id: process.env.FACEBOOK_TEST_ACCOUNT,
+            username: process.env.FACEBOOK_TEST_ACCOUNT_NAME,
+            // access_token: process.env.FACEBOOK_TEST_TOKEN,
+          },
         ],
       },
     },
     list: {
       filter: {
         internal: 'test@test.ru',
-        network: 'twitter',
+        network: 'facebook',
       },
     },
     read: {
       filter: {
-        account: 'HainekoT',
-        network: 'twitter',
+        account: process.env.FACEBOOK_TEST_ACCOUNT_NAME,
+        network: 'facebook',
       },
     },
     remove: {
       internal: 'test@test.ru',
-      network: 'twitter',
+      network: 'facebook',
     },
 
     registerFail: {},
   };
 
-  let tweetId;
+  const webhookParams = {
+    entry: [{
+      changed_fields: ['feed'],
+      id: process.env.FACEBOOK_TEST_ACCOUNT,
+      time: Date.now(),
+    }],
+    object: 'user',
+  };
+
+  let postCount;
+  let accessToken;
 
   before('start service', () => {
     const service = this.service = new Social(global.SERVICES);
     return service.connect();
+  });
+
+  before('acquire test user access_token', () => {
+    const params = { access_token: process.env.FACEBOOK_TOKEN };
+    return get(`${process.env.FACEBOOK_ID}/accounts/test-users`, params)
+      .then((response) => {
+        accessToken = response.data[0].access_token;
+        payload.register.filter.accounts[0].access_token = accessToken;
+      });
   });
 
   it('should return error if request to register is not valid', () => {
@@ -76,34 +103,17 @@ describe('twitter', function testSuite() {
       .then((response) => {
         assert(response.isFulfilled());
         const body = response.value();
-        const ids = map(body.data, feed => feed.id);
-        assert.equal(ids.length, 2);
-        assert.notEqual(ids.indexOf(1), -1);
-        assert.notEqual(ids.indexOf(2), -1);
+        assert.notEqual(body.data.length, 0);
       });
   });
 
-  // that long?
-  it('wait for stream to startup', () => Promise.delay(9000));
-
-  it('post tweet and wait for it to arrive', (done) => {
-    this.service.services.feed.getNetwork('twitter').client.post(
-      'statuses/update',
-      { status: `Test status ${Date.now()}` },
-      (error, tweet) => {
-        tweetId = tweet.id_str;
-        // why so long?
-        setTimeout(done, 9000);
-      });
-  });
-
-  it('should have collected some tweets', () => {
+  it('should have collected some posts', () => {
     return request(uri.read, merge(payload.read, { token: this.adminToken }))
       .then((response) => {
         const { body, statusCode } = response;
         assert.equal(statusCode, 200);
         assert.notEqual(body.data.length, 0);
-        assert.equal(body.data[0].id, tweetId);
+        postCount = body.meta.total;
       });
   });
 
@@ -117,6 +127,32 @@ describe('twitter', function testSuite() {
       });
   });
 
+  it('post something on facebook', () => {
+    const params = {
+      message: `Test message from ${Date.now()}`,
+    };
+    return post(`/me/feed?access_token=${accessToken}`, params);
+  });
+
+  it('manually call webhook', () => {
+    return request(uri.webhook, webhookParams)
+      .then((response) => {
+        const { body, statusCode } = response;
+        assert.equal(statusCode, 200);
+        assert.notEqual(body.data, 0);
+      });
+  });
+
+  it('should have more statuses than before', () => {
+    return request(uri.read, merge(payload.read, { token: this.adminToken }))
+      .then((response) => {
+        const { body, statusCode } = response;
+        assert.equal(statusCode, 200);
+        assert.notEqual(body.meta.total, 0);
+        assert.notEqual(body.meta.total, postCount);
+      });
+  });
+
   it('remove feed', () => {
     return this.service.amqp.publishAndWait(uri.remove, payload.remove)
       .reflect()
@@ -124,15 +160,6 @@ describe('twitter', function testSuite() {
         assert(response.isFulfilled());
       });
   });
-
-  /* after('delete tweet', (done) => {
-    this
-      .service
-      .services
-      .twitter
-      .client
-      .post(`statuses/destroy/${tweetId}`, () => done());
-  });*/
 
   after('shutdown service', () => this.service.close());
 });

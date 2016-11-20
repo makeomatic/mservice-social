@@ -1,4 +1,7 @@
 {
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
   "extends": "airbnb-base",
   "parser": "babel-eslint",
   "plugins": [
@@ -19,7 +22,9 @@
       "objects": "always-multiline",
       "imports": "never",
       "exports": "never",
-      "functions": "never",
-    }]
+      "functions": "never"
+    }],
+    "no-unused-expressions": 0,
+    "class-methods-use-this": 0
   }
 }

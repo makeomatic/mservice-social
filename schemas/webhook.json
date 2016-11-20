@@ -1,0 +1,25 @@
+{
+  "id": "webhook",
+  "anyOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hub.mode", "hub.challenge", "hub.verify_token"],
+      "properties": {
+        "hub.mode": {
+          "type": "string",
+          "constant": "subscribe"
+        },
+        "hub.challenge": {
+          "type": "string"
+        },
+        "hub.verify_token": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "type": "object"
+    }
+  ]
+}

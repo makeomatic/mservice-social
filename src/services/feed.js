@@ -1,64 +1,198 @@
-const Errors = require('common-errors');
-const Promise = require('bluebird');
-const instagramRegisterStrategy = require('./feed/register/instagram');
-const twitterRegisterStrategy = require('./feed/register/twitter');
+const { NotSupportedError } = require('common-errors');
+const { omit, clone, keys, filter, map, reduce, compact } = require('lodash');
+const { all } = require('bluebird');
+
+const services = require('./');
 
 class Feed {
-  constructor(storage, twitter, logger, knex) {
-    this.storage = storage;
-    this.twitter = twitter;
-    this.logger = logger;
-    this.knex = knex;
+  constructor(mservice) {
+    this.logger = mservice.log;
+    this.config = mservice.config;
+    this.db = mservice.knex;
+
+    this.tables = {
+      feeds: 'feeds',
+      statuses: 'statuses',
+    };
+
+    return this.init()
+      .then(networks => this.logger.info(`Feed service initialized, enabled networks: ${keys(networks).join(', ')}`))
+      .then(() => this);
   }
 
-  getByNetworkId(network, networkId) {
-    return this.knex(Feed.FEED_TABLE)
+  async init() {
+    this.enabledNetworks = filter(this.config.networks, network => network.enabled);
+    this.networks = map(
+      this.enabledNetworks,
+      async network => await new services[network.name](network, this)
+    );
+
+    return all(this.networks)
+      .then((networks) => {
+        this.networks = reduce(compact(networks), (accum, network) => {
+          accum[network.name] = network;
+          return accum;
+        }, {});
+        return this.networks;
+      });
+  }
+
+  async register(data) {
+    const network = this.getNetwork(data.network);
+    if (network === null) {
+      throw new NotSupportedError(`${data.network} is not currently supported or disabled`);
+    }
+
+    const accounts = data.filter.accounts;
+    const original = omit(data, 'filter');
+    // must return array of account objects: { id, username }
+    const expandedAccounts = await network.expandAccounts(accounts);
+
+    for (let i = 0; i < accounts.length; i += 1) {
+      const feed = clone(original);
+      const expandedAccount = {
+        account_id: expandedAccounts[i].id,
+        account: expandedAccounts[i].username,
+        access_token: expandedAccounts[i].access_token,
+      };
+
+      feed.network_id = expandedAccount.account_id;
+      feed.meta = JSON.stringify(expandedAccount);
+
+      // wait till storage is registered
+      await this.registerFeed(feed);
+
+      // sync feed
+      await network.syncAccount(expandedAccount);
+    }
+
+    // start listening
+    await network.refresh();
+
+    // log that we finished
+    this.logger.info(`Registered ${expandedAccounts.length} accounts`);
+
+    return expandedAccounts;
+  }
+
+  async list({ filter: { id, internal, network } }) {
+    const query = this.db(this.tables.feeds);
+    if (id) {
+      query.where({ id });
+    } else {
+      if (internal) {
+        query.where({ internal });
+      }
+      if (network) {
+        query.where({ network });
+      }
+    }
+    return query;
+  }
+
+  async statuses({ filter: { network, account, page, pageSize, cursor, order } }) {
+    const offset = page * pageSize;
+    const rawSelect = `meta->>'account' as account, *, (select count(id) from ${this.tables.statuses}) as total`;
+
+    const query = this.db(this.tables.statuses)
+      .select(this.db.raw(rawSelect))
       .where('network', network)
-      .where('network_id', networkId)
-      .first();
-  }
+      .orderBy('id', order)
+      .limit(pageSize)
+      .offset(offset);
 
-  register(data) {
-    const promise = Promise.bind(this, data);
-
-    if (data.network === 'twitter') {
-      return promise.then(twitterRegisterStrategy);
+    if (account) {
+      query.whereRaw('meta->>\'account\' = ?', [account]);
     }
 
-    if (data.network === 'instagram') {
-      return promise.then(instagramRegisterStrategy);
+    if (cursor) {
+      return order === 'desc'
+        ? query.where('id', '<', cursor)
+        : query.where('id', '>', cursor);
     }
 
-    throw new Errors.NotImplementedError(`'feed.register' for '${data.network}'`);
+    return query;
   }
 
-  list(data) {
-    return this.storage.listFeeds(data);
+  async remove(data) {
+    const { networks } = this;
+    const feed = await this.list({ filter: data });
+    if (feed.length === 0) {
+      return;
+    }
+
+    const { meta: { account } } = feed[0];
+    await this.removeFeed(data);
+
+    if (!data.keep_data) {
+      await this.removeStatuses({ account, network: data.network });
+    }
+
+    if (data.network && networks[data.network]) {
+      await networks[data.network].refresh();
+    }
   }
 
-  read(data) {
-    return this.storage.readStatuses(data);
+  /* Database functions */
+
+  getByAccountId(accountId, network) {
+    return this.db.select().from(this.tables.feeds)
+      .where('network', network)
+      .whereRaw('meta->>\'account_id\' = ?', [accountId])
+      .then((feeds) => {
+        if (feeds.length === 0) {
+          return null;
+        }
+        return feeds[0];
+      });
   }
 
-  remove(data) {
-    const { storage, twitter } = this;
-    const process = Promise.coroutine(function* action() {
-      const feed = yield storage.listFeeds({ filter: data });
-      if (feed.length === 0) {
-        return;
-      }
+  registerFeed(data) {
+    return this.db.upsertItem(this.tables.feeds, 'internal, network, network_id', data);
+  }
 
-      const { meta: { account } } = feed[0];
-      yield storage.removeFeed(data);
+  removeFeed(data) {
+    const query = this.db(this.tables.feeds);
+    if (data.id) {
+      query.where({ id: data.id });
+    } else {
+      query.where({ internal: data.internal, network: data.network });
+    }
+    return query.del();
+  }
 
-      if (!data.keep_data) {
-        yield storage.removeStatuses({ account });
-      }
+  insertStatus(data) {
+    return this.db.upsertItem(this.tables.statuses, 'id', data);
+  }
 
-      twitter.connect();
-    });
+  removeStatuses(data) {
+    return this.db(this.tables.statuses)
+      .where('network', data.network)
+      .whereRaw('meta->>\'account\' = ?', [data.account])
+      .del();
+  }
 
-    return process();
+  getLatestStatusByAccountId(accountId, network) {
+    return this.db.select().from(this.tables.statuses)
+      .where('network', network)
+      .whereRaw('meta->>\'account_id\' = ?', [accountId])
+      .limit(1)
+      .orderBy('date', 'desc')
+      .then((statuses) => {
+        if (statuses.length === 0) {
+          return null;
+        }
+        return statuses[0];
+      });
+  }
+
+  /* Utilities */
+
+  getNetwork(network) {
+    if (keys(this.networks).indexOf(network) >= 0) {
+      return this.networks[network];
+    }
+    return null;
   }
 }
 

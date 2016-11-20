@@ -17,7 +17,7 @@ describe('feed.register', function feedRegisterSuite() {
   it('should be able to return error if invalid network', () => {
     const params = {
       internal: 'foo@instagram.com',
-      network: 'odnokassniki',
+      network: 'odnoklassniki',
       filter: {},
     };
 
@@ -91,7 +91,7 @@ describe('feed.register', function feedRegisterSuite() {
           const { message } = response.error();
 
           assert.equal(message, 'feed.register validation failed: data.filter.accounts[0]'
-            + ' should have required property \'token\'');
+            + ' should have required property \'access_token\'');
         });
     });
   });

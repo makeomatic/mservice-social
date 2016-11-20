@@ -15,7 +15,8 @@ const http = request.defaults({
 });
 
 const config = {
-  instagram: {
+  networks: [{
+    name: 'instagram',
     enabled: true,
     syncMediaOnStart: false,
     subscribeOnStart: false,
@@ -31,7 +32,7 @@ const config = {
         callbackUrl: 'https://your.callback/url',
       },
     ],
-  },
+  }],
 };
 const service = new Social(config);
 
@@ -147,7 +148,7 @@ describe('instagram.webhook', function testSuite() {
       .once();
 
     return service
-      .getService('storage')
+      .services.feed
       .registerFeed(feed)
       .then(() => service.amqp.publishAndWait('social.instagram.webhook', params))
       .reflect()

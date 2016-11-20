@@ -9,8 +9,8 @@ PATH=$PATH:$DIR/.bin/
 COMPOSE=$(which docker-compose)
 MOCHA=$BIN/_mocha
 COVER="$BIN/isparta cover"
-NODE=node
-TESTS=${TESTS:-test/suites/*.js}
+NODE="node --harmony"
+TESTS=${TESTS:-test/suites/}
 COMPOSE_VER=${COMPOSE_VER:-1.7.1}
 COMPOSE="docker-compose -f $DC"
 
@@ -45,13 +45,19 @@ fi
 echo "running tests"
 for fn in $TESTS; do
   echo "running tests for $fn"
-  docker exec tester /bin/sh -c "$NODE $COVER --dir ./coverage/${fn##*/} $MOCHA -- $fn"
+  if [[ x"$LOCAL" == x"true" ]]; then
+    docker exec tester /bin/sh -c "$NODE $MOCHA -- $fn" | bunyan -o short
+  else
+    docker exec tester /bin/sh -c "$NODE $COVER --dir ./coverage/${fn##*/} $MOCHA -- $fn"
+  fi
 done
 
-echo "started generating combined coverage"
-docker exec tester test/aggregate-report.js
+if [[ x"$LOCAL" != x"true" ]]; then
+  echo "started generating combined coverage"
+  docker exec tester test/aggregate-report.js
+fi
 
-if [[ x"$CI" == x"true" ]]; then
+if [[ x"$CI" == x"true" && x"$LOCAL" != x"true" ]]; then
   echo "uploading coverage report from ./coverage/lcov.info"
   $BIN/codecov -f ./coverage/lcov.info
 fi

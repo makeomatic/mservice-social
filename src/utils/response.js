@@ -1,33 +1,29 @@
-const omit = require('lodash/omit');
+const { omit, isFunction } = require('lodash');
 
-const isfn = fn => typeof fn === 'function';
-const TYPE_TWEET = 'tweet';
-const TYPE_FEED = 'feed';
-const TYPE_INSTAGRAM_MEDIA = 'instagramMedia';
+const transform = (object, type) => ({
+  id: object.id,
+  type,
+  attributes: omit(object.toJSON ? object.toJSON() : object, 'id'),
+});
 
-function transform(object, type) {
-  const response = {
-    id: object.id,
-    type,
-    attributes: omit(object.toJSON ? object.toJSON() : object, 'id'),
-  };
-
-  return response;
-}
+const modelResponse = (model, type) => ({ data: model !== null ? transform(model, type) : null });
+const successResponse = () => ({ meta: { status: 'success' } });
 
 function collectionResponse(objects, type, options = {}) {
   const { before } = options;
   const count = objects.length;
+  const total = parseInt(objects[0].total, 10) || 0;
   const cursor = options.cursor || 'id';
   const response = {
     meta: {
       count,
+      total,
     },
     data: objects.map(object => transform(object, type)),
   };
 
   if (count) {
-    response.meta.cursor = isfn(cursor)
+    response.meta.cursor = isFunction(cursor)
       ? cursor(objects)
       : objects[count - 1][cursor];
   }
@@ -39,24 +35,13 @@ function collectionResponse(objects, type, options = {}) {
   return response;
 }
 
-function modelResponse(model, type) {
-  const response = {
-    data: model !== null ? transform(model, type) : null,
-  };
-
-  return response;
-}
-
-function successResponse() {
-  return { meta: { status: 'success' } };
-}
-
 module.exports = {
   collectionResponse,
   modelResponse,
   successResponse,
   transform,
-  TYPE_TWEET,
-  TYPE_FEED,
-  TYPE_INSTAGRAM_MEDIA,
+  TYPE_FEED: 'feed',
+  TYPE_TWEET: 'tweet',
+  TYPE_FACEBOOK_STATUS: 'facebook_status',
+  TYPE_INSTAGRAM_MEDIA: 'instagram_media',
 };

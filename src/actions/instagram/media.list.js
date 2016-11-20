@@ -8,9 +8,7 @@ const { collectionResponse, TYPE_INSTAGRAM_MEDIA } = require('../../utils/respon
  * @apiSchema {jsonschema=../../../schemas/instagram.media.list.json} apiParam
  */
 function instagramMediaListAction({ params }) {
-  const instagramService = this.getService('instagram');
-
-  return instagramService
+  return this.services.feed.getNetwork('instagram')
     .mediaList(params)
     .then(list => collectionResponse(list, TYPE_INSTAGRAM_MEDIA, { before: params.page.cursor }));
 }

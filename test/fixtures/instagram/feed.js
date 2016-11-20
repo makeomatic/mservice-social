@@ -3,8 +3,8 @@ module.exports = userId => ({
   network: 'instagram',
   network_id: userId,
   meta: JSON.stringify({
-    id: userId,
-    username: 'social-user',
-    token: `${userId}.1a1a111.111aa111aaaa1111a1a111a1aa1111aa`,
+    account_id: userId,
+    account: 'social-user',
+    access_token: `${userId}.1a1a111.111aa111aaaa1111a1a111a1aa1111aa`,
   }),
 });

@@ -7,21 +7,26 @@ const Social = require('../../src');
 const syncOnReconnectFixture = require('../fixtures/instagram/sync-on-reconnect');
 
 const config = {
-  instagram: {
-    enabled: true,
-    client: {
-      id: 'client-id',
-      secret: 'client-secret',
-    },
-    subscriptions: [
-      {
-        object: 'user',
-        type: 'media',
-        verifyToken: 'your-verify-token',
-        callbackUrl: 'https://your.callback/url',
+  networks: [
+    {
+      name: 'instagram',
+      enabled: true,
+      syncMediaOnStart: true,
+      subscribeOnStart: true,
+      client: {
+        id: 'client-id',
+        secret: 'client-secret',
       },
-    ],
-  },
+      subscriptions: [
+        {
+          object: 'user',
+          type: 'media',
+          verifyToken: 'your-verify-token',
+          callbackUrl: 'https://your.callback/url',
+        },
+      ],
+    },
+  ],
 };
 
 describe('instagram', function testSuite() {
@@ -73,7 +78,7 @@ describe('instagram', function testSuite() {
       filter: {
         accounts: [{
           id: '555',
-          token: '555.1',
+          access_token: '555.1',
           username: 'perchik',
         }],
       },

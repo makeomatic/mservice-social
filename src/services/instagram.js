@@ -61,24 +61,64 @@ function syncMedia(url, lastId) {
     });
 }
 
-class InstagramService {
-  constructor(config, knex, logger) {
-    this.config = config;
-    this.knex = knex;
-    this.logger = logger;
-    this.media = new ServiceMedia(knex);
+function validateAccount(account) {
+  if (account.id === undefined) {
+    throw new Errors.ValidationError('Instagram account id must be present');
   }
+
+  if (account.username === undefined) {
+    throw new Errors.ValidationError('Instagram account username must be present');
+  }
+
+  if (account.access_token === undefined) {
+    throw new Errors.ValidationError('Instagram account token must be present');
+  }
+}
+
+class InstagramService {
+  constructor(config, feed) {
+    this.config = config;
+    this.knex = feed.db;
+    this.logger = feed.logger;
+    this.name = 'instagram';
+
+    this.media = new ServiceMedia(this.knex);
+    return this.init().then(() => this.logger.info('Instagram initialized')).then(() => this);
+  }
+
+  async init() {
+    if (this.config.syncMediaOnStart) {
+      await this.syncMediaHistory();
+    }
+    if (this.config.subscribeOnStart) {
+      await this.subscribe();
+    }
+  }
+
+  expandAccounts(accounts) {
+    accounts.forEach(validateAccount);
+    return accounts;
+  }
+
+  syncAccount(account) {
+    const { account_id: id, access_token } = account;
+    return this.syncUserMediaHistory(id, access_token);
+  }
+
+  refresh() {}
 
   syncMediaHistory() {
     return this
       .knex('feeds')
       .where('network', 'instagram')
       .select(['network_id', 'meta'])
+      .tap('feed', feed => this.logger.info(feed))
       .map(feed => (this
         .getLastMediaId(feed.network_id)
         .then(result => Object.assign({ lastId: (result ? result.id : null) }, feed))
       ))
-      .map(feed => this.syncUserMediaHistory(feed.network_id, feed.meta.token, feed.lastId));
+      .tap('feed processed', feed => this.logger.info(feed))
+      .map(feed => this.syncUserMediaHistory(feed.network_id, feed.meta.access_token, feed.lastId));
   }
 
   syncUserMediaHistory(id, token, lastId) {
