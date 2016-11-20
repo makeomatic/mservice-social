@@ -32,13 +32,4 @@ class Social extends MService {
   }
 }
 
-Social.NETWORK_INSTAGRAM = 'instagram';
-Social.NETWORK_FACEBOOK = 'facebook';
-Social.NETWORK_TWITTER = 'twitter';
-
-Social.SERVICE_INSTAGRAM = 'instagram';
-Social.SERVICE_FACEBOOK = 'facebook';
-Social.SERVICE_FEED = 'feed';
-Social.SERVICE_TWITTER = 'twitter';
-
 module.exports = Social;

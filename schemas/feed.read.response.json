@@ -1,4 +1,4 @@
 {
   "id": "feed.read.response",
-  "$ref": "common.json#/definitions/tweetCollection"
+  "$ref": "common.json#/definitions/statusCollection"
 }

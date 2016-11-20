@@ -6,6 +6,8 @@
 
 Requires Node 7.1 for async/await support.
 
+**Coverage is broken atm**
+
 ## API
 
 [Documentation](http://makeomatic.github.io/mservice-social)

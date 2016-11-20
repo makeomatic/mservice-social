@@ -1,11 +1,11 @@
 {
   "id": "common.json",
   "definitions": {
-    "tweetId": {
+    "id": {
       "type": "string",
-      "description": "64 bit tweet string id"
+      "description": "String id of status"
     },
-    "list": {
+    "feed": {
       "description": "list of registered social feeds",
       "type": "object",
       "required": ["id", "type", "attributes"],
@@ -29,14 +29,14 @@
             },
             "network": {
               "type": "string",
-              "enum": ["twitter"],
+              "enum": ["twitter", "facebook", "instagram"],
               "description": "network for which this feed is returned"
             },
             "network_id": {
               "type": "string",
               "description": "internal network id of the feed"
             },
-            "filter": {
+            "meta": {
               "type": "object",
               "description": "filter, which is used when returning data from the feed"
             }
@@ -44,7 +44,7 @@
         }
       }
     },
-    "tweet": {
+    "status": {
       "description": "`tweet` object",
       "type": "object",
       "required": ["id", "type", "attributes"],
@@ -54,14 +54,14 @@
         },
         "type": {
           "type": "string",
-          "enum": ["tweet"]
+          "enum": ["tweet", "facebook_status", "instagram_media"]
         },
         "attributes": {
-          "description": "Tweet Properties",
+          "description": "Status Properties",
           "type": "object",
           "properties": {
             "id": {
-              "$ref": "#/definitions/tweetId"
+              "$ref": "#/definitions/id"
             },
             "date": {
               "type": "string",
@@ -70,47 +70,12 @@
             },
             "text": {
               "type": "string",
-              "description": "tweet body"
+              "description": "status body (tweet body, facebook message, instagram description)"
             },
             "meta": {
               "type": "object",
-              "properties": {
-                "id_str": {
-                  "type": "string",
-                  "description": "original tweet id"
-                },
-                "account": {
-                  "type": "string",
-                  "description": "account feed owner"
-                },
-                "account_id": {
-                  "type": "string",
-                  "description": "account string id"
-                },
-                "entities": {
-                  "type": "object",
-                  "description": "meta information of the embedded tweet"
-                }
-              }
+              "description": "status data (depends on type)"
             }
-          }
-        }
-      }
-    },
-    "tweetCollection": {
-      "additionalProperties": false,
-      "description": "Messages response",
-      "type": "object",
-      "required": ["meta", "data"],
-      "properties": {
-        "meta": {
-          "$ref": "#/definitions/collectionMeta"
-        },
-        "data": {
-          "description": "Collection of tweets",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/tweet"
           }
         }
       }
@@ -130,16 +95,16 @@
           "description": "Total number of results"
         },
         "before": {
-          "$ref": "#/definitions/tweetId"
+          "$ref": "#/definitions/id"
         },
         "cursor": {
-          "$ref": "#/definitions/tweetId"
+          "$ref": "#/definitions/id"
         }
       }
     },
-    "listCollection": {
+    "feedCollection": {
       "additionalProperties": false,
-      "description": "Messages response",
+      "description": "Collection of feeds with metadata",
       "type": "object",
       "required": ["meta", "data"],
       "properties": {
@@ -150,7 +115,25 @@
           "description": "Collection of feeds",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/list"
+            "$ref": "#/definitions/feed"
+          }
+        }
+      }
+    },
+    "statusCollection": {
+      "additionalProperties": false,
+      "description": "Collection of statuses with metadata",
+      "type": "object",
+      "required": ["meta", "data"],
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/collectionMeta"
+        },
+        "data": {
+          "description": "Collection of statuses",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/status"
           }
         }
       }

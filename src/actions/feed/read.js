@@ -1,4 +1,4 @@
-const { collectionResponse, TYPE_TWEET } = require('../../utils/response');
+const { collectionResponse, TYPE_TWEET, TYPE_FACEBOOK_STATUS, TYPE_INSTAGRAM_MEDIA } = require('../../utils/response');
 
 /**
  * @api {http} <prefix>.feed.read Read feed by account with optional filters
@@ -13,11 +13,20 @@ function FeedReadAction({ params }) {
     before: params.cursor,
   };
 
+  let responseType = null;
+  if (params.filter.network === 'twitter') {
+    responseType = TYPE_TWEET;
+  } else if (params.filter.network === 'facebook') {
+    responseType = TYPE_FACEBOOK_STATUS;
+  } else if (params.filter.network === 'instagram') {
+    responseType = TYPE_INSTAGRAM_MEDIA;
+  }
+
   return this
     .services
     .feed
     .statuses(params)
-    .then(tweets => collectionResponse(tweets, TYPE_TWEET, opts));
+    .then(tweets => collectionResponse(tweets, responseType, opts));
 }
 
 FeedReadAction.schema = 'feed.read';

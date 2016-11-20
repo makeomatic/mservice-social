@@ -7,8 +7,7 @@ const { NotSupportedError } = require('common-errors');
  * @apiSchema {jsonschema=../../../schemas/webhook.json} apiParam
  */
 function webhookAction({ params }) {
-  const feedService = this.services.feed;
-  const facebookService = feedService.getNetwork('facebook');
+  const facebookService = this.services.feed.getNetwork('facebook');
 
   if (facebookService) {
     if (params['hub.mode'] === 'subscribe') {
@@ -17,6 +16,7 @@ function webhookAction({ params }) {
 
     return facebookService.saveStatus(params);
   }
+
   throw new NotSupportedError('Facebook service disabled');
 }
 

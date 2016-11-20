@@ -10,7 +10,8 @@
       "properties": {
         "network": {
           "description": "Network name",
-          "type": "string"
+          "type": "string",
+          "enum": [ "twitter", "facebook", "instagram" ]
         },
         "account": {
           "description": "Account ID (for twitter — username) to fetch feed for",
@@ -42,7 +43,7 @@
         },
         "order": {
           "type": "string",
-          "enum": ["desc", "asc"],
+          "enum": [ "desc", "asc" ],
           "default": "desc"
         }
       }
