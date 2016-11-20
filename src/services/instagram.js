@@ -117,7 +117,7 @@ class InstagramService {
     };
 
     return knex.upsertItem('instagram_media', 'id', data)
-      .then(mediaId => logger.info(`Save instagram media #${mediaId}`));
+      .then(mediaData => logger.info('Save instagram media', mediaData));
   }
 
   mediaList(params) {
@@ -130,7 +130,10 @@ class InstagramService {
 
     return Promise
       .map(subscriptions, subscribeMapper(client.id, client.secret))
-      .each(subcription => logger.info('Instagram subcription:', subcription));
+      .each(subcription => logger.info('Instagram subcription:', subcription))
+      .catch((e) => {
+        logger.error('failed to subscribe', e);
+      });
   }
 
   verifySubcription(params) {
