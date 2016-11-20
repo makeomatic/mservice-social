@@ -74,8 +74,11 @@ describe('twitter', function testSuite() {
       .then((response) => {
         assert(response.isFulfilled());
         const body = response.value();
-        assert.notEqual(body.data.length, 0);
-        assert.equal(body.data[0].id, 1);
+        assert.equal(body.data.length, 2);
+
+        payload.filter.accounts.forEach((account) => {
+          assert.ok(body.data.find(x => x.meta.account === account.username));
+        });
       });
   });
 
