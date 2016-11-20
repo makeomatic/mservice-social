@@ -1,3 +1,4 @@
+const Errors = require('common-errors');
 const { collectionResponse, TYPE_INSTAGRAM_MEDIA } = require('../../utils/response');
 
 /**
@@ -7,8 +8,12 @@ const { collectionResponse, TYPE_INSTAGRAM_MEDIA } = require('../../utils/respon
  * @apiGroup Instagram
  * @apiSchema {jsonschema=../../../schemas/instagram.media.list.json} apiParam
  */
-function instagramMediaListAction({ params }) {
+function instagramMediaListAction({ params, method }) {
   const instagramService = this.getService('instagram');
+
+  if (method !== 'post' || method !== 'amqp') {
+    throw new Errors.NotImplementedError('media list is only available through HTTP Post or AMQP');
+  }
 
   return instagramService
     .mediaList(params)
@@ -16,6 +21,6 @@ function instagramMediaListAction({ params }) {
 }
 
 instagramMediaListAction.schema = 'instagram.media.list';
-instagramMediaListAction.transports = ['amqp'];
+instagramMediaListAction.transports = ['http', 'amqp'];
 
 module.exports = instagramMediaListAction;
