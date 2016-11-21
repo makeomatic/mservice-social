@@ -40,7 +40,7 @@ webhookAction.verify = function verify(query) {
 webhookAction.hook = function hook(params) {
   const feedService = this.getService(SERVICE_FEED);
   const instagramService = this.getService(SERVICE_INSTAGRAM);
-  const rawMediaData = values(params);
+  const rawMediaData = Array.isArray(params) ? params : values(params);
 
   return Promise.map(rawMediaData, (subscription) => {
     const { object_id: networkId, data: { media_id: mediaId } } = subscription;
