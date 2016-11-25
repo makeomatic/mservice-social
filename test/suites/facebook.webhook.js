@@ -66,7 +66,6 @@ describe('instagram.webhook', function testSuite() {
   });
 
   it('should not be able to save media if receives media from unknown user', () => {
-    const userId = Date.now().toString();
     const params = {
       entry: [{
         changes: [{
@@ -80,7 +79,7 @@ describe('instagram.webhook', function testSuite() {
             published: 1,
             created_time: 1480020997,
             message: 'test',
-          }
+          },
         }],
         id: '1',
         time: 1480020998,
@@ -125,7 +124,7 @@ describe('instagram.webhook', function testSuite() {
             published: 1,
             created_time: 1480020997,
             message: 'test',
-          }
+          },
         }],
         id: pageId,
         time: 1480020998,

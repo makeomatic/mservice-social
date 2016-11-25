@@ -1,6 +1,4 @@
-const assert = require('assert');
 const Chance = require('chance');
-const noop = require('lodash/noop');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const sinon = require('sinon');
@@ -55,7 +53,7 @@ describe('service', function suite() {
       mock
         .expects('get')
         .withArgs({
-          url: `https://graph.facebook.com/v2.8/1/feed?access_token=token1&`
+          url: 'https://graph.facebook.com/v2.8/1/feed?access_token=token1&'
             + 'fields=attachments,message,story,picture,link&limit=100',
           json: true,
         })

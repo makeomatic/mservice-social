@@ -20,10 +20,10 @@ const http = request.defaults({
 });
 const service = new Social(config);
 
-function istagramMediaFactory(id, pageId) {
+function istagramMediaFactory(postId, id) {
   return {
     message: 'Foo',
-    id: `${pageId}_${id}`,
+    id: `${id}_${postId}`,
   };
 }
 
