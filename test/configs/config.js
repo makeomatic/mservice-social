@@ -9,6 +9,7 @@ global.SERVICES = {
     },
   },
   twitter: {
+    enabled: true,
     consumer_key: process.env.TWITTER_KEY,
     consumer_secret: process.env.TWITTER_SECRET,
     access_token_key: process.env.TWITTER_ACCESS_KEY,

@@ -1,3 +1,3 @@
-const service = require('./social');
+const Service = require('./social');
 
-module.exports = service;
+module.exports = Service;

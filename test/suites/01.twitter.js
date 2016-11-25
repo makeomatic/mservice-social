@@ -18,12 +18,10 @@ describe('twitter', function testSuite() {
     register: {
       internal: 'test@test.ru',
       network: 'twitter',
-      filter: {
-        accounts: [
-          { username: 'HainekoT' },
-          { id: '2533316504', username: 'v_aminev' },
-        ],
-      },
+      accounts: [
+        { username: 'HainekoT' },
+        { id: '2533316504', username: 'v_aminev' },
+      ],
     },
     list: {
       filter: {
@@ -76,7 +74,7 @@ describe('twitter', function testSuite() {
         const body = response.value();
         assert.equal(body.data.length, 2);
 
-        payload.register.filter.accounts.forEach((account) => {
+        payload.register.accounts.forEach((account) => {
           assert.ok(body.data.find(x => x.attributes.meta.account === account.username));
         });
       });
@@ -86,7 +84,7 @@ describe('twitter', function testSuite() {
   it('wait for stream to startup', () => Promise.delay(9000));
 
   it('post tweet and wait for it to arrive', (done) => {
-    this.service.services.twitter.client.post(
+    this.service.service('twitter').client.post(
       'statuses/update',
       { status: 'Test status' },
       (error, tweet) => {
@@ -125,10 +123,8 @@ describe('twitter', function testSuite() {
   });
 
   after('delete tweet', (done) => {
-    this
-      .service
-      .services
-      .twitter
+    this.service
+      .service('twitter')
       .client
       .post(`statuses/destroy/${tweetId}`, () => done());
   });

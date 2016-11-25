@@ -9,8 +9,8 @@ const { collectionResponse, TYPE_FEED } = require('../utils/response');
  * @apiSchema {jsonschema=../../schemas/feed.list.response.json} apiSuccess
  */
 function FeedListAction({ params }) {
-  return this.services
-    .feed
+  return this
+    .service('feed')
     .list(params)
     .then(feeds => collectionResponse(feeds, TYPE_FEED));
 }

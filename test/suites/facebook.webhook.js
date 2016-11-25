@@ -1,43 +1,41 @@
 const assert = require('assert');
-const getMediaResponse = require('../fixtures/instagram/get-media-response');
-const feedFactory = require('../fixtures/instagram/feed');
+const Chance = require('chance');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const sinon = require('sinon');
 const Social = require('../../src');
-const subcriptionRequest = require('../fixtures/instagram/subscription-request');
 
+const chance = new Chance();
 const http = request.defaults({
-  uri: 'http://localhost:3000/api/social/instagram/webhook',
+  uri: 'http://localhost:3000/api/social/facebook/webhook',
   simple: false,
   resolveWithFullResponse: true,
   json: true,
 });
-
-const config = {
-  instagram: {
+const social = new Social({
+  facebook: {
     enabled: true,
     syncMediaOnStart: false,
     subscribeOnStart: false,
-    client: {
-      id: 'client-id',
-      secret: 'client-secret',
+    app: {
+      id: '2',
+      secret: 'secret1',
     },
     subscriptions: [
       {
-        object: 'user',
-        type: 'media',
-        verifyToken: 'your-verify-token',
-        callbackUrl: 'https://your.callback/url',
+        object: 'page',
+        fields: 'feed',
+        verifyToken: 'my-verify-token',
+        callbackUrl: 'https://my-call.back',
       },
     ],
   },
-};
-const service = new Social(config);
+});
 
 describe('instagram.webhook', function testSuite() {
-  before('start up service', () => service.connect());
-  after('shutdown service', () => service.close());
+  before('start up service', () => social.connect());
+  after('cleanup feeds', () => social.knex('feeds').delete());
+  after('shutdown service', () => social.close());
 
   it('should be able to return error if invalid verification token', () => {
     const params = {
@@ -57,7 +55,7 @@ describe('instagram.webhook', function testSuite() {
     const params = {
       'hub.mode': 'subscribe',
       'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
-      'hub.verify_token': 'your-verify-token',
+      'hub.verify_token': 'my-verify-token',
     };
 
     return http({ qs: params })
@@ -69,7 +67,26 @@ describe('instagram.webhook', function testSuite() {
 
   it('should not be able to save media if receives media from unknown user', () => {
     const userId = Date.now().toString();
-    const params = [subcriptionRequest(userId)];
+    const params = {
+      entry: [{
+        changes: [{
+          field: 'feed',
+          value: {
+            post_id: '1_1',
+            sender_name: 'Foo',
+            sender_id: 1,
+            item: 'status',
+            verb: 'add',
+            published: 1,
+            created_time: 1480020997,
+            message: 'test',
+          }
+        }],
+        id: '1',
+        time: 1480020998,
+      }],
+      object: 'page',
+    };
 
     return http({
       method: 'post',
@@ -81,22 +98,56 @@ describe('instagram.webhook', function testSuite() {
   });
 
   it('should be able to save media', () => {
-    const userId = Date.now().toString();
-    const feed = feedFactory(userId);
+    const pageId = Date.now().toString();
+    const feed = {
+      internal: chance.email(),
+      network: 'facebook',
+      network_id: pageId,
+      meta: JSON.stringify({
+        id: pageId,
+        name: 'City',
+        perms: [],
+        token: 'token1',
+        category: 'News',
+      }),
+    };
     const mock = sinon.mock(request);
-    const params = [subcriptionRequest(userId)];
+    const params = {
+      entry: [{
+        changes: [{
+          field: 'feed',
+          value: {
+            post_id: `${pageId}_1`,
+            sender_name: 'Oblakotilo',
+            sender_id: pageId,
+            item: 'status',
+            verb: 'add',
+            published: 1,
+            created_time: 1480020997,
+            message: 'test',
+          }
+        }],
+        id: pageId,
+        time: 1480020998,
+      }],
+      object: 'page',
+    };
 
     mock
       .expects('get')
       .withArgs({
-        url: `https://api.instagram.com/v1/media/1234567890123456789_${userId}?`
-          + `access_token=${userId}.1a1a111.111aa111aaaa1111a1a111a1aa1111aa`,
+        url: `https://graph.facebook.com/v2.8/${pageId}_1?access_token=token1&fields=`
+          + 'attachments,message,story,picture,link',
         json: true,
       })
-      .returns(Promise.resolve(getMediaResponse(userId)))
+      .returns(Promise.resolve({
+        created_time: '2016-11-24T20:56:37+0000',
+        message: 'test',
+        id: `${pageId}_1`,
+      }))
       .once();
 
-    return service
+    return social
       .service('storage')
       .feeds()
       .save(feed)
@@ -107,7 +158,6 @@ describe('instagram.webhook', function testSuite() {
       .then((response) => {
         assert.deepEqual(response.body, { media: 1 });
         mock.verify();
-        mock.restore();
       });
   });
 });

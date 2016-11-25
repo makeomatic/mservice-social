@@ -1,7 +1,7 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["internal", "network", "filter"],
+  "required": ["internal", "network", "accounts"],
   "properties": {
     "internal": {
       "description": "Internal ID to assign this feed to",
@@ -12,8 +12,8 @@
       "type": "string",
       "enum": ["twitter", "instagram", "facebook"]
     },
-    "filter": {
-      "type": "object"
+    "accounts": {
+      "type": "array"
     }
   },
   "switch": [
@@ -27,8 +27,8 @@
       },
       "then": {
         "properties": {
-          "filter": {
-            "$ref": "instagram.json#/definitions/registerFeedFilter"
+          "accounts": {
+            "$ref": "instagram.json#/definitions/registerFeed"
           }
         }
       }
@@ -43,8 +43,24 @@
       },
       "then": {
         "properties": {
-          "filter": {
-            "$ref": "twitter.json#/definitions/registerFeedFilter"
+          "accounts": {
+            "$ref": "twitter.json#/definitions/registerFeed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "network": {
+            "constant": "facebook"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "accounts": {
+            "$ref": "facebook.json#/definitions/registerFeed"
           }
         }
       }

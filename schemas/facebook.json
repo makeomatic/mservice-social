@@ -1,9 +1,9 @@
 {
-  "id": "instagram.json",
+  "id": "facebook.json",
   "definitions": {
-    "accountId": {
+    "pageId": {
       "type": "string",
-      "description": "Identificator of `instagram` account"
+      "description": "Identificator of `facebook` page"
     },
     "registerFeed": {
       "description": "Register a batch of accounts",
@@ -11,25 +11,38 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "username", "token"],
+        "required": ["category", "id", "name", "perms", "token"],
         "properties": {
-          "id": {
-            "$ref": "#/definitions/accountId"
-          },
-          "username": {
-            "description": "User name",
+          "category": {
+            "description": "Category of facebook page",
             "type": "string"
           },
+          "id": {
+            "description": "Page ID",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of facebook page",
+            "type": "string"
+          },
+          "perms": {
+            "description": "Array of permissions",
+            "type": "array",
+            "items": {
+              "description": "Permission name",
+              "type": "string"
+            }
+          },
           "token": {
-            "type": "string",
-            "description": "User token"
+            "description": "Page access token",
+            "type": "string"
           }
         }
       }
     },
     "config": {
       "type": "object",
-      "required": ["enabled"],
+      "required": ["enabled", "syncMediaOnStart", "subscribeOnStart", "api"],
       "additionalProperties": false,
       "properties": {
         "enabled": {
@@ -44,7 +57,20 @@
           "type": "boolean",
           "default": true
         },
-        "client": {
+        "api": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version", "fields"],
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "fields": {
+              "type": "string"
+            }
+          }
+        },
+        "app": {
           "type": "object",
           "required": ["id", "secret"],
           "additionalProperties": false,
@@ -61,16 +87,16 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["object", "type", "verifyToken", "callbackUrl"],
+            "required": ["object", "fields", "verifyToken", "callbackUrl"],
             "additionalProperties": false,
             "properties": {
               "object": {
                 "type": "string",
-                "enum": ["user"]
+                "enum": ["page"]
               },
-              "type": {
+              "fields": {
                 "type": "string",
-                "enum": ["media"]
+                "enum": ["feed"]
               },
               "verifyToken": {
                 "type": "string"

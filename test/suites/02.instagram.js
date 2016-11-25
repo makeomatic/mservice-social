@@ -70,13 +70,11 @@ describe('instagram', function testSuite() {
     const params = {
       internal: 'foo@instagram.com',
       network: 'instagram',
-      filter: {
-        accounts: [{
-          id: '555',
-          token: '555.1',
-          username: 'perchik',
-        }],
-      },
+      accounts: [{
+        id: '555',
+        token: '555.1',
+        username: 'perchik',
+      }],
     };
     const mock = sinon.mock(request);
 
@@ -95,9 +93,9 @@ describe('instagram', function testSuite() {
       .publishAndWait('social.feed.register', params)
       .reflect()
       .then((response) => {
-        const data = response.value();
+        const { data } = response.value();
 
-        assert.deepEqual(data, { accounts: 1 });
+        assert.equal(data.length, 1);
         mock.verify();
         mock.restore();
       });

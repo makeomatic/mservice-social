@@ -9,14 +9,15 @@ const { collectionResponse, TYPE_INSTAGRAM_MEDIA } = require('../../utils/respon
  * @apiSchema {jsonschema=../../../schemas/instagram.media.list.json} apiParam
  */
 function instagramMediaListAction({ params, method }) {
-  const instagramService = this.getService('instagram');
+  const instagramService = this.service('instagram');
 
   if (method !== 'post' && method !== 'amqp') {
     throw new Errors.NotImplementedError('media list is only available through HTTP Post or AMQP');
   }
 
   return instagramService
-    .mediaList(params)
+    .media()
+    .list(params)
     .then(list => collectionResponse(list, TYPE_INSTAGRAM_MEDIA, { before: params.page.cursor }));
 }
 
