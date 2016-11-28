@@ -146,7 +146,8 @@ class Twitter {
     if (Twitter.isTweet(data)) {
       this.logger.debug('inserting tweet', data);
       this.storage
-        .insertStatus(Twitter.serializeTweet(data))
+        .twitterStatuses()
+        .save(Twitter.serializeTweet(data))
         .return(true);
     }
   }
