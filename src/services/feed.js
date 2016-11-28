@@ -52,7 +52,7 @@ class Feed {
 
   remove(data) {
     const storage = this.service('storage');
-    const twitter = this.service('storage');
+    const twitter = this.service('twitter');
 
     const process = Promise.coroutine(function* action() {
       const feed = yield storage.feeds().list({ filter: data });
