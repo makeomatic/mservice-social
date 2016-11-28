@@ -48,6 +48,8 @@ describe('twitter', function testSuite() {
     return service.connect();
   });
 
+  after('cleanup feeds', () => this.service.knex('feeds').delete());
+
   it('should return error if request to register is not valid', () => {
     return this.service.amqp.publishAndWait(uri.register, payload.registerFail)
       .reflect()

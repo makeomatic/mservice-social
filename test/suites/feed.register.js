@@ -19,6 +19,7 @@ const service = new Social(config);
 
 describe('feed.register', function feedRegisterSuite() {
   before('start up service', () => service.connect());
+  after('cleanup feeds', () => service.knex('feeds').delete());
   after('shutdown service', () => service.close());
 
   it('should be able to return error if invalid network', () => {

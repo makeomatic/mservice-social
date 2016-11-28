@@ -37,6 +37,7 @@ const service = new Social(config);
 
 describe('instagram.webhook', function testSuite() {
   before('start up service', () => service.connect());
+  after('cleanup feeds', () => service.knex('feeds').delete());
   after('shutdown service', () => service.close());
 
   it('should be able to return error if invalid verification token', () => {
