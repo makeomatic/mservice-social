@@ -5,8 +5,9 @@ const request = require('request-promise');
 const syncAccountHistory = require('./media/sync-account-history');
 
 class Media {
-  constructor(config, storage, logger) {
+  constructor(config, instagramComments, storage, logger) {
     this.config = config;
+    this.comments = instagramComments;
     this.storage = storage;
     this.logger = logger;
   }
@@ -25,11 +26,11 @@ class Media {
       .map(([feed, lastId]) => this.syncAccountHistory(feed.network_id, feed.meta.token, lastId));
   }
 
-  syncAccountHistory(id, token, lastId) {
-    const url = getListUrl(id, token);
+  syncAccountHistory(id, accessToken, lastId) {
+    const url = getListUrl(id, accessToken);
 
     return Promise
-      .bind(this, [url, lastId])
+      .bind(this, [url, accessToken, lastId])
       .spread(syncAccountHistory);
   }
 
@@ -40,12 +41,12 @@ class Media {
   fetch(id, accessToken) { // eslint-disable-line class-methods-use-this
     const options = { url: getMediaUrl(id, accessToken), json: true };
 
-    return request
-      .get(options)
-      .then(response => response.data);
+    return Promise
+      .resolve(request.get(options))
+      .get('data');
   }
 
-  save(media) {
+  save({ media, comments }) {
     const { logger } = this;
     const { user: { id: userId, username } } = media;
     const [id] = media.id.split('_');
@@ -54,7 +55,8 @@ class Media {
       username,
       user_id: userId,
       created_time: new Date(),
-      meta: JSON.stringify(media),
+      comments: JSON.stringify(comments),
+      media: JSON.stringify(media),
     };
 
     return this.storage

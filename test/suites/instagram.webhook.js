@@ -97,6 +97,28 @@ describe('instagram.webhook', function testSuite() {
       .returns(Promise.resolve(getMediaResponse(userId)))
       .once();
 
+      mock
+        .expects('get')
+        .withArgs({
+          json: true,
+          url: `https://api.instagram.com/v1/media/1234567890123456789_${userId}/comments?`
+            + `access_token=${userId}.1a1a111.111aa111aaaa1111a1a111a1aa1111aa`,
+        })
+        .returns({
+          data: [{
+            created_time: '1280780324',
+            text: 'Really amazing photo!',
+            from: {
+              username: 'snoopdogg',
+              profile_picture: 'http://images.instagram.com/profiles/profile_16_75sq_1305612434.jpg',
+              id: '1574083',
+              full_name: 'Snoop Dogg',
+            },
+            id: '420',
+          }],
+        })
+        .once();
+
     return service
       .service('storage')
       .feeds()

@@ -28,7 +28,13 @@ describe('instagram.media.list', function testSuite() {
     const instagram = service.service('instagram');
     const ids = ['1111111111111111111', '1111111111111111112', '1111111111111111113'];
 
-    return Promise.map(ids, id => instagram.media().save(istagramMediaFactory(id, accountId)));
+    return Promise
+      .map(ids, id => instagram
+        .media()
+        .save({
+          media: istagramMediaFactory(id, accountId),
+          comments: [],
+        }));
   });
 
   after('shutdown service', () => service.close());

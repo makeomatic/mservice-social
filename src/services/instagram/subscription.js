@@ -21,7 +21,12 @@ function getMediaMapper(subscription) {
     .getByNetworkId('instagram', networkId)
     .then((feed) => {
       if (feed) {
-        return this.media.fetch(mediaId, feed.meta.token);
+        return Promise
+          .join(
+            this.media.fetch(mediaId, feed.meta.token),
+            this.comments.fetch(mediaId, feed.meta.token)
+          )
+          .spread((media, comments) => ({ media, comments }));
       }
 
       this.logger.warn(`Feed not found for user #${networkId}`);
@@ -31,8 +36,9 @@ function getMediaMapper(subscription) {
 }
 
 class Subscription {
-  constructor(config, feed, media, logger) {
+  constructor(config, feed, media, comments, logger) {
     this.config = config;
+    this.comments = comments;
     this.feed = feed;
     this.media = media;
     this.logger = logger;

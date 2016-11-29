@@ -4,7 +4,8 @@ exports.up = function up(knex) {
     table.string('user_id').notNullable();
     table.string('username').notNullable();
     table.timestamp('created_time').notNullable();
-    table.jsonb('meta').notNullable();
+    table.jsonb('media').notNullable();
+    table.jsonb('comments').notNullable();
 
     table.primary(['user_id', 'id']);
   });

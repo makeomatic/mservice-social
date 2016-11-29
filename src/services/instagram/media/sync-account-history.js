@@ -14,28 +14,28 @@ function filterLessThanId(data, lastId) {
   });
 }
 
-function saveMedia(response) {
-  const { lastId, instagramMedia } = this;
-  const data = lastId ? filterLessThanId(response.data, lastId) : response.data;
-
-  return Promise.map(data, media => instagramMedia.save(media));
+function fetchComments(media, accessToken) {
+  return this.comments
+    .fetch(media.id, accessToken)
+    .then(comments => ({ media, comments }));
 }
 
-function syncAccountHistory(url, lastId) {
-  const instagramMedia = this;
+function syncAccountHistory(url, accessToken, lastId) {
   const options = { url, json: true };
+  let pagination = {};
 
   return Promise
-    .resolve(request.get(options))
-    .bind({ lastId, instagramMedia })
-    .tap(saveMedia)
-    .then(paginate);
+    .bind(this, options)
+    .then(request.get)
+    .tap(response => (pagination = response.pagination))
+    .get('data')
+    .then(data => (lastId ? filterLessThanId(data, lastId) : data))
+    .map(media => fetchComments.call(this, media, accessToken))
+    .map(media => this.save(media))
+    .then(() => paginate.call(this, pagination, accessToken, lastId));
 }
 
-function paginate(response) {
-  const { lastId, instagramMedia } = this;
-  const { pagination } = response;
-
+function paginate(pagination, accessToken, lastId) {
   if (pagination.next_url === undefined) {
     return null;
   }
@@ -52,7 +52,7 @@ function paginate(response) {
   }
 
   return Promise
-    .bind(instagramMedia, [pagination.next_url, lastId])
+    .bind(this, [pagination.next_url, accessToken, lastId])
     .spread(syncAccountHistory);
 }
 

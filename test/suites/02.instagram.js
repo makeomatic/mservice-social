@@ -80,6 +80,38 @@ describe('instagram', function testSuite() {
 
     mock
       .expects('get')
+      .withArgs({
+        json: true,
+        url: 'https://api.instagram.com/v1/media/1385552885716996590_555/comments?access_token=555.1',
+      })
+      .returns({
+        data: [{
+          created_time: '1280780324',
+          text: 'Really amazing photo!',
+          from: {
+            username: 'snoopdogg',
+            profile_picture: 'http://images.instagram.com/profiles/profile_16_75sq_1305612434.jpg',
+            id: '1574083',
+            full_name: 'Snoop Dogg',
+          },
+          id: '420',
+        }],
+      })
+      .once();
+
+    mock
+      .expects('get')
+      .withArgs({
+        json: true,
+        url: 'https://api.instagram.com/v1/media/1385552885716996589_555/comments?access_token=555.1',
+      })
+      .returns({
+        data: [],
+      })
+      .once();
+
+    mock
+      .expects('get')
       .withArgs(createFeedFixture.request.first)
       .returns(createFeedFixture.response.first)
       .once();
@@ -132,6 +164,27 @@ describe('instagram', function testSuite() {
       .expects('get')
       .withArgs(syncOnReconnectFixture.request)
       .returns(syncOnReconnectFixture.response)
+      .once();
+
+    mock
+      .expects('get')
+      .withArgs({
+        json: true,
+        url: 'https://api.instagram.com/v1/media/1385552885716996591_555/comments?access_token=555.1',
+      })
+      .returns({
+        data: [{
+          created_time: '1280780324',
+          text: 'Really amazing photo!',
+          from: {
+            username: 'snoopdogg',
+            profile_picture: 'http://images.instagram.com/profiles/profile_16_75sq_1305612434.jpg',
+            id: '1574083',
+            full_name: 'Snoop Dogg',
+          },
+          id: '420',
+        }],
+      })
       .once();
 
     return this.service
