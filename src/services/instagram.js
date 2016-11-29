@@ -4,7 +4,7 @@ const Subscription = require('./instagram/subscription');
 
 const comments = new WeakMap();
 const media = new WeakMap();
-const subscription = new WeakMap();
+const subscriptions = new WeakMap();
 
 class InstagramService {
   constructor(config, storage, feed, logger) {
@@ -14,10 +14,11 @@ class InstagramService {
 
     const instagramComments = new Comments(config);
     const instagramMedia = new Media(config, instagramComments, storage, logger);
+    const subscription = new Subscription(config, feed, instagramMedia, instagramComments, logger);
 
     comments.set(this, instagramComments);
     media.set(this, instagramMedia);
-    subscription.set(this, new Subscription(config, feed, instagramMedia, instagramComments, logger));
+    subscriptions.set(this, subscription);
   }
 
   comments() {
@@ -29,7 +30,7 @@ class InstagramService {
   }
 
   subscription() {
-    return subscription.get(this);
+    return subscriptions.get(this);
   }
 }
 
