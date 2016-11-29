@@ -55,8 +55,7 @@ class Media {
       username,
       user_id: userId,
       created_time: new Date(),
-      comments: JSON.stringify(comments),
-      media: JSON.stringify(media),
+      meta: JSON.stringify({ comments, media }),
     };
 
     return this.storage
