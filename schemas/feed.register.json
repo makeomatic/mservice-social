@@ -13,7 +13,10 @@
       "enum": ["twitter", "instagram", "facebook"]
     },
     "accounts": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
     }
   },
   "switch": [
