@@ -14,8 +14,7 @@ function FeedReadAction({ params }) {
   };
 
   return this
-    .services
-    .feed
+    .service('feed')
     .read(params)
     .then(tweets => collectionResponse(tweets, TYPE_TWEET, opts));
 }

@@ -1,3 +1,6 @@
+const { collectionResponse, TYPE_FEED } = require('../utils/response');
+const Social = require('../');
+
 /**
  * @api {http} <prefix>.feed.register Register new feed source
  * @apiVersion 1.0.0
@@ -5,13 +8,14 @@
  * @apiGroup Feed
  * @apiSchema {jsonschema=../../schemas/feed.register.json} apiParam
  */
-function FeedRegisterAction({ params }) {
-  return this.services.feed
+function feedRegisterAction({ params }) {
+  return this
+    .service(Social.SERVICE_FEED)
     .register(params)
-    .then(({ length }) => ({ accounts: length }));
+    .then(feeds => collectionResponse(feeds, TYPE_FEED));
 }
 
-FeedRegisterAction.schema = 'feed.register';
-FeedRegisterAction.transports = ['amqp'];
+feedRegisterAction.schema = 'feed.register';
+feedRegisterAction.transports = ['amqp'];
 
-module.exports = FeedRegisterAction;
+module.exports = feedRegisterAction;

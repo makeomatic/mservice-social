@@ -42,7 +42,8 @@ class Twitter {
     this.reconnect = null;
 
     return this.storage
-      .fetchFeeds({ network: 'twitter' })
+      .feeds()
+      .fetch({ network: 'twitter' })
       .bind(this)
       .reduce(extractAccount, [])
       .tap(accounts => Promise.map(accounts, twAccount => (
@@ -145,7 +146,8 @@ class Twitter {
     if (Twitter.isTweet(data)) {
       this.logger.debug('inserting tweet', data);
       this.storage
-        .insertStatus(Twitter.serializeTweet(data))
+        .twitterStatuses()
+        .save(Twitter.serializeTweet(data))
         .return(true);
     }
   }
@@ -165,41 +167,42 @@ class Twitter {
   }
 
   syncAccount(account, order = 'asc') {
-    const storage = this.storage;
+    const twitterStatuses = this.storage.twitterStatuses();
 
     // recursively syncs account
     // TODO: subject to rate limit
-    return storage.readStatuses({
-      filter: {
-        page: 0,
-        account,
-        pageSize: 1,
-        order,
-      },
-    })
-    .bind(this)
-    .spread(function fetchedTweets(tweet) {
-      return this.fetchTweets(
-        Twitter.cursor(tweet, order),
-        account,
-        order === 'asc' ? 'max_id' : 'since_id'
-      )
-      .then((tweets) => {
-        const length = tweets.length;
-        this.logger.debug('fetched %d tweets', length);
+    return twitterStatuses
+      .list({
+        filter: {
+          page: 0,
+          account,
+          pageSize: 1,
+          order,
+        },
+      })
+      .bind(this)
+      .spread(function fetchedTweets(tweet) {
+        return this.fetchTweets(
+          Twitter.cursor(tweet, order),
+          account,
+          order === 'asc' ? 'max_id' : 'since_id'
+        )
+        .then((tweets) => {
+          const length = tweets.length;
+          this.logger.debug('fetched %d tweets', length);
 
-        if (length === 0) {
-          return null;
-        }
+          if (length === 0) {
+            return null;
+          }
 
-        return Promise
-          .bind(storage, tweets.map(Twitter.serializeTweet))
-          .map(storage.insertStatus)
-          .get(order === 'asc' ? length - 1 : 0)
-          .bind(this)
-          .then(fetchedTweets);
+          return Promise
+            .bind(twitterStatuses, tweets.map(Twitter.serializeTweet))
+            .map(twitterStatuses.save)
+            .get(order === 'asc' ? length - 1 : 0)
+            .bind(this)
+            .then(fetchedTweets);
+        });
       });
-    });
   }
 
   fillUserIds(original) {

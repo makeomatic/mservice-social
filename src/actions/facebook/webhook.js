@@ -1,23 +1,23 @@
 const { NotSupportedError } = require('common-errors');
 
 /**
- * @api {http} <prefix>.instagram.webhook Verify subscription, save media from instagram
+ * @api {http} <prefix>.facebook.webhook Verify subscription, save media from facebook
  * @apiVersion 1.0.0
- * @apiName instagram.webhook
- * @apiGroup Instagram
- * @apiSchema {jsonschema=../../../schemas/instagram.webhook.json} apiParam
+ * @apiName facebook.webhook
+ * @apiGroup facebook
+ * @apiSchema {jsonschema=../../../schemas/facebook.webhook.json} apiParam
  */
 function webhookAction({ params, query, method }) {
-  const instagram = this.service('instagram');
+  const facebook = this.service('facebook');
 
   if (method === 'get' && query['hub.mode'] === 'subscribe') {
-    return instagram
+    return facebook
       .subscription()
       .verify(query);
   }
 
   if (method === 'post') {
-    return instagram
+    return facebook
       .subscription()
       .save(params);
   }
@@ -25,7 +25,7 @@ function webhookAction({ params, query, method }) {
   throw new NotSupportedError();
 }
 
-webhookAction.schema = 'instagram.webhook';
+webhookAction.schema = 'facebook.webhook';
 webhookAction.transports = ['http'];
 
 module.exports = webhookAction;

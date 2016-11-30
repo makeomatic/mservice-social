@@ -1,11 +1,12 @@
-
 exports.up = function up(knex) {
   return knex.schema.createTable('instagram_media', (table) => {
-    table.string('id').primary();
-    table.string('user_id');
-    table.string('username');
-    table.timestamp('created_time');
-    table.jsonb('meta');
+    table.bigInteger('id').notNullable();
+    table.string('user_id').notNullable();
+    table.string('username').notNullable();
+    table.timestamp('created_time').notNullable();
+    table.jsonb('meta').notNullable();
+
+    table.primary(['user_id', 'id']);
   });
 };
 

@@ -6,7 +6,7 @@
  * @apiSchema {jsonschema=../../schemas/feed.remove.json} apiParam
  */
 function FeedRegisterAction({ params }) {
-  return this.services.feed.remove(params);
+  return this.service('feed').remove(params);
 }
 
 FeedRegisterAction.schema = 'feed.remove';

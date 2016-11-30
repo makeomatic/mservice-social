@@ -1,82 +1,132 @@
 const addUpsert = require('./utils/knex/upsert');
-const Errors = require('common-errors');
-const merge = require('lodash/merge');
+const Facebook = require('./services/facebook');
+const Feed = require('./services/feed');
 const { globFiles } = require('ms-conf/lib/load-config');
-const InstagramService = require('./services/instagram');
+const Instagram = require('./services/instagram');
+const merge = require('lodash/merge');
 const MService = require('mservice');
+const { NotFoundError } = require('common-errors');
 const path = require('path');
-const StorageService = require('./services/storage');
-const TwitterService = require('./services/twitter');
-const FeedService = require('./services/feed');
+const Storage = require('./services/storage');
+const Twitter = require('./services/twitter');
 
 const { ConnectorsTypes } = MService;
 const defaultConfig = globFiles(path.resolve(__dirname, 'configs'));
+const services = new WeakMap();
 
 class Social extends MService {
-  /**
-   * @param config
-   */
   constructor(config = {}) {
     super(merge({}, defaultConfig, config));
 
-    // make knex better
-    addUpsert(this.knex);
+    this.initServices();
+    this.initKnex();
+    this.initStorage();
+    this.initFeed();
+
+    if (this.config.facebook.enabled) {
+      this.initFacebook();
+    }
+
+    if (this.config.instagram.enabled) {
+      this.initInstagram();
+    }
+
+    if (this.config.twitter.enabled) {
+      this.initTwitter();
+    }
 
     // migrations
     this.addConnector(ConnectorsTypes.migration, () => this.migrate('knex'));
+  }
 
-    // services
-    const { instagram: instagramConfig, twitter: twitterConfig } = this.config;
-    const storage = new StorageService(this.knex);
-    const twitter = new TwitterService(twitterConfig, storage, this.log);
-    const feed = new FeedService(storage, twitter, this.log, this.knex);
+  service(name, instance) {
+    const classServices = services.get(this);
 
-    if (instagramConfig.enabled) {
-      const instagram = new InstagramService(instagramConfig, this.knex, this.log);
-
-      if (instagramConfig.subscribeOnStart) {
-        this.addConnector(ConnectorsTypes.transport, () => instagram.subscribe());
-      }
-
-      if (instagramConfig.syncMediaOnStart) {
-        this.addConnector(ConnectorsTypes.transport, () => instagram.syncMediaHistory());
-      }
-
-      this.addService(Social.SERVICE_INSTAGRAM, instagram);
-      // @TODO
-      feed.instagram = instagram;
+    if (instance) {
+      classServices.set(name, instance);
     }
+
+    if (classServices.has(name) === false) {
+      throw new NotFoundError(`Service ${name}`);
+    }
+
+    return classServices.get(name);
+  }
+
+  initServices() {
+    services.set(this, new Map());
+  }
+
+  initKnex() {
+    addUpsert(this.knex);
+  }
+
+  initStorage() {
+    this.service(Social.SERVICE_STORAGE, new Storage(this.knex));
+  }
+
+  initFeed() {
+    const { log } = this;
+    const storage = this.service(Social.SERVICE_STORAGE);
+    const feed = new Feed(log);
+
+    feed.service(Social.SERVICE_STORAGE, storage);
+    this.service(Social.SERVICE_FEED, feed);
+  }
+
+  initFacebook() {
+    const { config, log } = this;
+    const feed = this.service(Social.SERVICE_FEED);
+    const storage = this.service(Social.SERVICE_STORAGE);
+    const facebook = new Facebook(config.facebook, storage, feed, log);
+
+    if (config.facebook.subscribeOnStart) {
+      this.addConnector(ConnectorsTypes.transport, () => facebook.subscription().subscribe());
+    }
+
+    if (config.facebook.syncMediaOnStart) {
+      this.addConnector(ConnectorsTypes.transport, () => facebook.media().syncPagesHistory());
+    }
+
+    this.service(Social.SERVICE_FACEBOOK, facebook);
+    feed.service(Social.SERVICE_FACEBOOK, facebook);
+  }
+
+  initInstagram() {
+    const { config, log } = this;
+    const feed = this.service(Social.SERVICE_FEED);
+    const storage = this.service(Social.SERVICE_STORAGE);
+    const instagram = new Instagram(config.instagram, storage, feed, log);
+
+    if (config.instagram.subscribeOnStart) {
+      this.addConnector(ConnectorsTypes.transport, () => instagram.subscription().subscribe());
+    }
+
+    if (config.instagram.syncMediaOnStart) {
+      this.addConnector(ConnectorsTypes.transport, () => instagram.media().syncAccountsHistory());
+    }
+
+    this.service(Social.SERVICE_INSTAGRAM, instagram);
+    feed.service(Social.SERVICE_INSTAGRAM, instagram);
+  }
+
+  initTwitter() {
+    const { config, log } = this;
+    const feed = this.service(Social.SERVICE_FEED);
+    const storage = this.service(Social.SERVICE_STORAGE);
+    const twitter = new Twitter(config.twitter, storage, log);
 
     this.addConnector(ConnectorsTypes.transport, () => twitter.init());
-    this.addService('storage', storage);
-    this.addService('twitter', twitter);
-    this.addService('feed', feed);
-  }
 
-  addService(name, instance) {
-    if (this.services === undefined) {
-      this.services = {};
-    }
-
-    this.services[name] = instance;
-  }
-
-  getService(name) {
-    if (this.services === undefined || this.services[name] === undefined) {
-      throw new Errors.NotFoundError(`Service '${name}' not found`);
-    }
-
-    return this.services[name];
+    this.service(Social.SERVICE_TWITTER, twitter);
+    feed.service(Social.SERVICE_TWITTER, twitter);
   }
 }
 
-Social.NETWORK_INSTAGRAM = 'instagram';
-Social.NETWORK_FACEBOOK = 'facebook';
-Social.NETWORK_TWITTER = 'twitter';
-
-Social.SERVICE_INSTAGRAM = 'instagram';
 Social.SERVICE_FACEBOOK = 'facebook';
 Social.SERVICE_FEED = 'feed';
+Social.SERVICE_INSTAGRAM = 'instagram';
+Social.SERVICE_STORAGE = 'storage';
 Social.SERVICE_TWITTER = 'twitter';
 
 module.exports = Social;

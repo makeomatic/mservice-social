@@ -3,10 +3,12 @@ const omit = require('lodash/omit');
 const Promise = require('bluebird');
 
 function register(data) {
-  const { storage, twitter, logger } = this;
+  const { logger } = this;
+  const storage = this.service('storage');
+  const twitter = this.service('twitter');
   const process = Promise.coroutine(function* action() {
-    const accounts = data.filter.accounts;
-    const original = omit(data, 'filter');
+    const accounts = data.accounts;
+    const original = omit(data, 'accounts');
     const expandedAccounts = yield twitter.fillUserIds(accounts);
 
     for (let i = 0; i < accounts.length; i += 1) {
@@ -19,7 +21,7 @@ function register(data) {
       });
 
       // wait till storage is registered
-      yield storage.registerFeed(feed);
+      yield storage.feeds().save(feed);
 
       // syncs tweets
       yield twitter.syncAccount(expandedAccounts[i].username);

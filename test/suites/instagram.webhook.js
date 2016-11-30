@@ -37,9 +37,10 @@ const service = new Social(config);
 
 describe('instagram.webhook', function testSuite() {
   before('start up service', () => service.connect());
+  after('cleanup feeds', () => service.knex('feeds').delete());
   after('shutdown service', () => service.close());
 
-  it('http: should be able to return error if invalid verification token', () => {
+  it('should be able to return error if invalid verification token', () => {
     const params = {
       'hub.mode': 'subscribe',
       'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
@@ -53,42 +54,7 @@ describe('instagram.webhook', function testSuite() {
     });
   });
 
-  it('amqp: should be able to return error if invalid verification token', () => {
-    const params = {
-      'hub.mode': 'subscribe',
-      'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
-      'hub.verify_token': 'invalid-verify-token',
-    };
-
-    return service.amqp
-      .publishAndWait('social.instagram.webhook', params)
-      .reflect()
-      .then((response) => {
-        const error = response.error();
-
-        assert.equal(error.message, 'An attempt was made to perform an operation that' +
-          ' is not permitted: Verify token invalid-verify-token is invalid');
-      });
-  });
-
-  it('amqp: should be able to verify subscription', () => {
-    const params = {
-      'hub.mode': 'subscribe',
-      'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
-      'hub.verify_token': 'your-verify-token',
-    };
-
-    return service.amqp
-      .publishAndWait('social.instagram.webhook', params)
-      .reflect()
-      .then((response) => {
-        const data = response.value();
-
-        assert.equal(data, '15f7d1a91c1f40f8a748fd134752feb3');
-      });
-  });
-
-  it('http: should be able to verify subscription', () => {
+  it('should be able to verify subscription', () => {
     const params = {
       'hub.mode': 'subscribe',
       'hub.challenge': '15f7d1a91c1f40f8a748fd134752feb3',
@@ -102,31 +68,16 @@ describe('instagram.webhook', function testSuite() {
       });
   });
 
-  it('amqp: should be able to return error if receives media from unknown user', () => {
+  it('should not be able to save media if receives media from unknown user', () => {
     const userId = Date.now().toString();
-    const params = { 0: subcriptionRequest(userId) };
-
-    return service.amqp
-      .publishAndWait('social.instagram.webhook', params)
-      .reflect()
-      .then((response) => {
-        const error = response.error();
-
-        assert.equal(error.message, `Not Found: "Feed for user #${userId}"`);
-      });
-  });
-
-  it('http: should be able to return error if receives media from unknown user', () => {
-    const userId = Date.now().toString();
-    const params = { 0: subcriptionRequest(userId) };
+    const params = [subcriptionRequest(userId)];
 
     return http({
       method: 'post',
       body: params,
     })
     .then((response) => {
-      assert.equal(response.statusCode, 404);
-      assert.equal(response.body.message, `Not Found: "Feed for user #${userId}"`);
+      assert.deepEqual(response.body, { media: 0 });
     });
   });
 
@@ -134,7 +85,7 @@ describe('instagram.webhook', function testSuite() {
     const userId = Date.now().toString();
     const feed = feedFactory(userId);
     const mock = sinon.mock(request);
-    const params = { 0: subcriptionRequest(userId) };
+    const params = [subcriptionRequest(userId)];
 
     mock
       .expects('get')
@@ -146,15 +97,38 @@ describe('instagram.webhook', function testSuite() {
       .returns(Promise.resolve(getMediaResponse(userId)))
       .once();
 
-    return service
-      .getService('storage')
-      .registerFeed(feed)
-      .then(() => service.amqp.publishAndWait('social.instagram.webhook', params))
-      .reflect()
-      .then((response) => {
-        const data = response.value();
+    mock
+      .expects('get')
+      .withArgs({
+        json: true,
+        url: `https://api.instagram.com/v1/media/1234567890123456789_${userId}/comments?`
+          + `access_token=${userId}.1a1a111.111aa111aaaa1111a1a111a1aa1111aa`,
+      })
+      .returns({
+        data: [{
+          created_time: '1280780324',
+          text: 'Really amazing photo!',
+          from: {
+            username: 'snoopdogg',
+            profile_picture: 'http://images.instagram.com/profiles/profile_16_75sq_1305612434.jpg',
+            id: '1574083',
+            full_name: 'Snoop Dogg',
+          },
+          id: '420',
+        }],
+      })
+      .once();
 
-        assert.deepEqual(data, { media: 1 });
+    return service
+      .service('storage')
+      .feeds()
+      .save(feed)
+      .then(() => http({
+        method: 'post',
+        body: params,
+      }))
+      .then((response) => {
+        assert.deepEqual(response.body, { media: 1 });
         mock.verify();
         mock.restore();
       });

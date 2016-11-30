@@ -1,0 +1,52 @@
+{
+  "id": "facebook.webhook",
+  "anyOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hub.mode", "hub.challenge", "hub.verify_token"],
+      "properties": {
+        "hub.mode": {
+          "type": "string",
+          "constant": "subscribe"
+        },
+        "hub.challenge": {
+          "type": "string"
+        },
+        "hub.verify_token": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": "string"
+        },
+        "entry": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

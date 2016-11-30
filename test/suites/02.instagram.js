@@ -70,15 +70,45 @@ describe('instagram', function testSuite() {
     const params = {
       internal: 'foo@instagram.com',
       network: 'instagram',
-      filter: {
-        accounts: [{
-          id: '555',
-          token: '555.1',
-          username: 'perchik',
-        }],
-      },
+      accounts: [{
+        id: '555',
+        token: '555.1',
+        username: 'perchik',
+      }],
     };
     const mock = sinon.mock(request);
+
+    mock
+      .expects('get')
+      .withArgs({
+        json: true,
+        url: 'https://api.instagram.com/v1/media/1385552885716996590_555/comments?access_token=555.1',
+      })
+      .returns({
+        data: [{
+          created_time: '1280780324',
+          text: 'Really amazing photo!',
+          from: {
+            username: 'snoopdogg',
+            profile_picture: 'http://images.instagram.com/profiles/profile_16_75sq_1305612434.jpg',
+            id: '1574083',
+            full_name: 'Snoop Dogg',
+          },
+          id: '420',
+        }],
+      })
+      .once();
+
+    mock
+      .expects('get')
+      .withArgs({
+        json: true,
+        url: 'https://api.instagram.com/v1/media/1385552885716996589_555/comments?access_token=555.1',
+      })
+      .returns({
+        data: [],
+      })
+      .once();
 
     mock
       .expects('get')
@@ -95,9 +125,9 @@ describe('instagram', function testSuite() {
       .publishAndWait('social.feed.register', params)
       .reflect()
       .then((response) => {
-        const data = response.value();
+        const { data } = response.value();
 
-        assert.deepEqual(data, { accounts: 1 });
+        assert.equal(data.length, 1);
         mock.verify();
         mock.restore();
       });
@@ -134,6 +164,27 @@ describe('instagram', function testSuite() {
       .expects('get')
       .withArgs(syncOnReconnectFixture.request)
       .returns(syncOnReconnectFixture.response)
+      .once();
+
+    mock
+      .expects('get')
+      .withArgs({
+        json: true,
+        url: 'https://api.instagram.com/v1/media/1385552885716996591_555/comments?access_token=555.1',
+      })
+      .returns({
+        data: [{
+          created_time: '1280780324',
+          text: 'Really amazing photo!',
+          from: {
+            username: 'snoopdogg',
+            profile_picture: 'http://images.instagram.com/profiles/profile_16_75sq_1305612434.jpg',
+            id: '1574083',
+            full_name: 'Snoop Dogg',
+          },
+          id: '420',
+        }],
+      })
       .once();
 
     return this.service
