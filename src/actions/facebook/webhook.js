@@ -12,13 +12,13 @@ function webhookAction({ params, query, method }) {
 
   if (method === 'get' && query['hub.mode'] === 'subscribe') {
     return facebook
-      .subscription()
+      .subscription
       .verify(query);
   }
 
   if (method === 'post') {
     return facebook
-      .subscription()
+      .subscription
       .save(params);
   }
 

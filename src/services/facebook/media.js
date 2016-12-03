@@ -1,61 +1,54 @@
 const Promise = require('bluebird');
-const request = require('request-promise');
 const syncAccountHistory = require('./media/sync-account-history');
 
 class Media {
-  constructor(config, storage, logger) {
-    this.config = config;
-    this.storage = storage;
-    this.logger = logger;
-  }
-
-  getListUrl(pageId, token) {
-    const { version, fields } = this.config.api;
-
-    return 'https://graph.facebook.com/'
-      + `${version}/${pageId}/feed?access_token=${token}&fields=${fields}&limit=100`;
-  }
-
-  getPostUrl(postId, token) {
-    const { version, fields } = this.config.api;
-
-    return `https://graph.facebook.com/${version}/${postId}?access_token=${token}&fields=${fields}`;
+  constructor(facebook) {
+    this.facebook = facebook;
   }
 
   list(params) {
-    return this.storage.facebookMedia().list(params);
+    return this.facebook.storage.facebookMedia().list(params);
   }
 
   syncPagesHistory() {
-    return this.storage
+    return this.facebook.storage
       .feeds()
       .list({ filter: { network: 'facebook' } })
       .map(feed => Promise.join(feed, this.getLastId(feed.network_id)))
       .map(([feed, lastId]) => this.syncPageHistory(feed.network_id, feed.meta.token, lastId));
   }
 
-  syncPageHistory(id, token, lastId) {
-    const url = this.getListUrl(id, token);
+  syncPageHistory(id, accessToken, lastId) {
+    const { fields } = this.facebook.config.api;
+    const requestOptions = {
+      qs: {
+        fields,
+        limit: '100',
+      },
+      url: `/${id}/feed`,
+    };
 
-    return Promise
-      .bind(this, [url, lastId])
-      .spread(syncAccountHistory);
+    return syncAccountHistory.call(this, requestOptions, accessToken, lastId);
   }
 
   getLastId(userId) {
-    return this.storage
+    return this.facebook.storage
       .facebookMedia()
       .getLastId(userId);
   }
 
   fetch(id, accessToken) {
-    const options = { url: this.getPostUrl(id, accessToken), json: true };
+    const { fields } = this.facebook.config.api;
+    const options = {
+      url: `/${id}`,
+      qs: { fields },
+    };
 
-    return request.get(options);
+    return this.facebook.request(options, accessToken);
   }
 
   save(media) {
-    const { logger } = this;
+    const { logger } = this.facebook;
     const [pageId, postId] = media.id.split('_');
     const data = {
       id: postId,
@@ -64,7 +57,7 @@ class Media {
       meta: JSON.stringify(media),
     };
 
-    return this.storage
+    return this.facebook.storage
       .facebookMedia()
       .save(data)
       .then(mediaData => logger.info('Save facebook media', mediaData));

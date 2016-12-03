@@ -1,7 +1,7 @@
 const BigNumber = require('bn.js');
 const last = require('lodash/last');
-const request = require('request-promise');
 const Promise = require('bluebird');
+const url = require('url');
 
 function filterLessThanId(data, lastId) {
   const lastMediaId = new BigNumber(lastId, 10);
@@ -14,19 +14,19 @@ function filterLessThanId(data, lastId) {
   });
 }
 
-function saveMedia(response) {
-  const { lastId, facebookMedia } = this;
-  const data = lastId ? filterLessThanId(response.data, lastId) : response.data;
+function filterMediaAndSave(data, lastId) {
+  const media = lastId ? filterLessThanId(data, lastId) : data;
 
-  return Promise.map(data, media => facebookMedia.save(media));
+  return Promise
+    .bind(this, media)
+    .map(this.save);
 }
 
-function paginate(response) {
-  const { lastId, facebookMedia } = this;
+function needPaginate(response, lastId) {
   const { paging, data } = response;
 
   if (paging === undefined) {
-    return null;
+    return false;
   }
 
   if (lastId) {
@@ -35,24 +35,31 @@ function paginate(response) {
     const nextMediaId = new BigNumber(nextMediaIdString, 10);
 
     if (lastMediaId.gte(nextMediaId)) {
-      return null;
+      return false;
     }
   }
 
-  return Promise
-    .bind(facebookMedia, [paging.next, lastId])
-    .spread(syncAccountHistory);
+  return true;
 }
 
-function syncAccountHistory(url, lastId) {
-  const facebookMedia = this;
-  const options = { url, json: true };
+function syncAccountHistory(requestOptions, accessToken, lastId) {
+  return this.facebook
+    .request(requestOptions, accessToken)
+    .tap(response => filterMediaAndSave.call(this, response.data, lastId))
+    .then((response) => {
+      if (needPaginate(response, lastId) === false) {
+        return true;
+      }
 
-  return Promise
-    .resolve(request.get(options))
-    .bind({ lastId, facebookMedia })
-    .tap(saveMedia)
-    .then(paginate);
+      const { next } = response.paging;
+      const nextRequestOptions = Object.assign({}, requestOptions);
+
+      nextRequestOptions.qs = url.parse(next, true).query;
+
+      return Promise
+        .bind(this, [nextRequestOptions, accessToken, lastId])
+        .spread(syncAccountHistory);
+    });
 }
 
 module.exports = syncAccountHistory;
