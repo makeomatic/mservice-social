@@ -99,11 +99,11 @@ class Social extends MService {
     const instagram = new Instagram(config.instagram, storage, feed, log);
 
     if (config.instagram.subscribeOnStart) {
-      this.addConnector(ConnectorsTypes.transport, () => instagram.subscription.subscribe());
+      this.addConnector(ConnectorsTypes.transport, () => instagram.subscription().subscribe());
     }
 
     if (config.instagram.syncMediaOnStart) {
-      this.addConnector(ConnectorsTypes.transport, () => instagram.media.syncAccountsHistory());
+      this.addConnector(ConnectorsTypes.transport, () => instagram.media().syncAccountsHistory());
     }
 
     this.service(Social.SERVICE_INSTAGRAM, instagram);

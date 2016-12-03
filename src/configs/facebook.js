@@ -10,7 +10,6 @@ module.exports = {
     // app: {
     //   id: 'app-id',
     //   secret: 'app-secret',
-    //   token: 'app-token',
     // },
     subscriptions: [
       // {
