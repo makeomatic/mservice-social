@@ -51,25 +51,35 @@ class Feed {
   }
 
   remove(data) {
+    const facebook = this.service('facebook');
     const storage = this.service('storage');
     const twitter = this.service('twitter');
 
     const process = Promise.coroutine(function* action() {
-      const feed = yield storage.feeds().list({ filter: data });
-      if (feed.length === 0) {
+      const feeds = yield storage.feeds().list({ filter: data });
+      if (feeds.length === 0) {
         return;
       }
 
-      const { meta: { account } } = feed[0];
+      const { network, meta: { account } } = feeds[0];
       yield storage.feeds().remove(data);
 
-      if (!data.keep_data) {
+      // @TODO realize it later, need to refactor totally
+      if (!data.keep_data && network === 'twitter') {
         yield storage
           .twitterStatuses()
           .remove({ account });
       }
 
       twitter.connect();
+
+      for (const feed of feeds) { // eslint-disable-line no-restricted-syntax
+        if (feed.network === 'facebook') {
+          const { network_id: pageId, meta: { token } } = feed;
+
+          yield facebook.subscription.unsubscribeApp(pageId, token);
+        }
+      }
     });
 
     return process();
