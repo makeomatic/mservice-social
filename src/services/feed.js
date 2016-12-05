@@ -51,7 +51,6 @@ class Feed {
   }
 
   remove(data) {
-    const facebook = this.service('facebook');
     const storage = this.service('storage');
     const twitter = this.service('twitter');
 
@@ -77,7 +76,7 @@ class Feed {
         if (feed.network === 'facebook') {
           const { network_id: pageId, meta: { token } } = feed;
 
-          yield facebook.subscription.unsubscribeApp(pageId, token);
+          yield this.service('facebook').subscription.unsubscribeApp(pageId, token);
         }
       }
     });
