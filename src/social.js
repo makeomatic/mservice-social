@@ -81,11 +81,11 @@ class Social extends MService {
     const facebook = new Facebook(config.facebook, storage, feed, log);
 
     if (config.facebook.subscribeOnStart) {
-      this.addConnector(ConnectorsTypes.transport, () => facebook.subscription().subscribe());
+      this.addConnector(ConnectorsTypes.transport, () => facebook.subscription.subscribe());
     }
 
     if (config.facebook.syncMediaOnStart) {
-      this.addConnector(ConnectorsTypes.transport, () => facebook.media().syncPagesHistory());
+      this.addConnector(ConnectorsTypes.transport, () => facebook.media.syncPagesHistory());
     }
 
     this.service(Social.SERVICE_FACEBOOK, facebook);

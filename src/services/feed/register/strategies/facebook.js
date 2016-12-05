@@ -3,7 +3,7 @@ function afterSave(feed) {
 
   return this
     .service('facebook')
-    .subscription()
+    .subscription
     .subscribeApp(pageId, token)
     .return(feed);
 }
@@ -18,7 +18,7 @@ function collectFeedParams(account) {
 function getLastId(feed) {
   return this
     .service('facebook')
-    .media()
+    .media
     .getLastId(feed.network_id)
     .then(id => [feed, id]);
 }
@@ -28,7 +28,7 @@ function syncHistory([feed, lastId]) {
 
   return this
     .service('facebook')
-    .media()
+    .media
     .syncPageHistory(networkId, token, lastId)
     .return(feed);
 }

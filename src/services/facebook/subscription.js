@@ -2,59 +2,47 @@ const Errors = require('common-errors');
 const flatten = require('lodash/flatten');
 const mapKeys = require('lodash/mapKeys');
 const Promise = require('bluebird');
-const request = require('request-promise');
 const snakeCase = require('lodash/snakeCase');
-
-function getSubscriptionUrl(appId, appSecret) {
-  return `https://graph.facebook.com/${appId}/subscriptions?access_token=${appId}|${appSecret}`;
-}
-
-function getSubscribeAppUrl(pageId, token) {
-  return `https://graph.facebook.com/${pageId}/subscribed_apps?access_token=${token}`;
-}
-
-function subscribeMapper(subscription) {
-  const { id, secret } = this;
-  const params = Object.assign({}, subscription);
-  const formData = mapKeys(params, (value, key) => snakeCase(key));
-  const url = getSubscriptionUrl(id, secret);
-
-  return request.post({ url, formData });
-}
 
 function getMediaMapper(entry) {
   const { id, changes } = entry;
 
-  return this.feed
+  return this.facebook.feed
     .getByNetworkId('facebook', id)
     .then((feed) => {
       if (feed) {
         return Promise
           .filter(changes, change => change.value.verb === 'add' && change.field === 'feed')
-          .map(change => this.media.fetch(change.value.post_id, feed.meta.token));
+          .map(change => this.facebook.media.fetch(change.value.post_id, feed.meta.token));
       }
 
-      this.logger.warn(`Feed not found for user #${id}`);
+      this.facebook.logger.warn(`Feed not found for user #${id}`);
 
       return [];
     });
 }
 
 class Subscription {
-  constructor(config, feed, media, logger) {
-    this.config = config;
-    this.feed = feed;
-    this.media = media;
-    this.logger = logger;
+  constructor(facebook) {
+    this.facebook = facebook;
   }
 
   subscribe() {
-    const { logger, config } = this;
+    const { logger, config } = this.facebook;
     const { app, subscriptions } = config;
 
     return Promise
-      .bind(app, subscriptions)
-      .map(subscribeMapper)
+      .map(subscriptions, (subscription) => {
+        const options = {
+          formData: mapKeys(subscription, (value, key) => snakeCase(key)),
+          json: false,
+          method: 'post',
+          qs: { access_token: `${app.id}|${app.secret}` },
+          url: `/${app.id}/subscriptions`,
+        };
+
+        return this.facebook.request(options);
+      })
       .each(subcription => logger.info('Facebook subcription:', subcription))
       .catch((e) => {
         logger.error('Failed to subscribe', e);
@@ -62,13 +50,16 @@ class Subscription {
   }
 
   subscribeApp(pageId, token) {
-    const url = getSubscribeAppUrl(pageId, token);
+    const options = {
+      url: `/${pageId}/subscribed_apps`,
+      method: 'post',
+    };
 
-    return Promise.resolve(request.post({ url }));
+    return this.facebook.request(options, token);
   }
 
   verify(params) {
-    const { subscriptions } = this.config;
+    const { subscriptions } = this.facebook.config;
     const { 'hub.challenge': challenge, 'hub.verify_token': verifyToken } = params;
 
     if (subscriptions.map(subscription => subscription.verifyToken).includes(verifyToken)) {
@@ -88,7 +79,7 @@ class Subscription {
       .map(getMediaMapper)
       .filter(media => media.length > 0)
       .then(media => flatten(media))
-      .map(media => this.media.save(media))
+      .map(media => this.facebook.media.save(media))
       .then(({ length }) => ({ media: length }));
   }
 }

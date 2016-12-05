@@ -34,7 +34,7 @@ describe('facebook.media.list', function testSuite() {
     const facebook = service.service('facebook');
     const ids = ['1111111111111111111', '1111111111111111112', '1111111111111111113'];
 
-    return Promise.map(ids, id => facebook.media().save(istagramMediaFactory(id, pageId)));
+    return Promise.map(ids, id => facebook.media.save(istagramMediaFactory(id, pageId)));
   });
 
   after('shutdown service', () => service.close());

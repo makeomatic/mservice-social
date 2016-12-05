@@ -15,8 +15,7 @@ function facebookMediaListAction({ params, method }) {
     throw new Errors.NotImplementedError('media list is only available through HTTP Post or AMQP');
   }
 
-  return facebookService
-    .media()
+  return facebookService.media
     .list(params)
     .then(list => collectionResponse(list, TYPE_FACEBOOK_MEDIA, { before: params.page.cursor }));
 }

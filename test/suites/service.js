@@ -1,4 +1,5 @@
 const Chance = require('chance');
+const mockPageFeeds = require('../mocks/facebook/page-feeds');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const sinon = require('sinon');
@@ -47,23 +48,18 @@ describe('service', function suite() {
           enabled: true,
           syncMediaOnStart: true,
           subscribeOnStart: false,
+          app: {
+            id: 'appId1',
+            secret: 'appSecret1',
+          },
         },
       });
 
-      mock
-        .expects('get')
-        .withArgs({
-          url: 'https://graph.facebook.com/v2.8/1/feed?access_token=token1&'
-            + 'fields=attachments,message,story,picture,link&limit=100',
-          json: true,
-        })
-        .returns({
-          data: [{
-            id: '1_1',
-            message: 'Foo',
-          }],
-        })
-        .once();
+      mockPageFeeds(
+        mock,
+        { pageId: '1', accessToken: 'token1' },
+        { ids: [1] }
+      );
 
       return social
         .connect()
@@ -98,13 +94,15 @@ describe('service', function suite() {
         .expects('post')
         .once()
         .withArgs({
-          url: 'https://graph.facebook.com/2/subscriptions?access_token=2|secret1',
           formData: {
             object: 'page',
             fields: 'feed',
             verify_token: 'my-verify-token',
             callback_url: 'https://my-call.back',
           },
+          json: false,
+          qs: { access_token: '2|secret1' },
+          url: 'https://graph.facebook.com/v2.8/2/subscriptions',
         })
         .returns(Promise.resolve({ success: true }));
 

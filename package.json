@@ -24,7 +24,7 @@
     "knex": "^0.12.6",
     "lodash": "^4.17.2",
     "moment": "^2.17.0",
-    "ms-amqp-transport": "^7.0.0",
+    "ms-amqp-transport": "^7.0.1",
     "ms-conf": "^2.3.0",
     "ms-validation": "^3.0.0",
     "mservice": "^4.7.2",
@@ -32,9 +32,9 @@
     "request": "^2.79.0",
     "request-promise": "^4.1.1",
     "server-destroy": "^1.0.1",
-    "twitter": "1.4.0",
+    "twitter": "^1.5.0",
     "uid2": "0.0.3",
-    "yargs": "^6.4.0"
+    "yargs": "^6.5.0"
   },
   "devDependencies": {
     "apidoc": "^0.16.1",

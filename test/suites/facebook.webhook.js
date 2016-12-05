@@ -135,9 +135,13 @@ describe('instagram.webhook', function testSuite() {
     mock
       .expects('get')
       .withArgs({
-        url: `https://graph.facebook.com/v2.8/${pageId}_1?access_token=token1&fields=`
-          + 'attachments,message,story,picture,link',
+        url: `https://graph.facebook.com/v2.8/${pageId}_1`,
         json: true,
+        qs: {
+          access_token: 'token1',
+          fields: 'attachments,message,story,picture,link',
+          appsecret_proof: 'b222753b515c4c7865d64fa88b8aa676b66cef581344cb3dffb47e5c46163c98',
+        },
       })
       .returns(Promise.resolve({
         created_time: '2016-11-24T20:56:37+0000',

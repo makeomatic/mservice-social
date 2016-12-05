@@ -1,4 +1,6 @@
 const assert = require('assert');
+const mockPageFeeds = require('../mocks/facebook/page-feeds');
+const mockSubscribedApps = require('../mocks/facebook/subscribed-apps');
 const request = require('request-promise');
 const sinon = require('sinon');
 const Social = require('../../src');
@@ -13,6 +15,10 @@ const config = {
     enabled: true,
     syncMediaOnStart: false,
     subscribeOnStart: false,
+    app: {
+      id: 'appId1',
+      secret: 'appSecret1',
+    },
   },
 };
 const service = new Social(config);
@@ -216,111 +222,65 @@ describe('feed.register', function feedRegisterSuite() {
 
     it('should be able to register new feed', () => {
       const mock = sinon.mock(request);
-      const firstAccountId = this.firstAccountId = `1${Date.now()}`;
-      const secondAccountId = this.secondAccountId = `2${Date.now()}`;
+      const firstPageId = this.firstPageId = `1${Date.now()}`;
+      const secondPageId = this.secondPageId = `2${Date.now()}`;
       const params = {
         internal: 'foo@facebook.com',
         network: 'facebook',
         accounts: [{
           category: 'Website',
-          id: firstAccountId,
+          id: firstPageId,
           name: 'Music',
           perms: [],
           token: 'token1',
         }, {
           category: 'News',
-          id: secondAccountId,
+          id: secondPageId,
           name: 'City',
           perms: [],
           token: 'token2',
         }],
       };
-      const firstResponse1 = {
-        data: [{
-          id: `${firstAccountId}_100`,
-        }, {
-          message: 'Super post',
-          id: `${firstAccountId}_10`,
-        }],
-        paging: {
-          next: `https://graph.facebook.com/v2.8/${firstAccountId}/feed?access_token=token1&`
-            + 'fields=attachments,message,story,picture,link&limit=100&__paging_token=pageToken1',
-        },
-      };
-      const firstResponse2 = {
-        data: [{
-          id: `${firstAccountId}_2`,
-        }, {
-          message: 'Super post',
-          id: `${firstAccountId}_1`,
-        }],
-        paging: {
-          next: `https://graph.facebook.com/v2.8/${firstAccountId}/feed?access_token=token1&`
-            + 'fields=attachments,message,story,picture,link&limit=100&__paging_token=pageToken2',
-        },
-      };
-      const firstResponse3 = { data: [] };
-      const secondResponse1 = {
-        data: [{
-          id: `${secondAccountId}_99`,
-        }, {
-          message: 'Super post',
-          id: `${secondAccountId}_9`,
-        }],
-        paging: {
-          next: `https://graph.facebook.com/v2.8/${secondAccountId}/feed?access_token=token2&`
-            + 'fields=attachments,message,story,picture,link&limit=100&__paging_token=pageToken3',
-        },
-      };
-      const secondResponse2 = {
-        data: [{
-          id: `${secondAccountId}_2`,
-        }, {
-          message: 'Super post',
-          id: `${secondAccountId}_1`,
-        }],
-        paging: {
-          next: `https://graph.facebook.com/v2.8/${secondAccountId}/feed?access_token=token2&`
-            + 'fields=attachments,message,story,picture,link&limit=100&__paging_token=pageToken4',
-        },
-      };
-      const secondResponse3 = { data: [] };
-      const firstRequest1 = {
-        url: `https://graph.facebook.com/v2.8/${firstAccountId}/feed?access_token=token1&`
-          + 'fields=attachments,message,story,picture,link&limit=100',
-        json: true,
-      };
-      const firstRequest2 = { url: firstResponse1.paging.next, json: true };
-      const firstRequest3 = { url: firstResponse2.paging.next, json: true };
-      const secondRequest1 = {
-        url: `https://graph.facebook.com/v2.8/${secondAccountId}/feed?access_token=token2&`
-          + 'fields=attachments,message,story,picture,link&limit=100',
-        json: true,
-      };
-      const secondRequest2 = { url: secondResponse1.paging.next, json: true };
-      const secondRequest3 = { url: secondResponse2.paging.next, json: true };
 
-      mock.expects('get').withArgs(firstRequest1).returns(firstResponse1).once();
-      mock.expects('get').withArgs(firstRequest2).returns(firstResponse2).once();
-      mock.expects('get').withArgs(firstRequest3).returns(firstResponse3).once();
-      mock.expects('get').withArgs(secondRequest1).returns(secondResponse1).once();
-      mock.expects('get').withArgs(secondRequest2).returns(secondResponse2).once();
-      mock.expects('get').withArgs(secondRequest3).returns(secondResponse3).once();
+      /* first facebook page */
       // subscribe app
-      mock
-        .expects('post')
-        .withArgs({
-          url: `https://graph.facebook.com/${firstAccountId}/subscribed_apps?access_token=token1`,
-        })
-        .returns({ success: true })
-        .once();
-      mock
-        .expects('post')
-        .withArgs({
-          url: `https://graph.facebook.com/${secondAccountId}/subscribed_apps?access_token=token2`,
-        })
-        .returns({ success: true })
-        .once();
+      mockSubscribedApps(mock, firstPageId, 'token1');
+      // fetch history
+      mockPageFeeds(
+        mock,
+        { pageId: firstPageId, accessToken: 'token1' },
+        { ids: [100, 10], pageToken: 'pageToken1' }
+      );
+      mockPageFeeds(
+        mock,
+        { pageId: firstPageId, accessToken: 'token1', pageToken: 'pageToken1' },
+        { ids: [2, 1], pageToken: 'pageToken2' }
+      );
+      mockPageFeeds(
+        mock,
+        { pageId: firstPageId, accessToken: 'token1', pageToken: 'pageToken2' },
+        { ids: [] }
+      );
+
+      /* second facebook page */
+      // subscribe app
+      mockSubscribedApps(mock, secondPageId, 'token2');
+      // fetch history
+      mockPageFeeds(
+        mock,
+        { pageId: secondPageId, accessToken: 'token2' },
+        { ids: [99, 9], pageToken: 'pageToken3' }
+      );
+      mockPageFeeds(
+        mock,
+        { pageId: secondPageId, accessToken: 'token2', pageToken: 'pageToken3' },
+        { ids: [2, 1], pageToken: 'pageToken4' }
+      );
+      mockPageFeeds(
+        mock,
+        { pageId: secondPageId, accessToken: 'token2', pageToken: 'pageToken4' },
+        { ids: [] }
+      );
 
       return service.amqp
         .publishAndWait('social.feed.register', params)
@@ -338,75 +298,45 @@ describe('feed.register', function feedRegisterSuite() {
     // depend on previous test
     it('should be able to update feed', () => {
       const mock = sinon.mock(request);
+      const firstPageId = this.firstPageId;
+      const secondPageId = this.secondPageId;
       const params = {
         internal: 'foo@facebook.com',
         network: 'facebook',
         accounts: [{
           category: 'Website',
-          id: this.firstAccountId,
+          id: firstPageId,
           name: 'Music',
           perms: [],
           token: 'token3',
         }, {
           category: 'News',
-          id: this.secondAccountId,
+          id: secondPageId,
           name: 'City',
           perms: [],
           token: 'token4',
         }],
       };
-      const firstResponse1 = {
-        data: [{
-          id: `${this.firstAccountId}_101`,
-        }, {
-          message: 'Super post',
-          id: `${this.firstAccountId}_100`,
-        }],
-        paging: {
-          next: `https://graph.facebook.com/v2.8/${this.firstAccountId}/feed?access_token=token3&`
-            + 'fields=attachments,message,story,picture,link&limit=100&__paging_token=pageToken1',
-        },
-      };
-      const secondResponse1 = {
-        data: [{
-          id: `${this.secondAccountId}_100`,
-        }, {
-          message: 'Super post',
-          id: `${this.secondAccountId}_99`,
-        }],
-        paging: {
-          next: `https://graph.facebook.com/v2.8/${this.secondAccountId}/feed?access_token=token4&`
-            + 'fields=attachments,message,story,picture,link&limit=100&__paging_token=pageToken2',
-        },
-      };
-      const firstRequest1 = {
-        url: `https://graph.facebook.com/v2.8/${this.firstAccountId}/feed?access_token=token3&`
-          + 'fields=attachments,message,story,picture,link&limit=100',
-        json: true,
-      };
-      const secondRequest1 = {
-        url: `https://graph.facebook.com/v2.8/${this.secondAccountId}/feed?access_token=token4&`
-          + 'fields=attachments,message,story,picture,link&limit=100',
-        json: true,
-      };
 
-      mock.expects('get').withArgs(firstRequest1).returns(firstResponse1).once();
-      mock.expects('get').withArgs(secondRequest1).returns(secondResponse1).once();
+      /* first facebook page */
       // subscribe app
-      mock
-        .expects('post')
-        .withArgs({
-          url: `https://graph.facebook.com/${this.firstAccountId}/subscribed_apps?access_token=token3`,
-        })
-        .returns({ success: true })
-        .once();
-      mock
-        .expects('post')
-        .withArgs({
-          url: `https://graph.facebook.com/${this.secondAccountId}/subscribed_apps?access_token=token4`,
-        })
-        .returns({ success: true })
-        .once();
+      mockSubscribedApps(mock, firstPageId, 'token3');
+      // fetch history
+      mockPageFeeds(
+        mock,
+        { pageId: firstPageId, accessToken: 'token3' },
+        { ids: [101, 100], pageToken: 'pageToken1' }
+      );
+
+      /* second facebook page */
+      // subscribe app
+      mockSubscribedApps(mock, secondPageId, 'token4');
+      // fetch history
+      mockPageFeeds(
+        mock,
+        { pageId: secondPageId, accessToken: 'token4' },
+        { ids: [100, 99], pageToken: 'pageToken2' }
+      );
 
       return service.amqp
         .publishAndWait('social.feed.register', params)
