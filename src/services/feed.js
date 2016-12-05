@@ -1,7 +1,6 @@
 const { NotFoundError } = require('common-errors');
 const Promise = require('bluebird');
 const register = require('./feed/register');
-const sinon = require('sinon');
 
 const services = new WeakMap();
 
