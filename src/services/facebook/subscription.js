@@ -32,7 +32,7 @@ function applyMediaChangesMapper(entry) {
       const accessToken = feed.meta.token;
       const action = change.value.verb;
       const postId = change.value.post_id;
-      let promise = Promise.reject('Not realized');
+      let promise;
 
       switch (action) {
         case 'add':
@@ -44,6 +44,8 @@ function applyMediaChangesMapper(entry) {
         case 'remove':
           promise = facebookMedia.delete(postId);
           break;
+        default:
+          promise = Promise.reject('Not realized');
       }
 
       return promise

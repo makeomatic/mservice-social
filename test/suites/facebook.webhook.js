@@ -159,13 +159,13 @@ describe('instagram.webhook', function testSuite() {
       .once();
 
     return http({
-        method: 'post',
-        body: params,
-      })
-      .then((response) => {
-        assert.deepEqual(response.body, { add: 1, remove: 0, edited: 0 });
-        mock.verify();
-      });
+      method: 'post',
+      body: params,
+    })
+    .then((response) => {
+      assert.deepEqual(response.body, { add: 1, remove: 0, edited: 0 });
+      mock.verify();
+    });
   });
 
   it('should be able to edit media', () => {
@@ -210,13 +210,13 @@ describe('instagram.webhook', function testSuite() {
       .once();
 
     return http({
-        method: 'post',
-        body: params,
-      })
-      .then((response) => {
-        assert.deepEqual(response.body, { add: 0, remove: 0, edited: 1 });
-        mock.verify();
-      });
+      method: 'post',
+      body: params,
+    })
+    .then((response) => {
+      assert.deepEqual(response.body, { add: 0, remove: 0, edited: 1 });
+      mock.verify();
+    });
   });
 
   it('should be able to delete media', () => {
@@ -240,11 +240,11 @@ describe('instagram.webhook', function testSuite() {
     };
 
     return http({
-        method: 'post',
-        body: params,
-      })
-      .then((response) => {
-        assert.deepEqual(response.body, { add: 0, remove: 1, edited: 0 });
-      });
+      method: 'post',
+      body: params,
+    })
+    .then((response) => {
+      assert.deepEqual(response.body, { add: 0, remove: 1, edited: 0 });
+    });
   });
 });
