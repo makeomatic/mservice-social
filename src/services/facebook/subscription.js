@@ -58,6 +58,15 @@ class Subscription {
     return this.facebook.request(options, token);
   }
 
+  unsubscribeApp(pageId, token) {
+    const options = {
+      url: `/${pageId}/subscribed_apps`,
+      method: 'delete',
+    };
+
+    return this.facebook.request(options, token);
+  }
+
   verify(params) {
     const { subscriptions } = this.facebook.config;
     const { 'hub.challenge': challenge, 'hub.verify_token': verifyToken } = params;
