@@ -62,6 +62,14 @@ class Media {
       .save(data)
       .then(mediaData => logger.info('Save facebook media', mediaData));
   }
+
+  delete(id) {
+    const [pageId, postId] = id.split('_');
+
+    return this.facebook.storage
+      .facebookMedia()
+      .delete(postId, pageId);
+  }
 }
 
 module.exports = Media;

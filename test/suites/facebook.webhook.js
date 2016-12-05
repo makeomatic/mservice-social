@@ -34,6 +34,27 @@ const social = new Social({
 
 describe('instagram.webhook', function testSuite() {
   before('start up service', () => social.connect());
+  before('create feed', () => {
+    const pageId = Date.now().toString();
+    const params = {
+      internal: chance.email(),
+      network: 'facebook',
+      network_id: pageId,
+      meta: JSON.stringify({
+        id: pageId,
+        name: 'City',
+        perms: [],
+        token: 'token1',
+        category: 'News',
+      }),
+    };
+
+    return social
+      .service('storage')
+      .feeds()
+      .save(params)
+      .then(feed => (this.feed = feed));
+  });
   after('cleanup feeds', () => social.knex('feeds').delete());
   after('shutdown service', () => social.close());
 
@@ -92,33 +113,20 @@ describe('instagram.webhook', function testSuite() {
       body: params,
     })
     .then((response) => {
-      assert.deepEqual(response.body, { media: 0 });
+      assert.deepEqual(response.body, { add: 0, remove: 0, edited: 0 });
     });
   });
 
   it('should be able to save media', () => {
-    const pageId = Date.now().toString();
-    const feed = {
-      internal: chance.email(),
-      network: 'facebook',
-      network_id: pageId,
-      meta: JSON.stringify({
-        id: pageId,
-        name: 'City',
-        perms: [],
-        token: 'token1',
-        category: 'News',
-      }),
-    };
     const mock = sinon.mock(request);
     const params = {
       entry: [{
         changes: [{
           field: 'feed',
           value: {
-            post_id: `${pageId}_1`,
+            post_id: `${this.feed.meta.id}_1`,
             sender_name: 'Oblakotilo',
-            sender_id: pageId,
+            sender_id: this.feed.meta.id,
             item: 'status',
             verb: 'add',
             published: 1,
@@ -126,7 +134,7 @@ describe('instagram.webhook', function testSuite() {
             message: 'test',
           },
         }],
-        id: pageId,
+        id: this.feed.meta.id,
         time: 1480020998,
       }],
       object: 'page',
@@ -135,7 +143,7 @@ describe('instagram.webhook', function testSuite() {
     mock
       .expects('get')
       .withArgs({
-        url: `https://graph.facebook.com/v2.8/${pageId}_1`,
+        url: `https://graph.facebook.com/v2.8/${this.feed.meta.id}_1`,
         json: true,
         qs: {
           access_token: 'token1',
@@ -146,21 +154,97 @@ describe('instagram.webhook', function testSuite() {
       .returns(Promise.resolve({
         created_time: '2016-11-24T20:56:37+0000',
         message: 'test',
-        id: `${pageId}_1`,
+        id: `${this.feed.meta.id}_1`,
       }))
       .once();
 
-    return social
-      .service('storage')
-      .feeds()
-      .save(feed)
-      .then(() => http({
-        method: 'post',
-        body: params,
+    return http({
+      method: 'post',
+      body: params,
+    })
+    .then((response) => {
+      assert.deepEqual(response.body, { add: 1, remove: 0, edited: 0 });
+      mock.verify();
+    });
+  });
+
+  it('should be able to edit media', () => {
+    const mock = sinon.mock(request);
+    const params = {
+      entry: [{
+        changes: [{
+          field: 'feed',
+          value: {
+            post_id: `${this.feed.meta.id}_1`,
+            sender_name: 'Oblakotilo',
+            sender_id: this.feed.meta.id,
+            item: 'status',
+            verb: 'edited',
+            published: 1,
+            created_time: 1480020997,
+            message: 'test 2',
+          },
+        }],
+        id: this.feed.meta.id,
+        time: 1480020998,
+      }],
+      object: 'page',
+    };
+
+    mock
+      .expects('get')
+      .withArgs({
+        url: `https://graph.facebook.com/v2.8/${this.feed.meta.id}_1`,
+        json: true,
+        qs: {
+          access_token: 'token1',
+          fields: 'attachments,message,story,picture,link',
+          appsecret_proof: 'b222753b515c4c7865d64fa88b8aa676b66cef581344cb3dffb47e5c46163c98',
+        },
+      })
+      .returns(Promise.resolve({
+        created_time: '2016-11-24T20:56:37+0000',
+        message: 'test 2',
+        id: `${this.feed.meta.id}_1`,
       }))
-      .then((response) => {
-        assert.deepEqual(response.body, { media: 1 });
-        mock.verify();
-      });
+      .once();
+
+    return http({
+      method: 'post',
+      body: params,
+    })
+    .then((response) => {
+      assert.deepEqual(response.body, { add: 0, remove: 0, edited: 1 });
+      mock.verify();
+    });
+  });
+
+  it('should be able to delete media', () => {
+    const params = {
+      entry: [{
+        changes: [{
+          field: 'feed',
+          value: {
+            post_id: `${this.feed.meta.id}_1`,
+            sender_name: 'Oblakotilo',
+            sender_id: this.feed.meta.id,
+            item: 'status',
+            verb: 'remove',
+            created_time: 1480020997,
+          },
+        }],
+        id: this.feed.meta.id,
+        time: 1480020998,
+      }],
+      object: 'page',
+    };
+
+    return http({
+      method: 'post',
+      body: params,
+    })
+    .then((response) => {
+      assert.deepEqual(response.body, { add: 0, remove: 1, edited: 0 });
+    });
   });
 });

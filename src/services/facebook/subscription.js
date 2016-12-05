@@ -1,25 +1,69 @@
 const Errors = require('common-errors');
-const flatten = require('lodash/flatten');
 const mapKeys = require('lodash/mapKeys');
 const Promise = require('bluebird');
 const snakeCase = require('lodash/snakeCase');
 
-function getMediaMapper(entry) {
+function fetchFeedMapper(entry) {
   const { id, changes } = entry;
 
   return this.facebook.feed
     .getByNetworkId('facebook', id)
     .then((feed) => {
+      const response = { changes };
+
       if (feed) {
-        return Promise
-          .filter(changes, change => change.value.verb === 'add' && change.field === 'feed')
-          .map(change => this.facebook.media.fetch(change.value.post_id, feed.meta.token));
+        response.feed = feed;
+      } else {
+        this.facebook.logger.warn(`Feed not found for user #${id}`);
       }
 
-      this.facebook.logger.warn(`Feed not found for user #${id}`);
-
-      return [];
+      return response;
     });
+}
+
+function applyMediaChangesMapper(entry) {
+  const { feed, changes } = entry;
+  const facebookMedia = this.facebook.media;
+  const logger = this.facebook.logger;
+
+  return Promise
+    .filter(changes, change => change.field === 'feed')
+    .map((change) => {
+      const accessToken = feed.meta.token;
+      const action = change.value.verb;
+      const postId = change.value.post_id;
+      let promise;
+
+      switch (action) {
+        case 'add':
+        case 'edited':
+          promise = facebookMedia
+            .fetch(postId, accessToken)
+            .then(media => facebookMedia.save(media));
+          break;
+        case 'remove':
+          promise = facebookMedia.delete(postId);
+          break;
+        default:
+          promise = Promise.reject('Not realized');
+      }
+
+      return promise
+        .then(() => ({ action, postId }))
+        .catch((error) => {
+          logger.warn(`Error ${action} for post #${postId}:`, error);
+        });
+    })
+    // remove unsuccessful actions
+    .filter(change => change !== undefined);
+}
+
+function webhookResponseReducer(response, changes) {
+  changes.forEach((change) => {
+    response[change.action] += 1;
+  });
+
+  return response;
 }
 
 class Subscription {
@@ -85,11 +129,10 @@ class Subscription {
 
     return Promise
       .bind(this, params.entry)
-      .map(getMediaMapper)
-      .filter(media => media.length > 0)
-      .then(media => flatten(media))
-      .map(media => this.facebook.media.save(media))
-      .then(({ length }) => ({ media: length }));
+      .map(fetchFeedMapper)
+      .filter(entry => entry.feed !== undefined)
+      .map(applyMediaChangesMapper)
+      .reduce(webhookResponseReducer, { add: 0, remove: 0, edited: 0 });
   }
 }
 

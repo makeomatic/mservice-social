@@ -34,9 +34,15 @@ class FacebookMedia {
   }
 
   save(data) {
-    return this.knex
-      .insert(data, '*')
-      .into(this.table);
+    return this.knex.upsertItem(this.table, 'page_id, id', data);
+  }
+
+  delete(postId, pageId) {
+    return this
+      .knex(this.table)
+      .where('id', postId)
+      .where('page_id', pageId)
+      .del();
   }
 }
 
