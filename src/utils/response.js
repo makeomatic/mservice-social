@@ -4,6 +4,7 @@ const isfn = fn => typeof fn === 'function';
 const TYPE_TWEET = 'tweet';
 const TYPE_FEED = 'feed';
 const TYPE_INSTAGRAM_MEDIA = 'instagramMedia';
+const TYPE_FACEBOOK_MEDIA = 'facebookMedia';
 
 function transform(object, type) {
   const response = {
@@ -59,4 +60,5 @@ module.exports = {
   TYPE_TWEET,
   TYPE_FEED,
   TYPE_INSTAGRAM_MEDIA,
+  TYPE_FACEBOOK_MEDIA,
 };
