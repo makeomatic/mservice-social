@@ -55,6 +55,7 @@ describe('facebook.media.list', function testSuite() {
           assert.equal(cursor, '1111111111111111111');
           assert.equal(data.length, 3);
           assert.equal(first.id, '1111111111111111113');
+          assert.equal(first.type, 'facebookMedia');
           assert.equal(second.id, '1111111111111111112');
           assert.equal(third.id, '1111111111111111111');
         });
