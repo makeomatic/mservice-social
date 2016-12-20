@@ -33,7 +33,7 @@
         },
         "cursor": {
           "description": "Pass biggest internal status id for consistent pagination",
-          "type": "integer"
+          "type": "string"
         },
         "order": {
           "type": "string",
