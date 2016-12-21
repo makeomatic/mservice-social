@@ -6,7 +6,7 @@ const url = require('url');
 function filterLessThanId(data, lastMedia) {
   const lastMediaCreatedTime = moment(lastMedia.created_time);
 
-  return data.filter((media) => lastMediaCreatedTime.isAfter(media.created_time));
+  return data.filter(media => lastMediaCreatedTime.isAfter(media.created_time));
 }
 
 function filterMediaAndSave(data, lastMedia) {
