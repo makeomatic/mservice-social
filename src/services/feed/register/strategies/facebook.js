@@ -19,17 +19,17 @@ function getLastId(feed) {
   return this
     .service('facebook')
     .media
-    .getLastId(feed.network_id)
-    .then(id => [feed, id]);
+    .getLast(feed.network_id)
+    .then(media => [feed, media]);
 }
 
-function syncHistory([feed, lastId]) {
+function syncHistory([feed, lastMedia]) {
   const { network_id: networkId, meta: { token } } = feed;
 
   return this
     .service('facebook')
     .media
-    .syncPageHistory(networkId, token, lastId)
+    .syncPageHistory(networkId, token, lastMedia)
     .return(feed);
 }
 

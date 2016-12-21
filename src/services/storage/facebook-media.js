@@ -10,7 +10,7 @@ class FacebookMedia {
     const cursorDirection = sort[0] === '-' ? '<' : '>';
     const query = this
       .knex(this.table)
-      .orderBy('id', sortDirection)
+      .orderBy('created_time', sortDirection)
       .limit(page.size);
 
     if (filter.pageId) {
@@ -18,19 +18,18 @@ class FacebookMedia {
     }
 
     if (page.cursor) {
-      query.where('id', cursorDirection, page.cursor);
+      query.where('created_time', cursorDirection, page.cursor);
     }
 
     return query.select();
   }
 
-  getLastId(pageId) {
+  getLast(pageId) {
     return this
       .knex(this.table)
       .where('page_id', pageId)
-      .orderBy('id', 'desc')
-      .first('id')
-      .then(media => (media ? media.id : null));
+      .orderBy('created_time', 'desc')
+      .first();
   }
 
   save(data) {

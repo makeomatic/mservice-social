@@ -8,7 +8,7 @@ function makeRequest(requestOptions) {
     qs: {
       appsecret_proof: proofGenerator('appSecret1', accessToken),
       access_token: accessToken,
-      fields: 'attachments,message,story,picture,link',
+      fields: 'attachments,message,story,picture,link,created_time',
       limit: '100',
     },
   };
@@ -24,13 +24,17 @@ function makeResponse(requestOptions, responseOptions) {
   const { pageId, accessToken } = requestOptions;
   const { ids, pageToken: responsePageToken } = responseOptions;
   const response = {
-    data: ids.map(id => ({ id: `${pageId}_${id}`, message: `Post #${id}` })),
+    data: ids.map(id => ({
+      id: `${pageId}_${id}`,
+      message: `Post #${id}`,
+      created_time: '2016-11-24T20:56:37+0000',
+    })),
   };
 
   if (responsePageToken) {
     response.paging = {
       next: `https://graph.facebook.com/v2.8/${pageId}/feed?access_token=${accessToken}&fields=`
-        + `attachments,message,story,picture,link&limit=100&__paging_token=${responsePageToken}`,
+        + `attachments,message,story,picture,link,created_time&limit=100&__paging_token=${responsePageToken}`,
     };
   }
 

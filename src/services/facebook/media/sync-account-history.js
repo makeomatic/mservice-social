@@ -1,53 +1,42 @@
-const BigNumber = require('bn.js');
 const last = require('lodash/last');
+const moment = require('moment');
 const Promise = require('bluebird');
 const url = require('url');
 
-function filterLessThanId(data, lastId) {
-  const lastMediaId = new BigNumber(lastId, 10);
+function filterLessThanId(data, lastMedia) {
+  const lastMediaCreatedTime = moment(lastMedia.created_time);
 
-  return data.filter((media) => {
-    const [, mediaIdString] = media.id.split('_');
-    const mediaId = new BigNumber(mediaIdString, 10);
-
-    return lastMediaId.lt(mediaId);
-  });
+  return data.filter(media => lastMediaCreatedTime.isAfter(media.created_time));
 }
 
-function filterMediaAndSave(data, lastId) {
-  const media = lastId ? filterLessThanId(data, lastId) : data;
+function filterMediaAndSave(data, lastMedia) {
+  const media = lastMedia ? filterLessThanId(data, lastMedia) : data;
 
   return Promise
     .bind(this, media)
     .map(this.save);
 }
 
-function needPaginate(response, lastId) {
+function needPaginate(response, lastMedia) {
   const { paging, data } = response;
 
   if (paging === undefined) {
     return false;
   }
 
-  if (lastId) {
-    const [, nextMediaIdString] = last(data).id.split('_');
-    const lastMediaId = new BigNumber(lastId, 10);
-    const nextMediaId = new BigNumber(nextMediaIdString, 10);
-
-    if (lastMediaId.gte(nextMediaId)) {
-      return false;
-    }
+  if (lastMedia) {
+    return moment(last(data).created_time).isBefore(lastMedia.created_time);
   }
 
   return true;
 }
 
-function syncAccountHistory(requestOptions, accessToken, lastId) {
+function syncAccountHistory(requestOptions, accessToken, lastMedia) {
   return this.facebook
     .request(requestOptions, accessToken)
-    .tap(response => filterMediaAndSave.call(this, response.data, lastId))
+    .tap(response => filterMediaAndSave.call(this, response.data, lastMedia))
     .then((response) => {
-      if (needPaginate(response, lastId) === false) {
+      if (needPaginate(response, lastMedia) === false) {
         return true;
       }
 
@@ -57,7 +46,7 @@ function syncAccountHistory(requestOptions, accessToken, lastId) {
       nextRequestOptions.qs = url.parse(next, true).query;
 
       return Promise
-        .bind(this, [nextRequestOptions, accessToken, lastId])
+        .bind(this, [nextRequestOptions, accessToken, lastMedia])
         .spread(syncAccountHistory);
     });
 }
