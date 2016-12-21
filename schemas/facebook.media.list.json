@@ -36,8 +36,8 @@
     "sort": {
       "type": "string",
       "description": "Field for sorting",
-      "enum": ["id", "-id"],
-      "default": "-id"
+      "enum": ["created_time", "-created_time"],
+      "default": "-created_time"
     }
   }
 }

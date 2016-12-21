@@ -50,10 +50,11 @@ class Media {
   save(media) {
     const { logger } = this.facebook;
     const [pageId, postId] = media.id.split('_');
+    const { created_time: createdTime } = media;
     const data = {
       id: postId,
       page_id: pageId,
-      created_time: new Date(),
+      created_time: createdTime,
       meta: JSON.stringify(media),
     };
 
