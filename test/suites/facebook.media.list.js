@@ -24,6 +24,10 @@ function istagramMediaFactory(postId, id) {
   return {
     message: 'Foo',
     id: `${id}_${postId}`,
+    picture: 'https://external.xx.fbcdn.net/safe_image.php?d=AQDDucmRBtRHqIzg&w=130&h=130&url'
+      + '=http%3A%2F%2Fi0.wp.com%2Fpeopledotcom.files.wordpress.com%2F2016%2F11%2Fcarrie-fish'
+      + 'er-2.jpg%3Fcrop%3D111px%252C0px%252C1777px%252C1333px%26resize%3D660%252C495%26ssl%3'
+      + 'D1&cfs=1&sx=0&sy=0&sw=495&sh=495&_nc_hash=AQAbqRhsnlL1g6Ps',
   };
 }
 
@@ -56,6 +60,9 @@ describe('facebook.media.list', function testSuite() {
           assert.equal(data.length, 3);
           assert.equal(first.id, '1111111111111111113');
           assert.equal(first.type, 'facebookMedia');
+          assert.equal(first.attributes.meta.picture, 'http://i0.wp.com/peopledotcom.files.'
+            + 'wordpress.com/2016/11/carrie-fisher-2.jpg?crop=111px%2C0px%2C1777px%2C1333px'
+            + '&resize=660%2C495&ssl=1');
           assert.equal(second.id, '1111111111111111112');
           assert.equal(third.id, '1111111111111111111');
         });

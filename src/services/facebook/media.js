@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
 const syncAccountHistory = require('./media/sync-account-history');
+const extractLinks = require('./links-extractor');
 
 class Media {
   constructor(facebook) {
@@ -54,7 +55,7 @@ class Media {
       id: postId,
       page_id: pageId,
       created_time: new Date(),
-      meta: JSON.stringify(media),
+      meta: JSON.stringify(extractLinks(media)),
     };
 
     return this.facebook.storage
