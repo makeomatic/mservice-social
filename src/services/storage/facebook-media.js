@@ -24,13 +24,12 @@ class FacebookMedia {
     return query.select();
   }
 
-  getLastId(pageId) {
+  getLast(pageId) {
     return this
       .knex(this.table)
       .where('page_id', pageId)
       .orderBy('created_time', 'desc')
-      .first('id')
-      .then(media => (media ? media.id : null));
+      .first();
   }
 
   save(data) {

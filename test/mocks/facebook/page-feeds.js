@@ -24,7 +24,11 @@ function makeResponse(requestOptions, responseOptions) {
   const { pageId, accessToken } = requestOptions;
   const { ids, pageToken: responsePageToken } = responseOptions;
   const response = {
-    data: ids.map(id => ({ id: `${pageId}_${id}`, message: `Post #${id}` })),
+    data: ids.map(id => ({
+      id: `${pageId}_${id}`,
+      message: `Post #${id}`,
+      created_time: '2016-11-24T20:56:37+0000',
+    })),
   };
 
   if (responsePageToken) {

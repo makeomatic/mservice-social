@@ -14,11 +14,13 @@ class Media {
     return this.facebook.storage
       .feeds()
       .list({ filter: { network: 'facebook' } })
-      .map(feed => Promise.join(feed, this.getLastId(feed.network_id)))
-      .map(([feed, lastId]) => this.syncPageHistory(feed.network_id, feed.meta.token, lastId));
+      .map(feed => Promise.join(feed, this.getLast(feed.network_id)))
+      .map(([feed, lastMedia]) =>
+        this.syncPageHistory(feed.network_id, feed.meta.token, lastMedia)
+      );
   }
 
-  syncPageHistory(id, accessToken, lastId) {
+  syncPageHistory(id, accessToken, lastMedia) {
     const { fields } = this.facebook.config.api;
     const requestOptions = {
       qs: {
@@ -28,13 +30,13 @@ class Media {
       url: `/${id}/feed`,
     };
 
-    return syncAccountHistory.call(this, requestOptions, accessToken, lastId);
+    return syncAccountHistory.call(this, requestOptions, accessToken, lastMedia);
   }
 
-  getLastId(userId) {
+  getLast(pageId) {
     return this.facebook.storage
       .facebookMedia()
-      .getLastId(userId);
+      .getLast(pageId);
   }
 
   fetch(id, accessToken) {
