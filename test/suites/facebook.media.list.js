@@ -20,10 +20,11 @@ const http = request.defaults({
 });
 const service = new Social(config);
 
-function istagramMediaFactory(postId, id) {
+function istagramMediaFactory(params) {
   return {
     message: 'Foo',
-    id: `${id}_${postId}`,
+    id: `${params.pageId}_${params.postId}`,
+    created_time: params.createdTime,
     picture: 'https://external.xx.fbcdn.net/safe_image.php?d=AQDDucmRBtRHqIzg&w=130&h=130&url'
       + '=http%3A%2F%2Fi0.wp.com%2Fpeopledotcom.files.wordpress.com%2F2016%2F11%2Fcarrie-fish'
       + 'er-2.jpg%3Fcrop%3D111px%252C0px%252C1777px%252C1333px%26resize%3D660%252C495%26ssl%3'
@@ -36,15 +37,19 @@ describe('facebook.media.list', function testSuite() {
 
   before('create facebook media', () => {
     const facebook = service.service('facebook');
-    const ids = ['1111111111111111111', '1111111111111111112', '1111111111111111113'];
+    const posts = [
+      { pageId, postId: '1111111111111111111', createdTime: '2016-11-01T20:00:00+0000' },
+      { pageId, postId: '1111111111111111112', createdTime: '2016-10-01T20:00:00+0000' },
+      { pageId, postId: '1111111111111111113', createdTime: '2016-10-15T20:00:00+0000' },
+    ];
 
-    return Promise.map(ids, id => facebook.media.save(istagramMediaFactory(id, pageId)));
+    return Promise.map(posts, params => facebook.media.save(istagramMediaFactory(params)));
   });
 
   after('shutdown service', () => service.close());
 
   describe('amqp', () => {
-    it('should be able to a list of media ordered by desc', () => {
+    it('should be able to get a list of media ordered by desc', () => {
       const params = { filter: { pageId } };
 
       return service.amqp
@@ -56,22 +61,22 @@ describe('facebook.media.list', function testSuite() {
           const [first, second, third] = data;
 
           assert.equal(count, 3);
-          assert.equal(cursor, '1111111111111111111');
+          assert.equal(cursor, '2016-10-01T20:00:00.000Z');
           assert.equal(data.length, 3);
-          assert.equal(first.id, '1111111111111111113');
+          assert.equal(first.id, '1111111111111111111');
           assert.equal(first.type, 'facebookMedia');
           assert.equal(first.attributes.meta.picture, 'http://i0.wp.com/peopledotcom.files.'
             + 'wordpress.com/2016/11/carrie-fisher-2.jpg?crop=111px%2C0px%2C1777px%2C1333px'
             + '&resize=660%2C495&ssl=1');
-          assert.equal(second.id, '1111111111111111112');
-          assert.equal(third.id, '1111111111111111111');
+          assert.equal(second.id, '1111111111111111113');
+          assert.equal(third.id, '1111111111111111112');
         });
     });
 
-    it('should be able to a list of media ordered by asc', () => {
+    it('should be able to get a list of media ordered by asc', () => {
       const params = {
         filter: { pageId },
-        sort: 'id',
+        sort: 'created_time',
       };
 
       return service.amqp
@@ -83,20 +88,20 @@ describe('facebook.media.list', function testSuite() {
           const [first, second, third] = data;
 
           assert.equal(count, 3);
-          assert.equal(cursor, '1111111111111111113');
+          assert.equal(cursor, '2016-11-01T20:00:00.000Z');
           assert.equal(data.length, 3);
-          assert.equal(first.id, '1111111111111111111');
-          assert.equal(second.id, '1111111111111111112');
-          assert.equal(third.id, '1111111111111111113');
+          assert.equal(first.id, '1111111111111111112');
+          assert.equal(second.id, '1111111111111111113');
+          assert.equal(third.id, '1111111111111111111');
         });
     });
 
-    it('should be able to a list of media with size and cursor', () => {
+    it('should be able to get a list of media with size and cursor', () => {
       const params = {
         filter: { pageId },
         page: {
           size: 1,
-          cursor: '1111111111111111113',
+          cursor: '2016-11-01T20:00:00.000Z',
         },
       };
 
@@ -109,16 +114,16 @@ describe('facebook.media.list', function testSuite() {
           const [first] = data;
 
           assert.equal(count, 1);
-          assert.equal(cursor, '1111111111111111112');
-          assert.equal(before, '1111111111111111113');
+          assert.equal(cursor, '2016-10-15T20:00:00.000Z');
+          assert.equal(before, '2016-11-01T20:00:00.000Z');
           assert.equal(data.length, 1);
-          assert.equal(first.id, '1111111111111111112');
+          assert.equal(first.id, '1111111111111111113');
         });
     });
   });
 
   describe('http', () => {
-    it('should be able to a list of media ordered by desc', () => {
+    it('should be able to get a list of media ordered by desc', () => {
       const params = { filter: { pageId } };
 
       return http({ body: params })
@@ -130,18 +135,19 @@ describe('facebook.media.list', function testSuite() {
           const [first, second, third] = data;
 
           assert.equal(count, 3);
-          assert.equal(cursor, '1111111111111111111');
+          assert.equal(cursor, '2016-10-01T20:00:00.000Z');
           assert.equal(data.length, 3);
-          assert.equal(first.id, '1111111111111111113');
-          assert.equal(second.id, '1111111111111111112');
-          assert.equal(third.id, '1111111111111111111');
+          assert.equal(first.id, '1111111111111111111');
+          assert.equal(first.type, 'facebookMedia');
+          assert.equal(second.id, '1111111111111111113');
+          assert.equal(third.id, '1111111111111111112');
         });
     });
 
-    it('should be able to a list of media ordered by asc', () => {
+    it('should be able to get a list of media ordered by asc', () => {
       const params = {
         filter: { pageId },
-        sort: 'id',
+        sort: 'created_time',
       };
 
       return http({ body: params })
@@ -153,20 +159,20 @@ describe('facebook.media.list', function testSuite() {
           const [first, second, third] = data;
 
           assert.equal(count, 3);
-          assert.equal(cursor, '1111111111111111113');
+          assert.equal(cursor, '2016-11-01T20:00:00.000Z');
           assert.equal(data.length, 3);
-          assert.equal(first.id, '1111111111111111111');
-          assert.equal(second.id, '1111111111111111112');
-          assert.equal(third.id, '1111111111111111113');
+          assert.equal(first.id, '1111111111111111112');
+          assert.equal(second.id, '1111111111111111113');
+          assert.equal(third.id, '1111111111111111111');
         });
     });
 
-    it('should be able to a list of media with size and cursor', () => {
+    it('should be able to get a list of media with size and cursor', () => {
       const params = {
         filter: { pageId },
         page: {
           size: 1,
-          cursor: '1111111111111111113',
+          cursor: '2016-11-01T20:00:00.000Z',
         },
       };
 
@@ -179,10 +185,10 @@ describe('facebook.media.list', function testSuite() {
           const [first] = data;
 
           assert.equal(count, 1);
-          assert.equal(cursor, '1111111111111111112');
-          assert.equal(before, '1111111111111111113');
+          assert.equal(cursor, '2016-10-15T20:00:00.000Z');
+          assert.equal(before, '2016-11-01T20:00:00.000Z');
           assert.equal(data.length, 1);
-          assert.equal(first.id, '1111111111111111112');
+          assert.equal(first.id, '1111111111111111113');
         });
     });
   });
