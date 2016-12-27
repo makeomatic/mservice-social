@@ -147,7 +147,8 @@ describe('instagram.webhook', function testSuite() {
         json: true,
         qs: {
           access_token: 'token1',
-          fields: 'attachments,message,story,picture,link,created_time',
+          fields: 'attachments,message,story,picture,link,created_time,likes.summary(true),'
+            + 'shares,comments.summary(true)',
           appsecret_proof: 'b222753b515c4c7865d64fa88b8aa676b66cef581344cb3dffb47e5c46163c98',
         },
       })
@@ -198,7 +199,8 @@ describe('instagram.webhook', function testSuite() {
         json: true,
         qs: {
           access_token: 'token1',
-          fields: 'attachments,message,story,picture,link,created_time',
+          fields: 'attachments,message,story,picture,link,created_time,likes.summary(true),'
+            + 'shares,comments.summary(true)',
           appsecret_proof: 'b222753b515c4c7865d64fa88b8aa676b66cef581344cb3dffb47e5c46163c98',
         },
       })
