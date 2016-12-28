@@ -5,7 +5,8 @@ module.exports = {
     subscribeOnStart: true,
     api: {
       version: 'v2.8',
-      fields: 'attachments,message,story,picture,link,created_time',
+      fields: 'attachments,message,story,picture,link,created_time,'
+        + 'likes.summary(true),shares,comments.summary(true)',
     },
     // app: {
     //   id: 'app-id',

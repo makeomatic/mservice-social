@@ -8,7 +8,8 @@ function makeRequest(requestOptions) {
     qs: {
       appsecret_proof: proofGenerator('appSecret1', accessToken),
       access_token: accessToken,
-      fields: 'attachments,message,story,picture,link,created_time',
+      fields: 'attachments,message,story,picture,link,created_time,'
+        + 'likes.summary(true),shares,comments.summary(true)',
       limit: '100',
     },
   };
@@ -34,7 +35,8 @@ function makeResponse(requestOptions, responseOptions) {
   if (responsePageToken) {
     response.paging = {
       next: `https://graph.facebook.com/v2.8/${pageId}/feed?access_token=${accessToken}&fields=`
-        + `attachments,message,story,picture,link,created_time&limit=100&__paging_token=${responsePageToken}`,
+        + 'attachments,message,story,picture,link,created_time,likes.summary(true),shares,'
+        + `comments.summary(true)&limit=100&__paging_token=${responsePageToken}`,
     };
   }
 
