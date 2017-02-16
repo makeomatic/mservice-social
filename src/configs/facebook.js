@@ -6,7 +6,7 @@ module.exports = {
     api: {
       version: 'v2.8',
       fields: 'attachments,message,story,picture,link,created_time,'
-        + 'likes.summary(true),shares,comments.summary(true)',
+        + 'likes.summary(true),shares,comments.summary(true),permalink_url',
     },
     // app: {
     //   id: 'app-id',

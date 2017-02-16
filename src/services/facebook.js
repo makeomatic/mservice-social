@@ -45,7 +45,7 @@ class Facebook {
          * 32: Page-level throttling 4800 calls/person/24-hours
          */
         if (error && [4, 32].includes(error.code)) {
-          this.logger.warn('Trying to repeat request after 1000*60ms because', error);
+          this.logger.error('Trying to repeat request after 1000*60ms because', error);
 
           return Promise.bind(this, options).delay(1000 * 60).then(this.request);
         }

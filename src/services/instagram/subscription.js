@@ -29,7 +29,7 @@ function getMediaMapper(subscription) {
           .spread((media, comments) => ({ media, comments }));
       }
 
-      this.logger.warn(`Feed not found for user #${networkId}`);
+      this.logger.error(`Feed not found for user #${networkId}`);
 
       return null;
     });

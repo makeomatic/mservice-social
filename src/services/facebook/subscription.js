@@ -14,7 +14,7 @@ function fetchFeedMapper(entry) {
       if (feed) {
         response.feed = feed;
       } else {
-        this.facebook.logger.warn(`Feed not found for user #${id}`);
+        this.facebook.logger.error(`Feed not found for user #${id}`);
       }
 
       return response;
@@ -51,7 +51,7 @@ function applyMediaChangesMapper(entry) {
       return promise
         .then(() => ({ action, postId }))
         .catch((error) => {
-          logger.warn(`Error ${action} for post #${postId}:`, error);
+          logger.error(`Error ${action} for post #${postId}:`, error);
         });
     })
     // remove unsuccessful actions
