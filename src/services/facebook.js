@@ -38,7 +38,7 @@ class Facebook {
     return Promise
       .bind(this, handler(requestOptions))
       .catch((response) => {
-        const error = response.error.error;
+        const error = response.error && response.error.error;
 
         /**
          * 4: Application-level throttling 200 calls/person/hour
@@ -50,7 +50,7 @@ class Facebook {
           return Promise.bind(this, options).delay(1000 * 60).then(this.request);
         }
 
-        throw error;
+        throw response;
       });
   }
 }
