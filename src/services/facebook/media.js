@@ -22,6 +22,7 @@ class Media {
   }
 
   syncPageHistory(id, accessToken, lastMedia) {
+    const logger = this.facebook.logger;
     const { fields } = this.facebook.config.api;
     const requestOptions = {
       qs: {
@@ -31,7 +32,11 @@ class Media {
       url: `/${id}/feed`,
     };
 
-    return syncAccountHistory.call(this, requestOptions, accessToken, lastMedia);
+    return syncAccountHistory
+      .call(this, requestOptions, accessToken, lastMedia)
+      .catch((error) => {
+        logger.error(`Can't sync page history for "${id}":`, error);
+      });
   }
 
   getLast(pageId) {
