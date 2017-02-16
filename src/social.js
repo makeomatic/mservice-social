@@ -7,6 +7,7 @@ const merge = require('lodash/merge');
 const MService = require('mservice');
 const { NotFoundError } = require('common-errors');
 const path = require('path');
+const Promise = require('bluebird');
 const Storage = require('./services/storage');
 const Twitter = require('./services/twitter');
 
@@ -81,7 +82,11 @@ class Social extends MService {
     const facebook = new Facebook(config.facebook, storage, feed, log);
 
     if (config.facebook.subscribeOnStart) {
-      this.addConnector(ConnectorsTypes.application, () => facebook.subscription.subscribe());
+      this.addConnector(ConnectorsTypes.application, () =>
+        Promise
+          .delay(1000)
+          .then(() => facebook.subscription.subscribe())
+      );
     }
 
     if (config.facebook.syncMediaOnStart) {
@@ -99,7 +104,11 @@ class Social extends MService {
     const instagram = new Instagram(config.instagram, storage, feed, log);
 
     if (config.instagram.subscribeOnStart) {
-      this.addConnector(ConnectorsTypes.application, () => instagram.subscription().subscribe());
+      this.addConnector(ConnectorsTypes.application, () =>
+        Promise
+          .delay(1000)
+          .then(() => instagram.subscription().subscribe())
+      );
     }
 
     if (config.instagram.syncMediaOnStart) {
