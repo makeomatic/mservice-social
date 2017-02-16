@@ -84,7 +84,7 @@ class Social extends MService {
     if (config.facebook.subscribeOnStart) {
       this.addConnector(ConnectorsTypes.application, () =>
         Promise
-          .delay(1000)
+          .delay(60000)
           .then(() => facebook.subscription.subscribe())
       );
     }
@@ -106,7 +106,7 @@ class Social extends MService {
     if (config.instagram.subscribeOnStart) {
       this.addConnector(ConnectorsTypes.application, () =>
         Promise
-          .delay(1000)
+          .delay(60000)
           .then(() => instagram.subscription().subscribe())
       );
     }
