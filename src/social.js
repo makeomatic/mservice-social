@@ -81,11 +81,11 @@ class Social extends MService {
     const facebook = new Facebook(config.facebook, storage, feed, log);
 
     if (config.facebook.subscribeOnStart) {
-      this.addConnector(ConnectorsTypes.transport, () => facebook.subscription.subscribe());
+      this.addConnector(ConnectorsTypes.application, () => facebook.subscription.subscribe());
     }
 
     if (config.facebook.syncMediaOnStart) {
-      this.addConnector(ConnectorsTypes.transport, () => facebook.media.syncPagesHistory());
+      this.addConnector(ConnectorsTypes.application, () => facebook.media.syncPagesHistory());
     }
 
     this.service(Social.SERVICE_FACEBOOK, facebook);
@@ -99,11 +99,11 @@ class Social extends MService {
     const instagram = new Instagram(config.instagram, storage, feed, log);
 
     if (config.instagram.subscribeOnStart) {
-      this.addConnector(ConnectorsTypes.transport, () => instagram.subscription().subscribe());
+      this.addConnector(ConnectorsTypes.application, () => instagram.subscription().subscribe());
     }
 
     if (config.instagram.syncMediaOnStart) {
-      this.addConnector(ConnectorsTypes.transport, () => instagram.media().syncAccountsHistory());
+      this.addConnector(ConnectorsTypes.application, () => instagram.media().syncAccountsHistory());
     }
 
     this.service(Social.SERVICE_INSTAGRAM, instagram);
@@ -116,7 +116,7 @@ class Social extends MService {
     const storage = this.service(Social.SERVICE_STORAGE);
     const twitter = new Twitter(config.twitter, storage, log);
 
-    this.addConnector(ConnectorsTypes.transport, () => twitter.init());
+    this.addConnector(ConnectorsTypes.application, () => twitter.init());
 
     this.service(Social.SERVICE_TWITTER, twitter);
     feed.service(Social.SERVICE_TWITTER, twitter);
