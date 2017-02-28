@@ -17,6 +17,20 @@
             "description": "Category of facebook page",
             "type": "string"
           },
+          "category_list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "id": {
             "description": "Page ID",
             "type": "string"
