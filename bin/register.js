@@ -26,18 +26,14 @@ const route = `${config.router.routes.prefix}.feed.register`;
 const message = {
   internal: argv.internal,
   network: argv.network,
-  filter: {
-    accounts: [{
-      id: argv.account.id,
-      username: argv.account.username,
-    }],
-  },
+  accounts: [argv.account],
 };
 
 debug('sending to %s, message %j', route, message);
+debug('amqp configuration: %j', config.amqp.transport);
 
 return AMQPTransport
-  .connect(config.amqp.transport)
+  .connect(Object.assign(config.amqp.transport, { debug: true }))
   .then(amqp => (
     amqp.publish(route, message).finally(() => amqp.close())
   ));
