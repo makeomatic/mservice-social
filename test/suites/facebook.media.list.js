@@ -70,6 +70,8 @@ describe('facebook.media.list', function testSuite() {
             + '&resize=660%2C495&ssl=1');
           assert.equal(second.id, '1111111111111111113');
           assert.equal(third.id, '1111111111111111112');
+
+          return null;
         });
     });
 
@@ -93,6 +95,8 @@ describe('facebook.media.list', function testSuite() {
           assert.equal(first.id, '1111111111111111112');
           assert.equal(second.id, '1111111111111111113');
           assert.equal(third.id, '1111111111111111111');
+
+          return null;
         });
     });
 
@@ -118,6 +122,8 @@ describe('facebook.media.list', function testSuite() {
           assert.equal(before, '2016-11-01T20:00:00.000Z');
           assert.equal(data.length, 1);
           assert.equal(first.id, '1111111111111111113');
+
+          return null;
         });
     });
   });
@@ -141,6 +147,8 @@ describe('facebook.media.list', function testSuite() {
           assert.equal(first.type, 'facebookMedia');
           assert.equal(second.id, '1111111111111111113');
           assert.equal(third.id, '1111111111111111112');
+
+          return null;
         });
     });
 
@@ -164,6 +172,8 @@ describe('facebook.media.list', function testSuite() {
           assert.equal(first.id, '1111111111111111112');
           assert.equal(second.id, '1111111111111111113');
           assert.equal(third.id, '1111111111111111111');
+
+          return null;
         });
     });
 
@@ -189,6 +199,8 @@ describe('facebook.media.list', function testSuite() {
           assert.equal(before, '2016-11-01T20:00:00.000Z');
           assert.equal(data.length, 1);
           assert.equal(first.id, '1111111111111111113');
+
+          return null;
         });
     });
   });

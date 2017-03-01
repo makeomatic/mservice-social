@@ -67,6 +67,8 @@ describe('feed.register', function feedRegisterSuite() {
         .then((response) => {
           assert(response.isFulfilled());
           mock.verify();
+
+          return null;
         });
     });
   });

@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+
 const BigNumber = require('bn.js');
 const request = require('request-promise');
 const Promise = require('bluebird');
@@ -20,19 +22,32 @@ function fetchComments(media, accessToken) {
     .then(comments => ({ media, comments }));
 }
 
+// first arg is pagination data
+function setPagination(response) {
+  this[0] = response.pagination;
+}
+
+// returns context
+function returnContext() {
+  return this;
+}
+
 function syncAccountHistory(url, accessToken, lastId) {
   const options = { url, json: true };
-  let pagination = {};
+  const ctx = [null, accessToken, lastId];
 
   return Promise
     .bind(this, options)
     .then(request.get)
-    .tap(response => (pagination = response.pagination))
+    .bind(ctx)
+    .tap(setPagination)
     .get('data')
     .then(data => (lastId ? filterLessThanId(data, lastId) : data))
     .map(media => fetchComments.call(this, media, accessToken))
     .map(media => this.save(media))
-    .then(() => paginate.call(this, pagination, accessToken, lastId));
+    .then(returnContext)
+    .bind(this)
+    .spread(paginate);
 }
 
 function paginate(pagination, accessToken, lastId) {

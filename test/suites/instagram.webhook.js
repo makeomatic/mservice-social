@@ -51,6 +51,7 @@ describe('instagram.webhook', function testSuite() {
       assert.equal(response.statusCode, 403);
       assert.equal(response.body.message, 'An attempt was made to perform an operation that' +
         ' is not permitted: Verify token invalid-verify-token is invalid');
+      return null;
     });
   });
 
@@ -65,6 +66,7 @@ describe('instagram.webhook', function testSuite() {
       .then((response) => {
         assert.equal(response.statusCode, 200);
         assert.equal(response.body, '15f7d1a91c1f40f8a748fd134752feb3');
+        return null;
       });
   });
 
@@ -78,6 +80,7 @@ describe('instagram.webhook', function testSuite() {
     })
     .then((response) => {
       assert.deepEqual(response.body, { media: 0 });
+      return null;
     });
   });
 
@@ -131,6 +134,7 @@ describe('instagram.webhook', function testSuite() {
         assert.deepEqual(response.body, { media: 1 });
         mock.verify();
         mock.restore();
+        return null;
       });
   });
 });

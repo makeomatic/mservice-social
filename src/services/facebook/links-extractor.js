@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+
 const mapValues = require('lodash/mapValues');
 const url = require('url');
 

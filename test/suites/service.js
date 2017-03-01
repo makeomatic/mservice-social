@@ -65,6 +65,7 @@ describe('service', function suite() {
         .connect()
         .then(() => {
           mock.verify();
+          return null;
         })
         .finally(() => social.close());
     });
@@ -110,6 +111,7 @@ describe('service', function suite() {
         .connect()
         .then(() => {
           mock.verify();
+          return null;
         })
         .finally(() => social.close());
     });

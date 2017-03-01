@@ -7,9 +7,9 @@ const name = process.argv[2];
 
 assert(name, 'Migration name must be specified');
 
-knex.migrate
+return knex.migrate
   .make(name)
   .then((info) => {
     service.log.info('Create migration:', info);
-    process.exit();
+    return process.exit();
   });

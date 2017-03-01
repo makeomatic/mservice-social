@@ -36,7 +36,7 @@ const message = {
 
 debug('sending to %s, message %j', route, message);
 
-AMQPTransport
+return AMQPTransport
   .connect(config.amqp.transport)
   .then(amqp => (
     amqp.publish(route, message).finally(() => amqp.close())

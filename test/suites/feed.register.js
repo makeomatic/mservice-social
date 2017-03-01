@@ -43,6 +43,7 @@ describe('feed.register', function feedRegisterSuite() {
 
         assert.equal(message, 'feed.register validation failed: data.network'
           + ' should be equal to one of the allowed values');
+        return null;
       });
   });
 
@@ -61,6 +62,7 @@ describe('feed.register', function feedRegisterSuite() {
 
           assert.equal(message, 'feed.register validation failed:'
             + ' data should have required property \'accounts\'');
+          return null;
         });
     });
 
@@ -79,6 +81,7 @@ describe('feed.register', function feedRegisterSuite() {
 
           assert.equal(message, 'feed.register validation failed:'
             + ' data.accounts should be array, data.accounts should be array');
+          return null;
         });
     });
 
@@ -100,6 +103,7 @@ describe('feed.register', function feedRegisterSuite() {
 
           assert.equal(message, 'feed.register validation failed: data.accounts[0]'
             + ' should have required property \'token\'');
+          return null;
         });
     });
   });
@@ -119,6 +123,7 @@ describe('feed.register', function feedRegisterSuite() {
 
           assert.equal(message, 'feed.register validation failed:'
             + ' data should have required property \'accounts\'');
+          return null;
         });
     });
 
@@ -137,6 +142,7 @@ describe('feed.register', function feedRegisterSuite() {
 
           assert.equal(message, 'feed.register validation failed:'
             + ' data.accounts should be array, data.accounts should be array');
+          return null;
         });
     });
 
@@ -157,6 +163,7 @@ describe('feed.register', function feedRegisterSuite() {
 
           assert.equal(message, 'feed.register validation failed: data.accounts[0]'
             + ' should have required property \'username\'');
+          return null;
         });
     });
   });
@@ -176,6 +183,7 @@ describe('feed.register', function feedRegisterSuite() {
 
           assert.equal(message, 'feed.register validation failed:'
             + ' data should have required property \'accounts\'');
+          return null;
         });
     });
 
@@ -194,6 +202,7 @@ describe('feed.register', function feedRegisterSuite() {
 
           assert.equal(message, 'feed.register validation failed:'
             + ' data.accounts should be array, data.accounts should be array');
+          return null;
         });
     });
 
@@ -217,6 +226,8 @@ describe('feed.register', function feedRegisterSuite() {
 
           assert.equal(message, 'feed.register validation failed: data.accounts[0]'
             + ' should have required property \'token\'');
+
+          return null;
         });
     });
 
@@ -292,6 +303,8 @@ describe('feed.register', function feedRegisterSuite() {
 
           mock.verify();
           mock.restore();
+
+          return null;
         });
     });
 
@@ -348,6 +361,8 @@ describe('feed.register', function feedRegisterSuite() {
 
           mock.verify();
           mock.restore();
+
+          return null;
         });
     });
   });

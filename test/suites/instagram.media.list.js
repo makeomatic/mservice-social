@@ -57,6 +57,8 @@ describe('instagram.media.list', function testSuite() {
           assert.equal(first.id, '1111111111111111113');
           assert.equal(second.id, '1111111111111111112');
           assert.equal(third.id, '1111111111111111111');
+
+          return null;
         });
     });
 
@@ -80,6 +82,8 @@ describe('instagram.media.list', function testSuite() {
           assert.equal(first.id, '1111111111111111111');
           assert.equal(second.id, '1111111111111111112');
           assert.equal(third.id, '1111111111111111113');
+
+          return null;
         });
     });
 
@@ -105,6 +109,8 @@ describe('instagram.media.list', function testSuite() {
           assert.equal(before, '1111111111111111113');
           assert.equal(data.length, 1);
           assert.equal(first.id, '1111111111111111112');
+
+          return null;
         });
     });
   });
@@ -127,6 +133,8 @@ describe('instagram.media.list', function testSuite() {
           assert.equal(first.id, '1111111111111111113');
           assert.equal(second.id, '1111111111111111112');
           assert.equal(third.id, '1111111111111111111');
+
+          return null;
         });
     });
 
@@ -150,6 +158,8 @@ describe('instagram.media.list', function testSuite() {
           assert.equal(first.id, '1111111111111111111');
           assert.equal(second.id, '1111111111111111112');
           assert.equal(third.id, '1111111111111111113');
+
+          return null;
         });
     });
 
@@ -175,6 +185,8 @@ describe('instagram.media.list', function testSuite() {
           assert.equal(before, '1111111111111111113');
           assert.equal(data.length, 1);
           assert.equal(first.id, '1111111111111111112');
+
+          return null;
         });
     });
   });

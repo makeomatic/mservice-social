@@ -195,10 +195,11 @@ class Twitter {
             return null;
           }
 
+          const index = order === 'asc' ? length - 1 : 0;
           return Promise
             .bind(twitterStatuses, tweets.map(Twitter.serializeTweet))
             .map(twitterStatuses.save)
-            .get(order === 'asc' ? length - 1 : 0)
+            .get(index)
             .bind(this)
             .then(fetchedTweets);
         });

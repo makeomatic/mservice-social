@@ -63,6 +63,7 @@ describe('instagram', function testSuite() {
       .then(() => {
         mock.verify();
         mock.restore();
+        return null;
       });
   });
 
@@ -130,6 +131,8 @@ describe('instagram', function testSuite() {
         assert.equal(data.length, 1);
         mock.verify();
         mock.restore();
+
+        return null;
       });
   });
 
@@ -197,6 +200,8 @@ describe('instagram', function testSuite() {
       .then(() => {
         mock.verify();
         mock.restore();
+
+        return null;
       });
   });
 });

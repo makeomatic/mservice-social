@@ -10,6 +10,7 @@ class Comments {
     this.config = config;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   fetch(mediaId, accessToken) {
     const options = { url: getCommentsUrl(mediaId, accessToken), json: true };
 

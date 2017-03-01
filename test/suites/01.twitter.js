@@ -55,6 +55,7 @@ describe('twitter', function testSuite() {
       .reflect()
       .then((response) => {
         assert(response.isRejected());
+        return null;
       });
   });
 
@@ -64,6 +65,7 @@ describe('twitter', function testSuite() {
       .reflect()
       .then((response) => {
         assert.doesNotThrow(() => response.value());
+        return null;
       });
   });
 
@@ -79,6 +81,8 @@ describe('twitter', function testSuite() {
         payload.register.accounts.forEach((account) => {
           assert.ok(body.data.find(x => x.attributes.meta.account === account.username));
         });
+
+        return null;
       });
   });
 
@@ -103,6 +107,8 @@ describe('twitter', function testSuite() {
         assert.equal(statusCode, 200);
         assert.notEqual(body.data.length, 0);
         assert.equal(body.data[0].id, tweetId);
+
+        return null;
       });
   });
 
@@ -113,6 +119,8 @@ describe('twitter', function testSuite() {
         assert(response.isFulfilled());
         const body = response.value();
         assert.notEqual(body.data.length, 0);
+
+        return null;
       });
   });
 
@@ -121,6 +129,7 @@ describe('twitter', function testSuite() {
       .reflect()
       .then((response) => {
         assert(response.isFulfilled());
+        return null;
       });
   });
 
