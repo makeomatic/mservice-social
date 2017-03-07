@@ -25,7 +25,7 @@ function needPaginate(response, lastMedia) {
   }
 
   if (lastMedia) {
-    return moment(last(data).created_time).isBefore(lastMedia.created_time);
+    return moment(last(data).created_time).isAfter(lastMedia.created_time);
   }
 
   return true;
