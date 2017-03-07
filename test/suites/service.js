@@ -30,6 +30,20 @@ describe('service', function suite() {
             }),
           })
         )
+        .then(() => social
+          .service('storage')
+          .facebookMedia()
+          .save({
+            id: '2',
+            page_id: '1',
+            created_time: '2016-11-02T20:56:37+0000',
+            meta: JSON.stringify({
+              id: '1_2',
+              message: 'Post #1',
+              created_time: '2016-11-02T20:56:37+0000',
+            }),
+          })
+        )
         .then(() => social.close());
     });
     after('clean up feeds', () => {
@@ -38,6 +52,7 @@ describe('service', function suite() {
       return social
         .connect()
         .then(() => social.knex('feeds').delete())
+        .then(() => social.knex('facebook_media').delete())
         .then(() => social.close());
     });
 
@@ -58,15 +73,18 @@ describe('service', function suite() {
       mockPageFeeds(
         mock,
         { pageId: '1', accessToken: 'token1' },
-        { ids: [1] }
+        {
+          ids: [
+            { id: 2, createdTime: '2016-11-02T20:56:37+0000' },
+            { id: 1, createdTime: '2016-11-01T20:56:37+0000' },
+          ],
+          pageToken: '42',
+        }
       );
 
       return social
         .connect()
-        .then(() => {
-          mock.verify();
-          return null;
-        })
+        .then(() => mock.verify())
         .finally(() => social.close());
     });
 
@@ -109,10 +127,7 @@ describe('service', function suite() {
 
       return social
         .connect()
-        .then(() => {
-          mock.verify();
-          return null;
-        })
+        .then(() => mock.verify())
         .finally(() => social.close());
     });
   });
