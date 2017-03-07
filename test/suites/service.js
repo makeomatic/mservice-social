@@ -73,7 +73,13 @@ describe('service', function suite() {
       mockPageFeeds(
         mock,
         { pageId: '1', accessToken: 'token1' },
-        { ids: [2, 1], pageToken: '42' }
+        {
+          ids: [
+            { id: 2, createdTime: '2016-11-02T20:56:37+0000' },
+            { id: 1, createdTime: '2016-11-01T20:56:37+0000' },
+          ],
+          pageToken: '42',
+        }
       );
 
       return social
