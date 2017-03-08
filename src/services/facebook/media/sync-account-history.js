@@ -3,14 +3,14 @@ const moment = require('moment');
 const Promise = require('bluebird');
 const url = require('url');
 
-function filterLessThanId(data, lastMedia) {
-  const lastMediaCreatedTime = moment(lastMedia.created_time);
+function filterBeforeDate(data, date) {
+  const lastMediaCreatedTime = moment(date);
 
-  return data.filter(media => lastMediaCreatedTime.isAfter(media.created_time));
+  return data.filter(media => lastMediaCreatedTime.isBefore(media.created_time));
 }
 
 function filterMediaAndSave(data, lastMedia) {
-  const media = lastMedia ? filterLessThanId(data, lastMedia) : data;
+  const media = lastMedia ? filterBeforeDate(data, lastMedia.created_time) : data;
 
   return Promise
     .bind(this, media)
