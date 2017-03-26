@@ -1,6 +1,7 @@
 {
   "plugins": [
-    "transform-strict-mode"
+    "transform-strict-mode",
+    "transform-class-properties"
   ],
   "env": {
     "test": {
