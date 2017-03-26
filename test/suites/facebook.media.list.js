@@ -20,7 +20,7 @@ const http = request.defaults({
 });
 const service = new Social(config);
 
-function istagramMediaFactory(params) {
+function FacebookMediaFactory(params) {
   return {
     message: 'Foo',
     id: `${params.pageId}_${params.postId}`,
@@ -43,7 +43,7 @@ describe('facebook.media.list', function testSuite() {
       { pageId, postId: '1111111111111111113', createdTime: '2016-10-15T20:00:00+0000' },
     ];
 
-    return Promise.map(posts, params => facebook.media.save(istagramMediaFactory(params)));
+    return Promise.map(posts, params => facebook.media.save(FacebookMediaFactory(params)));
   });
 
   after('shutdown service', () => service.close());

@@ -32,7 +32,7 @@ const social = new Social({
   },
 });
 
-describe('instagram.webhook', function testSuite() {
+describe('facebook.webhook', function testSuite() {
   before('start up service', () => social.connect());
   before('create feed', () => {
     const pageId = Date.now().toString();
@@ -155,12 +155,21 @@ describe('instagram.webhook', function testSuite() {
           appsecret_proof: 'b222753b515c4c7865d64fa88b8aa676b66cef581344cb3dffb47e5c46163c98',
         },
       })
+      .onCall(0)
+      .returns(Promise.reject({
+        error: {
+          error: {
+            code: 32,
+          },
+        },
+      }))
+      .onCall(1)
       .returns(Promise.resolve({
         created_time: '2016-11-24T20:56:37+0000',
         message: 'test',
         id: `${this.feed.meta.id}_1`,
       }))
-      .once();
+      .twice();
 
     return http({
       method: 'post',
