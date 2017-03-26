@@ -15,6 +15,8 @@ class Facebook {
     randomize: true,
   };
 
+  static throttleCodes = [4, 32];
+
   constructor(config, storage, feed, logger) {
     this.config = config;
     this.feed = feed;
@@ -32,11 +34,11 @@ class Facebook {
      * 4: Application-level throttling 200 calls/person/hour
      * 32: Page-level throttling 4800 calls/person/24-hours
      */
-    if (error && [4, 32].includes(error.code)) {
+    if (error && Facebook.throttleCodes.includes(error.code)) {
       const timeout = retry.createTimeout(this.attempt, Facebook.timeoutOptions);
 
       // notify of throttling error
-      this.logger.warn('Trying to repeat request after %d ms because', timeout, error);
+      this.ctx.logger.warn('Trying to repeat request after %d ms because', timeout, error);
 
       return Promise
         .bind(this.ctx, [this.options, this.accessToken, this.attempt + 1])
