@@ -34,6 +34,7 @@
     "raven": "^1.1.4",
     "request": "^2.80.0",
     "request-promise": "^4.2.0",
+    "retry": "^0.10.1",
     "server-destroy": "^1.0.1",
     "stdout-stream": "^1.4.0",
     "twitter": "^1.7.0",
