@@ -156,19 +156,19 @@ describe('facebook.webhook', function testSuite() {
         },
       })
       .onCall(0)
-      .returns(Promise.reject({
+      .rejects({
         error: {
           error: {
             code: 32,
           },
         },
-      }))
+      })
       .onCall(1)
-      .returns(Promise.resolve({
+      .resolves({
         created_time: '2016-11-24T20:56:37+0000',
         message: 'test',
         id: `${this.feed.meta.id}_1`,
-      }))
+      })
       .twice();
 
     return http({
