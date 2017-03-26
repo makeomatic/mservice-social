@@ -5,7 +5,7 @@ ENV NCONF_NAMESPACE=MS_SOCIAL \
 
 WORKDIR /src
 
-COPY package.json .
+COPY package.json yarn.lock ./
 RUN \
   apk --update add --virtual .buildDeps \
     build-base \
@@ -14,8 +14,7 @@ RUN \
     curl \
   && apk add openssl ca-certificates \
   && update-ca-certificates \
-  && npm install --production \
-  && npm dedupe \
+  && yarn --production \
   && apk del \
     .buildDeps \
     wget \

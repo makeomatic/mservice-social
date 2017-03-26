@@ -9,20 +9,10 @@ module.exports = {
     },
   },
   redis: {
-    hosts: [
-      {
-        host: 'redis-1',
-        port: 6379,
-      },
-      {
-        host: 'redis-2',
-        port: 6379,
-      },
-      {
-        host: 'redis-3',
-        port: 6379,
-      },
-    ],
+    hosts: [{
+      host: 'redis',
+      port: 7000,
+    }],
   },
   admins: [
     {

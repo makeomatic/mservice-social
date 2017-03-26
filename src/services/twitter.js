@@ -89,7 +89,7 @@ class Twitter {
     // init new reset timer
     this.resetTimeout();
 
-    this.logger.info('Listening for %d accounts on %s. Account list: %s', accounts.length, params.follow);
+    this.logger.info('Listening for %d accounts. Account list: %s', accounts.length, params.follow);
     return true;
   }
 

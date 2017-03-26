@@ -3,22 +3,23 @@
   "description": "mservice-social",
   "main": "./lib/index.js",
   "scripts": {
+    "compile": "babel -d ./lib --copy-files ./src",
+    "prepublish": "npm run lint && npm run compile",
     "doc": "cd schemas && apidoc -i ./../src/actions -v -o ./../docs",
     "docker-release": "./docker-release.sh",
     "lint": "eslint . --ext .json --ext .js",
-    "prepublish": "npm run lint",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "start": "node ./bin/mservice.js | bunyan -o short",
-    "test": "npm run lint && ./test/docker.sh"
+    "test": "rimraf ./coverage && npm run lint && ./test/docker.sh"
   },
   "dependencies": {
     "bluebird": "^3.5.0",
     "bn.js": "^4.11.6",
-    "boom": "^4.2.0",
+    "boom": "^4.3.0",
     "bunyan": "^1.8.8",
     "bunyan-sentry-stream": "^1.1.0",
     "common-errors": "^1.0.0",
-    "debug": "^2.6.1",
+    "debug": "^2.6.3",
     "glob": "^7.1.1",
     "hapi": "^16.1.0",
     "is": "^3.2.1",
@@ -26,13 +27,13 @@
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
     "ms-amqp-transport": "^7.1.0",
-    "ms-conf": "^2.4.0",
+    "ms-conf": "^3.1.2",
     "ms-validation": "^3.0.0",
-    "mservice": "^5.1.0",
+    "mservice": "^6.0.1",
     "pg": "^6.1.3",
     "raven": "^1.1.4",
     "request": "^2.80.0",
-    "request-promise": "^4.1.1",
+    "request-promise": "^4.2.0",
     "server-destroy": "^1.0.1",
     "stdout-stream": "^1.4.0",
     "twitter": "^1.7.0",
@@ -42,9 +43,15 @@
   "devDependencies": {
     "apidoc": "^0.17.5",
     "apidoc-plugin-schema": "^0.1.1",
-    "babel-eslint": "^7.1.1",
+    "babel-cli": "^6.24.0",
+    "babel-core": "^6.24.0",
+    "babel-eslint": "^7.2.1",
+    "babel-plugin-istanbul": "^4.1.1",
+    "babel-plugin-transform-strict-mode": "^6.22.0",
+    "babel-register": "^6.24.0",
     "chance": "^1.0.6",
-    "codecov": "^1.0.1",
+    "codecov": "^2.1.0",
+    "cross-env": "^3.2.4",
     "cz-conventional-changelog": "^2.0.0",
     "dotenv": "^4.0.0",
     "eslint": "^3.17.1",
@@ -53,14 +60,13 @@
     "eslint-plugin-json": "^1.2.0",
     "eslint-plugin-mocha": "^4.8.0",
     "eslint-plugin-promise": "^3.5.0",
-    "isparta": "^4.0.0",
-    "istanbul": "=0.4.4",
     "json": "^9.0.6",
     "latest-version-cli": "^1.1.0",
     "mocha": "^3.2.0",
-    "request-promise": "^4.1.1",
+    "nyc": "^10.1.2",
+    "rimraf": "^2.6.1",
     "semantic-release": "^6.3.2",
-    "sinon": "^1.17.7"
+    "sinon": "^2.1.0"
   },
   "license": "MIT",
   "repository": {
@@ -74,5 +80,28 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "engines": {
+    "node": ">= 7.6.0",
+    "npm": ">= 3.0.0"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.js"
+    ],
+    "exclude": [
+      "src/**/*.spec.js"
+    ],
+    "require": [
+      "babel-register"
+    ],
+    "sourceMap": false,
+    "instrument": false,
+    "cache": true,
+    "reporter": [
+      "lcov",
+      "json",
+      "text-summary"
+    ]
   }
 }
