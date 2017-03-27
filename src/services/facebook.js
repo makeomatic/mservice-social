@@ -29,6 +29,7 @@ class Facebook {
 
   handleError(response) {
     const error = response.error && response.error.error;
+    const self = this.ctx;
 
     /**
      * 4: Application-level throttling 200 calls/person/hour
@@ -38,12 +39,12 @@ class Facebook {
       const timeout = retry.createTimeout(this.attempt, Facebook.timeoutOptions);
 
       // notify of throttling error
-      this.ctx.logger.warn('Trying to repeat request after %d ms because', timeout, error);
+      self.logger.warn('Trying to repeat request after %d ms because', timeout, error);
 
       return Promise
-        .bind(this.ctx, [this.options, this.accessToken, this.attempt + 1])
+        .bind(self, [this.options, this.accessToken, this.attempt + 1])
         .delay(timeout)
-        .spread(this.request);
+        .spread(self.request);
     }
 
     return Promise.reject(response);
