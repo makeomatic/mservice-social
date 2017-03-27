@@ -10,7 +10,7 @@ class Facebook {
   static timeoutOptions = {
     retries: Infinity,
     factor: 2,
-    minTimeout: 60000,
+    minTimeout: 10000,
     maxTimeout: Infinity,
     randomize: true,
   };
@@ -50,7 +50,7 @@ class Facebook {
     return Promise.reject(response);
   }
 
-  request(options, accessToken, attempt = 1) {
+  request(options, accessToken, attempt = 0) {
     const method = options.method || 'get';
     const path = options.url;
     const { version } = this.config.api;
