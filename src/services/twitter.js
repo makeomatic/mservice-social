@@ -75,6 +75,9 @@ class Twitter {
     listener.on('error', this.onError);
     listener.on('end', this.onEnd);
 
+    // attach params
+    params.params = params;
+
     // TODO: do this!
     // add 'delete' handler
     // listener.on('delete', this.onDelete);
@@ -133,8 +136,13 @@ class Twitter {
   }
 
   _onError(exception) {
-    this.logger.error('stream connection failed', exception);
-    this._destroyAndReconnect();
+    if (Array.isArray(exception) && exception.includes(it => (it.code === 34))) {
+      // do not reconnect, but try to identify account that has been deleted
+      this.logger.warn('account erased from', this.listener.params, exception);
+    } else {
+      this.logger.error('stream connection failed', exception);
+      this._destroyAndReconnect();
+    }
   }
 
   _onEnd() {
