@@ -26,7 +26,10 @@ function getMediaMapper(subscription) {
             this.media.fetch(mediaId, feed.meta.token),
             this.comments.fetch(mediaId, feed.meta.token)
           )
-          .spread((media, comments) => ({ media, comments }));
+          .spread((media, comments) => ({ media, comments }))
+          .catch((error) => {
+            this.logger.error(`Failed to init #${networkId}`, error);
+          });
       }
 
       this.logger.error(`Feed not found for user #${networkId}`);

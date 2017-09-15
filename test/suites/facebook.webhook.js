@@ -53,7 +53,10 @@ describe('facebook.webhook', function testSuite() {
       .service('storage')
       .feeds()
       .save(params)
-      .then(feed => (this.feed = feed));
+      .then((feed) => {
+        this.feed = feed;
+        return feed;
+      });
   });
   after('cleanup feeds', () => social.knex('feeds').delete());
   after('shutdown service', () => social.close());

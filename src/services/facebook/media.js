@@ -1,4 +1,5 @@
 const Promise = require('bluebird');
+const get = require('lodash/get');
 const syncAccountHistory = require('./media/sync-account-history');
 const extractLinks = require('./links-extractor');
 
@@ -35,7 +36,7 @@ class Media {
     return syncAccountHistory
       .call(this, requestOptions, accessToken, lastMedia)
       .catch((error) => {
-        logger.error(`Can't sync page history for "${id}":`, error);
+        logger.error(`Can't sync page history for "${id}":`, get(error, 'error', error.message));
       });
   }
 

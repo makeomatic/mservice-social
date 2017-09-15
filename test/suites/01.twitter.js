@@ -3,6 +3,8 @@ const assert = require('assert');
 const merge = require('lodash/merge');
 
 describe('twitter', function testSuite() {
+  this.retries(20);
+
   const Social = require('../../src');
   const request = require('../helpers/request');
 
@@ -19,7 +21,7 @@ describe('twitter', function testSuite() {
       internal: 'test@test.ru',
       network: 'twitter',
       accounts: [
-        { username: 'HainekoT' },
+        { username: 'tjholowaychuk' },
         { id: '2533316504', username: 'v_aminev' },
       ],
     },
@@ -30,7 +32,7 @@ describe('twitter', function testSuite() {
     },
     read: {
       filter: {
-        account: 'HainekoT',
+        account: 'v_aminev',
       },
     },
     remove: {
@@ -87,7 +89,7 @@ describe('twitter', function testSuite() {
   });
 
   // that long?
-  it('wait for stream to startup', () => Promise.delay(9000));
+  it('wait for stream to startup', () => Promise.delay(5000));
 
   it('post tweet and wait for it to arrive', (done) => {
     this.service.service('twitter').client.post(
@@ -95,13 +97,14 @@ describe('twitter', function testSuite() {
       { status: 'Test status' },
       (error, tweet) => {
         tweetId = tweet.id_str;
-        // why so long?
-        setTimeout(done, 9000);
+        done();
       });
   });
 
   it('should have collected some tweets', () => {
-    return request(uri.read, merge(payload.read, { token: this.adminToken }))
+    return Promise
+      .delay(1500)
+      .then(() => request(uri.read, merge(payload.read, { token: this.adminToken })))
       .then((response) => {
         const { body, statusCode } = response;
         assert.equal(statusCode, 200);

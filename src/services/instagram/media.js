@@ -23,7 +23,12 @@ class Media {
     return feeds
       .list({ filter: { network: 'instagram' } })
       .map(feed => Promise.join(feed, instagramMedia.getLastId(feed.network_id)))
-      .map(([feed, lastId]) => this.syncAccountHistory(feed.network_id, feed.meta.token, lastId));
+      .map(([feed, lastId]) => (
+        this.syncAccountHistory(feed.network_id, feed.meta.token, lastId)
+          .catch((error) => {
+            this.logger.error(`Failed to sync account "${feed.network_id}" history`, error);
+          })
+      ));
   }
 
   syncAccountHistory(id, accessToken, lastId) {

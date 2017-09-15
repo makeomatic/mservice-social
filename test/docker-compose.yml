@@ -3,7 +3,7 @@ services:
   redis:
     hostname: redis
     container_name: redis
-    image: makeomatic/redis-cluster:3.2.8
+    image: makeomatic/redis-cluster:3.2.9
 
   rabbitmq:
     expose:
@@ -42,7 +42,7 @@ services:
 
   tester:
     container_name: tester
-    image: makeomatic/node:7.7.4-tester
+    image: makeomatic/node:8.5.0-tester
     links:
       - postgres
       - rabbitmq
