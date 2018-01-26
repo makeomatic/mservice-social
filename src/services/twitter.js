@@ -73,7 +73,7 @@ class Twitter {
             this.logger.fatal('unknown error from twitter', exception);
             throw exception;
           })
-      ))
+      ), { concurrency: 2 }) /* to avoid rate limits */
       .then(this.listen)
       .catch(this.onError);
   }
