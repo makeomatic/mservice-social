@@ -11,6 +11,7 @@ function extractAccount(accum, value) {
   // if we have accountId & we dont have it yet
   if (accountId && !find(accum, { account_id: accountId })) {
     value.meta.internal = value.internal;
+    value.meta.network_id = value.network_id;
     accum.push(value.meta);
   }
 
@@ -64,6 +65,7 @@ class Twitter {
               await this.storage.feeds().remove({
                 internal: twAccount.internal,
                 network: 'twitter',
+                network_id: twAccount.network_id,
               });
               return false;
             }
