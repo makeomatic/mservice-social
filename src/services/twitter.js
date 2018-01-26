@@ -167,6 +167,10 @@ class Twitter {
     if (Array.isArray(exception) && exception.find(it => (it.code === 34))) {
       // do not reconnect, but try to identify account that has been deleted
       this.logger.warn('account erased from', exception);
+    } else if (exception === 'Status Code: 420') {
+      this.destroy();
+      this.logger.warn('stream connection rate limit, reconnect in 10s', exception.message);
+      this.reconnect = Promise.bind(this).delay(10000).then(this.init);
     } else {
       this.logger.error('stream connection failed', exception);
       this._destroyAndReconnect();
