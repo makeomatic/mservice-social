@@ -33,6 +33,11 @@ function applyMediaChangesMapper(entry) {
       const postId = change.value.post_id;
       let promise;
 
+      // no post-id - dont do anything
+      if (postId == null) {
+        return null;
+      }
+
       switch (action) {
         case 'add':
         case 'edited':
@@ -40,9 +45,11 @@ function applyMediaChangesMapper(entry) {
             .fetch(postId, accessToken)
             .then(media => facebookMedia.save(media));
           break;
+
         case 'remove':
           promise = facebookMedia.delete(postId);
           break;
+
         default:
           promise = Promise.reject(new Error('Not implemented'));
       }
