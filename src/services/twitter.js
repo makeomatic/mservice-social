@@ -10,6 +10,7 @@ function extractAccount(accum, value) {
 
   // if we have accountId & we dont have it yet
   if (accountId && !find(accum, { account_id: accountId })) {
+    value.meta.internal = value.internal;
     accum.push(value.meta);
   }
 
@@ -52,8 +53,25 @@ class Twitter {
       .fetch({ network: 'twitter' })
       .bind(this)
       .reduce(extractAccount, [])
-      .tap(accounts => Promise.map(accounts, twAccount => (
-        this.syncAccount(twAccount.account, 'desc'))))
+      .filter(twAccount => (
+        this
+          .syncAccount(twAccount.account, 'desc')
+          .return(true)
+          .catch(async (exception) => {
+            // removed twitter account
+            if (Array.isArray(exception) && exception.find(it => (it.code === 34))) {
+              this.logger.warn('removing tw %j from database', twAccount);
+              await this.storage.feeds().remove({
+                internal: twAccount.internal,
+                network: 'twitter',
+              });
+              return false;
+            }
+
+            this.logger.fatal('unknown error from twitter', exception);
+            throw exception;
+          })
+      ))
       .then(this.listen)
       .catch(this.onError);
   }
@@ -198,11 +216,12 @@ class Twitter {
       })
       .bind(this)
       .spread(function fetchedTweets(tweet) {
-        return this.fetchTweets(
-          Twitter.cursor(tweet, order),
-          account,
-          order === 'asc' ? 'max_id' : 'since_id'
-        )
+        return this
+          .fetchTweets(
+            Twitter.cursor(tweet, order),
+            account,
+            order === 'asc' ? 'max_id' : 'since_id'
+          )
           .then((tweets) => {
             const { length } = tweets;
             this.logger.debug('fetched %d tweets', length);
