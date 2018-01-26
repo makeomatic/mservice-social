@@ -11,7 +11,8 @@
     "doc": "cd schemas && apidoc -i ./../src/actions -v -o ./../docs",
     "docker-release": "mdep docker release",
     "lint": "eslint . --ext .json --ext .js",
-    "release": "semantic-release && yarn docker-release && yarn doc",
+    "semantic-release": "semantic-release",
+    "release": "yarn --freze-lockfile && yarn semantic-release && yarn docker-release && yarn doc",
     "start": "node ./bin/mservice.js | bunyan -o short"
   },
   "dependencies": {
