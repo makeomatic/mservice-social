@@ -4,7 +4,7 @@ const Feed = require('./services/feed');
 const { globFiles } = require('ms-conf/lib/load-config');
 const Instagram = require('./services/instagram');
 const merge = require('lodash/merge');
-const MService = require('mservice');
+const MService = require('@microfleet/core');
 const { NotFoundError } = require('common-errors');
 const path = require('path');
 const Promise = require('bluebird');
@@ -85,8 +85,7 @@ class Social extends MService {
       this.addConnector(ConnectorsTypes.application, () =>
         Promise
           .delay(60000)
-          .then(() => facebook.subscription.subscribe())
-      );
+          .then(() => facebook.subscription.subscribe()));
     }
 
     if (config.facebook.syncMediaOnStart) {
@@ -107,8 +106,7 @@ class Social extends MService {
       this.addConnector(ConnectorsTypes.application, () =>
         Promise
           .delay(60000)
-          .then(() => instagram.subscription().subscribe())
-      );
+          .then(() => instagram.subscription().subscribe()));
     }
 
     if (config.instagram.syncMediaOnStart) {
@@ -126,6 +124,9 @@ class Social extends MService {
     const twitter = new Twitter(config.twitter, storage, log);
 
     this.addConnector(ConnectorsTypes.application, () => twitter.init());
+
+    /* so that it stops before database is closed, but after transport is unavailable */
+    this.addDestructor(ConnectorsTypes.migration, () => twitter.destroy(true));
 
     this.service(Social.SERVICE_TWITTER, twitter);
     feed.service(Social.SERVICE_TWITTER, twitter);

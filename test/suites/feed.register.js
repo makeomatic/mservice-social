@@ -311,8 +311,7 @@ describe('feed.register', function feedRegisterSuite() {
     // depend on previous test
     it('should be able to update feed', () => {
       const mock = sinon.mock(request);
-      const firstPageId = this.firstPageId;
-      const secondPageId = this.secondPageId;
+      const { firstPageId, secondPageId } = this;
       const params = {
         internal: 'foo@facebook.com',
         network: 'facebook',

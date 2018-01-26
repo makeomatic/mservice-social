@@ -28,8 +28,7 @@ describe('service', function suite() {
               token: 'token1',
               category: 'News',
             }),
-          })
-        )
+          }))
         .then(() => social
           .service('storage')
           .facebookMedia()
@@ -42,8 +41,7 @@ describe('service', function suite() {
               message: 'Post #1',
               created_time: '2016-11-02T20:56:37+0000',
             }),
-          })
-        )
+          }))
         .then(() => social.close());
     });
     after('clean up feeds', () => {

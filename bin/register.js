@@ -4,21 +4,19 @@
 // suitable for configuring this in the docker env
 const Social = require('../src');
 const service = new Social(require('ms-conf').get('/'));
-const AMQPTransport = require('ms-amqp-transport');
+const AMQPTransport = require('@microfleet/transport-amqp');
 const yargs = require('yargs');
 const debug = require('debug')('mservice:social:register');
 
 // merged configuration
-const config = service.config;
-
-const argv = yargs
+const { config } = service;
+const { argv } = yargs
   .coerce({
     account: JSON.parse,
   })
   .required('internal', 'supply owner username')
   .required('network', 'supply network, <twitter>')
-  .required('account', 'supply account, stringified JSON')
-  .argv;
+  .required('account', 'supply account, stringified JSON');
 
 if (!argv.account) throw new Error('must supply twitter account');
 

@@ -1,5 +1,5 @@
 {
-  "id": "twitter.json",
+  "$id": "twitter.json",
   "definitions": {
     "registerFeed": {
       "description": "Register a batch of accounts",

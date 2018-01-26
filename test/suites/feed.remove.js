@@ -38,8 +38,7 @@ describe('feed.register', function feedRegisterSuite() {
           token: 'token1',
           category: 'News',
         }),
-      })
-    );
+      }));
 
     it('should be able to unsubscribe app', () => {
       const mock = sinon.mock(request);

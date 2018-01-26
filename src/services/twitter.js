@@ -1,7 +1,9 @@
 const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
-const { isObject, isString, conforms, merge, find } = require('lodash');
+const {
+  isObject, isString, conforms, merge, find,
+} = require('lodash');
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
@@ -31,6 +33,7 @@ class Twitter {
     this.listener = null;
     this.storage = storage;
     this.logger = logger;
+    this._destroyed = false;
 
     // cheaper than bind
     this.onData = json => this._onData(json);
@@ -39,6 +42,9 @@ class Twitter {
   }
 
   init() {
+    /* draining */
+    if (this._destroyed) return null;
+
     this.reconnect = null;
 
     return this.storage
@@ -47,8 +53,7 @@ class Twitter {
       .bind(this)
       .reduce(extractAccount, [])
       .tap(accounts => Promise.map(accounts, twAccount => (
-        this.syncAccount(twAccount.account, 'desc'))
-      ))
+        this.syncAccount(twAccount.account, 'desc'))))
       .then(this.listen)
       .catch(this.onError);
   }
@@ -76,14 +81,14 @@ class Twitter {
     listener.on('end', this.onEnd);
 
     // attach params
-    params.params = params;
+    listener.params = params;
 
     // TODO: do this!
     // add 'delete' handler
     // listener.on('delete', this.onDelete);
 
     // remap stream receiver to add 90 sec timeout
-    const receive = listener.receive;
+    const { receive } = listener;
     listener.receive = (chunk) => {
       this.resetTimeout();
       receive.call(listener, chunk);
@@ -117,7 +122,7 @@ class Twitter {
     this.reconnect = Promise.bind(this).delay(1000).then(this.init);
   }
 
-  destroy() {
+  destroy(final = false) {
     // reconnect if we failed
     if (this.listener) {
       this.listener.removeAllListeners();
@@ -125,9 +130,12 @@ class Twitter {
       this.listener = null;
     }
 
-    if (this.timeout) {
-      clearTimeout(this.timeout);
+    if (this.timeout) clearTimeout(this.timeout);
+    if (this.reconnect) {
+      this.reconnect.cancel();
+      this.reconnect = null;
     }
+    if (final) this._destroyed = true;
   }
 
   _destroyAndReconnect() {
@@ -136,9 +144,9 @@ class Twitter {
   }
 
   _onError(exception) {
-    if (Array.isArray(exception) && exception.includes(it => (it.code === 34))) {
+    if (Array.isArray(exception) && exception.find(it => (it.code === 34))) {
       // do not reconnect, but try to identify account that has been deleted
-      this.logger.warn('account erased from', this.listener.params, exception);
+      this.logger.warn('account erased from', exception);
     } else {
       this.logger.error('stream connection failed', exception);
       this._destroyAndReconnect();
@@ -146,7 +154,7 @@ class Twitter {
   }
 
   _onEnd() {
-    this.logger.warn('stream connection closed');
+    this.logger.warn('stream connection closed', this.listener && this.listener.params);
     this._destroyAndReconnect();
   }
 
@@ -195,22 +203,22 @@ class Twitter {
           account,
           order === 'asc' ? 'max_id' : 'since_id'
         )
-        .then((tweets) => {
-          const length = tweets.length;
-          this.logger.debug('fetched %d tweets', length);
+          .then((tweets) => {
+            const { length } = tweets;
+            this.logger.debug('fetched %d tweets', length);
 
-          if (length === 0) {
-            return null;
-          }
+            if (length === 0) {
+              return null;
+            }
 
-          const index = order === 'asc' ? length - 1 : 0;
-          return Promise
-            .bind(twitterStatuses, tweets.map(Twitter.serializeTweet))
-            .map(twitterStatuses.save)
-            .get(index)
-            .bind(this)
-            .then(fetchedTweets);
-        });
+            const index = order === 'asc' ? length - 1 : 0;
+            return Promise
+              .bind(twitterStatuses, tweets.map(Twitter.serializeTweet))
+              .map(twitterStatuses.save)
+              .get(index)
+              .bind(this)
+              .then(fetchedTweets);
+          });
       });
   }
 

@@ -1,4 +1,5 @@
 {
+  "$id": "feed.register",
   "type": "object",
   "additionalProperties": false,
   "required": ["internal", "network", "accounts"],
@@ -24,7 +25,7 @@
       "if": {
         "properties": {
           "network": {
-            "constant": "instagram"
+            "const": "instagram"
           }
         }
       },
@@ -40,7 +41,7 @@
       "if": {
         "properties": {
           "network": {
-            "constant": "twitter"
+            "const": "twitter"
           }
         }
       },
@@ -56,7 +57,7 @@
       "if": {
         "properties": {
           "network": {
-            "constant": "facebook"
+            "const": "facebook"
           }
         }
       },

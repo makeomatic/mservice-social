@@ -9,11 +9,14 @@ class TwitterStatuses {
   }
 
   list(data) {
-    const page = data.filter.page;
-    const pageSize = data.filter.pageSize;
-    const cursor = data.filter.cursor;
+    const {
+      page,
+      pageSize,
+      cursor,
+      order,
+    } = data.filter;
+
     const offset = page * pageSize;
-    const order = data.filter.order;
 
     const query = this.knex(this.table)
       .select(this.knex.raw('meta->>\'account\' as account, *'))

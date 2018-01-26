@@ -78,10 +78,10 @@ describe('instagram.webhook', function testSuite() {
       method: 'post',
       body: params,
     })
-    .then((response) => {
-      assert.deepEqual(response.body, { media: 0 });
-      return null;
-    });
+      .then((response) => {
+        assert.deepEqual(response.body, { media: 0 });
+        return null;
+      });
   });
 
   it('should be able to save media', () => {

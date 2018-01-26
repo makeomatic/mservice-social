@@ -1,5 +1,5 @@
 {
-  "id": "facebook.webhook",
+  "$id": "facebook.webhook",
   "anyOf": [
     {
       "type": "object",
@@ -8,7 +8,7 @@
       "properties": {
         "hub.mode": {
           "type": "string",
-          "constant": "subscribe"
+          "const": "subscribe"
         },
         "hub.challenge": {
           "type": "string"

@@ -23,8 +23,7 @@ function fetchFeedMapper(entry) {
 
 function applyMediaChangesMapper(entry) {
   const { feed, changes } = entry;
-  const facebookMedia = this.facebook.media;
-  const logger = this.facebook.logger;
+  const { logger, media: facebookMedia } = this.facebook;
 
   return Promise
     .filter(changes, change => change.field === 'feed')
@@ -45,7 +44,7 @@ function applyMediaChangesMapper(entry) {
           promise = facebookMedia.delete(postId);
           break;
         default:
-          promise = Promise.reject('Not realized');
+          promise = Promise.reject(new Error('Not implemented'));
       }
 
       return promise

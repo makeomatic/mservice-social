@@ -50,39 +50,38 @@ class Feed {
       .list(data);
   }
 
-  remove(data) {
+  async remove(data) {
     const facebook = this.service('facebook');
     const storage = this.service('storage');
     const twitter = this.service('twitter');
 
-    const process = Promise.coroutine(function* action() {
-      const feeds = yield storage.feeds().list({ filter: data });
-      if (feeds.length === 0) {
-        return;
+    const feeds = await storage.feeds().list({ filter: data });
+    if (feeds.length === 0) {
+      return;
+    }
+
+    const { network, meta: { account } } = feeds[0];
+    await storage.feeds().remove(data);
+
+    // @TODO realize it later, need to refactor totally
+    if (!data.keep_data && network === 'twitter') {
+      await storage
+        .twitterStatuses()
+        .remove({ account });
+    }
+
+    twitter.connect();
+
+    const acts = [];
+    for (const feed of feeds) { // eslint-disable-line no-restricted-syntax
+      if (feed.network === 'facebook') {
+        const { network_id: pageId, meta: { token } } = feed;
+
+        acts.push(facebook.subscription.unsubscribeApp(pageId, token));
       }
+    }
 
-      const { network, meta: { account } } = feeds[0];
-      yield storage.feeds().remove(data);
-
-      // @TODO realize it later, need to refactor totally
-      if (!data.keep_data && network === 'twitter') {
-        yield storage
-          .twitterStatuses()
-          .remove({ account });
-      }
-
-      twitter.connect();
-
-      for (const feed of feeds) { // eslint-disable-line no-restricted-syntax
-        if (feed.network === 'facebook') {
-          const { network_id: pageId, meta: { token } } = feed;
-
-          yield facebook.subscription.unsubscribeApp(pageId, token);
-        }
-      }
-    });
-
-    return process();
+    if (acts.length > 0) await Promise.all(acts);
   }
 }
 

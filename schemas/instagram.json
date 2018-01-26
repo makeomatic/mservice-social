@@ -1,5 +1,5 @@
 {
-  "id": "instagram.json",
+  "$id": "instagram.json",
   "definitions": {
     "accountId": {
       "type": "string",

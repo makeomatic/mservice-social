@@ -72,7 +72,9 @@ class Facebook {
 
     return Promise
       .bind(this, handler(requestOptions))
-      .bind({ options, accessToken, attempt, ctx: this })
+      .bind({
+        options, accessToken, attempt, ctx: this,
+      })
       .catch(this.handleError);
   }
 }

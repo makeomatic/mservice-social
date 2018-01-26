@@ -18,13 +18,11 @@ class Media {
       .list({ filter: { network: 'facebook' } })
       .map(feed => Promise.join(feed, this.getLast(feed.network_id)))
       .map(([feed, lastMedia]) =>
-        this.syncPageHistory(feed.network_id, feed.meta.token, lastMedia)
-      );
+        this.syncPageHistory(feed.network_id, feed.meta.token, lastMedia));
   }
 
   syncPageHistory(id, accessToken, lastMedia) {
-    const logger = this.facebook.logger;
-    const { fields } = this.facebook.config.api;
+    const { logger, config: { api: { fields } } } = this.facebook;
     const requestOptions = {
       qs: {
         fields,

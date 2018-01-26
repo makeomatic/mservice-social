@@ -1,4 +1,4 @@
-const { ActionTransport, routerExtension } = require('mservice');
+const { ActionTransport, routerExtension } = require('@microfleet/core');
 const path = require('path');
 
 const auditLog = routerExtension('audit/log');

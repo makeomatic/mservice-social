@@ -117,10 +117,10 @@ describe('facebook.webhook', function testSuite() {
       method: 'post',
       body: params,
     })
-    .then((response) => {
-      assert.deepEqual(response.body, { add: 0, remove: 0, edited: 0 });
-      return null;
-    });
+      .then((response) => {
+        assert.deepEqual(response.body, { add: 0, remove: 0, edited: 0 });
+        return null;
+      });
   });
 
   it('should be able to save media', () => {
@@ -178,11 +178,11 @@ describe('facebook.webhook', function testSuite() {
       method: 'post',
       body: params,
     })
-    .then((response) => {
-      assert.deepEqual(response.body, { add: 1, remove: 0, edited: 0 });
-      mock.verify();
-      return null;
-    });
+      .then((response) => {
+        assert.deepEqual(response.body, { add: 1, remove: 0, edited: 0 });
+        mock.verify();
+        return null;
+      });
   });
 
   it('should be able to edit media', () => {
@@ -231,11 +231,11 @@ describe('facebook.webhook', function testSuite() {
       method: 'post',
       body: params,
     })
-    .then((response) => {
-      assert.deepEqual(response.body, { add: 0, remove: 0, edited: 1 });
-      mock.verify();
-      return null;
-    });
+      .then((response) => {
+        assert.deepEqual(response.body, { add: 0, remove: 0, edited: 1 });
+        mock.verify();
+        return null;
+      });
   });
 
   it('should be able to delete media', () => {
@@ -262,9 +262,9 @@ describe('facebook.webhook', function testSuite() {
       method: 'post',
       body: params,
     })
-    .then((response) => {
-      assert.deepEqual(response.body, { add: 0, remove: 1, edited: 0 });
-      return null;
-    });
+      .then((response) => {
+        assert.deepEqual(response.body, { add: 0, remove: 1, edited: 0 });
+        return null;
+      });
   });
 });

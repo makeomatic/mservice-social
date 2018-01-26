@@ -11,11 +11,9 @@ services:
       - "5672"
       - "15672"
       - "25672"
-    image: makeomatic/rabbitmq:3.6.2
+    image: makeomatic/rabbitmq:3.6.12
     container_name: rabbitmq
     hostname: rabbitmq
-    volumes:
-      - ./configs/rabbitmq/rabbitmq.config:/usr/lib/rabbitmq/etc/rabbitmq/rabbitmq.config
 
   postgres:
     expose:
@@ -42,7 +40,7 @@ services:
 
   tester:
     container_name: tester
-    image: makeomatic/node:8.5.0-tester
+    image: makeomatic/node:9.4.0-tester
     links:
       - postgres
       - rabbitmq

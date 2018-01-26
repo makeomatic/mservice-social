@@ -9,7 +9,7 @@ module.exports = {
       user: 'postgres',
       password: '',
     },
-    searchPath: 'public,social',
+    searchPath: ['public', 'social'],
     migrations: {
       tableName: 'migrations',
       directory: path.resolve(__dirname, '../migrations'),

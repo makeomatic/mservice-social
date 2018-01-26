@@ -26,7 +26,9 @@ function register(data) {
   }
 
   const { network, accounts, internal } = data;
-  const { afterSave, collectFeedParams, getLastId, syncHistory } = getRegisterStrategy(network);
+  const {
+    afterSave, collectFeedParams, getLastId, syncHistory,
+  } = getRegisterStrategy(network);
 
   return Promise
     .bind(this, accounts)

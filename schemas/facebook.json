@@ -1,5 +1,5 @@
 {
-  "id": "facebook.json",
+  "$id": "facebook.json",
   "definitions": {
     "pageId": {
       "type": "string",

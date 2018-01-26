@@ -1,4 +1,4 @@
 {
-  "id": "feed.list.response",
+  "$id": "feed.list.response",
   "$ref": "common.json#/definitions/listCollection"
 }

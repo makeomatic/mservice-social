@@ -1,4 +1,5 @@
 {
+  "$id": "feed.list",
   "type": "object",
   "additionalProperties": false,
   "required": [ "filter" ],

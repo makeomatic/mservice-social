@@ -98,7 +98,8 @@ describe('twitter', function testSuite() {
       (error, tweet) => {
         tweetId = tweet.id_str;
         done();
-      });
+      }
+    );
   });
 
   it('should have collected some tweets', () => {

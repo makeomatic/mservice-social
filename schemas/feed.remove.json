@@ -1,4 +1,5 @@
 {
+  "$id": "feed.remove",
   "type": "object",
   "additionalProperties": false,
   "properties": {
