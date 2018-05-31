@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 
 module.exports = {
   request: {
-    url: 'https://api.instagram.com/v1/users/555/media/recent?access_token=555.1&count=200',
+    url: 'https://api.instagram.com/v1/users/self/media/recent?access_token=555.1&count=200',
     json: true,
   },
   response: Promise.resolve({

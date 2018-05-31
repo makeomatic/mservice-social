@@ -10,6 +10,13 @@ class Media {
     this.comments = instagramComments;
     this.storage = storage;
     this.logger = logger;
+    this.timeout = null;
+  }
+
+  destroy() {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
   }
 
   list(params) {
@@ -24,19 +31,35 @@ class Media {
       .list({ filter: { network: 'instagram' } })
       .map(feed => Promise.join(feed, instagramMedia.getLastId(feed.network_id)))
       .map(([feed, lastId]) => (
-        this.syncAccountHistory(feed.network_id, feed.meta.token, lastId)
+        this.syncAccountHistory(feed.meta.token, lastId)
           .catch((error) => {
             this.logger.error(`Failed to sync account "${feed.network_id}" history`, error);
           })
       ));
   }
 
-  syncAccountHistory(id, accessToken, lastId) {
-    const url = getListUrl(id, accessToken);
+  syncAccountHistory(accessToken, lastId) {
+    const url = getListUrl(accessToken);
 
     return Promise
       .bind(this, [url, accessToken, lastId])
       .spread(syncAccountHistory);
+  }
+
+  async init() {
+    const { syncMediaOnStart, syncOnInterval, syncInterval } = this.config;
+
+    if (syncMediaOnStart) {
+      await this.syncAccountsHistory();
+    }
+
+    if (syncOnInterval) {
+      const intervalSync = async () => {
+        await this.syncAccountsHistory();
+        this.timeout = setTimeout(intervalSync, syncInterval);
+      };
+      this.timeout = setTimeout(intervalSync, syncInterval);
+    }
   }
 
   getLastId(userId) {
