@@ -42,7 +42,7 @@
         },
         "syncOnInterval": {
           "type": "boolean",
-          "default": true
+          "default": false
         },
         "syncInterval": {
           "type": "integer",

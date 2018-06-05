@@ -9,7 +9,6 @@ const config = {
   instagram: {
     enabled: true,
     syncMediaOnStart: false,
-    subscribeOnStart: false,
   },
 };
 const http = request.defaults({
