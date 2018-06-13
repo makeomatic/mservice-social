@@ -40,9 +40,14 @@
           "type": "boolean",
           "default": true
         },
-        "subscribeOnStart": {
+        "syncOnInterval": {
           "type": "boolean",
-          "default": true
+          "default": false
+        },
+        "syncInterval": {
+          "type": "integer",
+          "default": 60000,
+          "minimum": 100
         },
         "client": {
           "type": "object",
@@ -54,30 +59,6 @@
             },
             "secret": {
               "type": "string"
-            }
-          }
-        },
-        "subscriptions": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["object", "type", "verifyToken", "callbackUrl"],
-            "additionalProperties": false,
-            "properties": {
-              "object": {
-                "type": "string",
-                "enum": ["user"]
-              },
-              "type": {
-                "type": "string",
-                "enum": ["media"]
-              },
-              "verifyToken": {
-                "type": "string"
-              },
-              "callbackUrl": {
-                "type": "string"
-              }
             }
           }
         }

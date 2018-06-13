@@ -21,12 +21,12 @@ function getLastId(feed) {
 }
 
 function syncHistory([feed, lastId]) {
-  const { network_id: networkId, meta: { token } } = feed;
+  const { meta: { token } } = feed;
   const instagram = this.service('instagram');
 
   return instagram
     .media()
-    .syncAccountHistory(networkId, token, lastId)
+    .syncAccountHistory(token, lastId)
     .return(feed);
 }
 

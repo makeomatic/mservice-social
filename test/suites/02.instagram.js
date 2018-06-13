@@ -1,10 +1,12 @@
 const assert = require('assert');
-const createFeedFixture = require('../fixtures/instagram/create-feed');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const sinon = require('sinon');
 const Social = require('../../src');
+
+const createFeedFixture = require('../fixtures/instagram/create-feed');
 const syncOnReconnectFixture = require('../fixtures/instagram/sync-on-reconnect');
+const instagramMediaFactory = require('../fixtures/instagram/instagram-media');
 
 const config = {
   instagram: {
@@ -13,14 +15,8 @@ const config = {
       id: 'client-id',
       secret: 'client-secret',
     },
-    subscriptions: [
-      {
-        object: 'user',
-        type: 'media',
-        verifyToken: 'your-verify-token',
-        callbackUrl: 'https://your.callback/url',
-      },
-    ],
+    syncOnInterval: false,
+    syncInterval: 500,
   },
 };
 
@@ -28,46 +24,12 @@ describe('instagram', function testSuite() {
   after('clean instagram_media', () => this.service.knex('instagram_media').delete());
   after('clean feeds', () => this.service.knex('feeds').delete());
   after('shutdown service', () => this.service.close());
-
-  it('should be able to subscribe on start up', () => {
-    const response = Promise.resolve({
-      meta: { code: 200 },
-      data: {
-        object: 'user',
-        object_id: null,
-        aspect: 'media',
-        subscription_id: 0,
-        callback_url: 'https://your.callback/url',
-        type: 'subscription',
-        id: 0,
-      },
-    });
-    const requestParams = {
-      url: 'https://api.instagram.com/v1/subscriptions/',
-      formData: {
-        object: 'user',
-        type: 'media',
-        verify_token: 'your-verify-token',
-        callback_url: 'https://your.callback/url',
-        client_id: 'client-id',
-        client_secret: 'client-secret',
-      },
-    };
-    const mock = sinon.mock(request);
-    const service = this.service = new Social(config);
-
-    mock.expects('post').once().withArgs(requestParams).returns(response);
-
-    return service
-      .connect()
-      .then(() => {
-        mock.verify();
-        mock.restore();
-        return null;
-      });
+  before('launch service', () => {
+    this.service = new Social(config);
+    return this.service.connect();
   });
 
-  it('should be able to register feed', () => {
+  it('should be able to register feed', async () => {
     const params = {
       internal: 'foo@instagram.com',
       network: 'instagram',
@@ -122,47 +84,18 @@ describe('instagram', function testSuite() {
       .returns(createFeedFixture.response.second)
       .once();
 
-    return this.service.amqp
+    const response = await this.service.amqp
       .publishAndWait('social.feed.register', params)
-      .reflect()
-      .then((response) => {
-        const { data } = response.value();
+      .reflect();
 
-        assert.equal(data.length, 1);
-        mock.verify();
-        mock.restore();
-
-        return null;
-      });
+    const { data } = response.value();
+    assert.equal(data.length, 1);
+    mock.verify();
+    mock.restore();
   });
 
   it('should be able to synchronize media on reconnect', () => {
     const mock = sinon.mock(request);
-    const response = Promise.resolve({
-      meta: { code: 200 },
-      data: {
-        object: 'user',
-        object_id: null,
-        aspect: 'media',
-        subscription_id: 0,
-        callback_url: 'https://your.callback/url',
-        type: 'subscription',
-        id: 0,
-      },
-    });
-    const requestParams = {
-      url: 'https://api.instagram.com/v1/subscriptions/',
-      formData: {
-        object: 'user',
-        type: 'media',
-        verify_token: 'your-verify-token',
-        callback_url: 'https://your.callback/url',
-        client_id: 'client-id',
-        client_secret: 'client-secret',
-      },
-    };
-
-    mock.expects('post').once().withArgs(requestParams).returns(response);
     mock
       .expects('get')
       .withArgs(syncOnReconnectFixture.request)
@@ -203,5 +136,65 @@ describe('instagram', function testSuite() {
 
         return null;
       });
+  });
+
+  it('should be able to synchronize on interval', async () => {
+    const stub = sinon.stub(request, 'get');
+    const mediaStub = stub
+      .withArgs(syncOnReconnectFixture.request);
+
+    const media = Array.from({ length: 3 }, (_, i) => {
+      /** start from previously fetched id */
+      const id = `138555288571699659${2 + i}`;
+      const prev = `138555288571699659${1 + i}`;
+
+      stub
+        .withArgs({
+          json: true,
+          url: `https://api.instagram.com/v1/media/${id}_555/comments?access_token=555.1`,
+        })
+        .returns({
+          data: [],
+        });
+
+      const response = {
+        pagination: {
+          next_url: `https://api.instagram.com/v1/users/555/media/recent?access_token=555.1&count=200&max_id=${prev}_555`,
+          next_max_id: prev,
+        },
+        meta: {
+          code: 200,
+        },
+        data: [instagramMediaFactory(id, '555')],
+      };
+
+      mediaStub
+        .onCall(i)
+        .returns(response);
+
+      return response;
+    });
+
+    await this.service.close();
+
+    this.service = new Social({
+      ...config,
+      instagram: {
+        ...config.instagram,
+        syncMediaOnStart: false,
+        syncOnInterval: true,
+      },
+    });
+
+    await this.service.connect();
+
+    /** let the service to sync several times */
+    await Promise.delay(config.instagram.syncInterval * (media.length + 1));
+
+    media.forEach((it) => {
+      assert.ok(mediaStub.returned(it));
+    });
+
+    stub.reset();
   });
 });
