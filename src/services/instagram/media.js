@@ -26,16 +26,35 @@ class Media {
   syncAccountsHistory() {
     const feeds = this.storage.feeds();
     const instagramMedia = this.storage.instagramMedia();
+    const stats = {
+      failed: [],
+      total: 0,
+      start: process.hrtime(),
+    };
+
+    this.logger.debug('instagram: sync started');
 
     return feeds
       .list({ filter: { network: 'instagram' } })
       .map(feed => Promise.join(feed, instagramMedia.getLastId(feed.network_id)))
+      .tap((toFetch) => {
+        stats.total = toFetch.length;
+      })
       .map(([feed, lastId]) => (
         this.syncAccountHistory(feed.meta.token, lastId)
           .catch((error) => {
             this.logger.error(`Failed to sync account "${feed.network_id}" history`, error);
+            stats.failed.push(feed.network_id);
           })
-      ));
+      ))
+      .tap(() => {
+        setImmediate(() => {
+          this.logger.debug('instagram: sync finished in', process.hrtime(stats.start));
+          this.logger.debug('instagram: total accounts', stats.total);
+          this.logger.debug('instagram: with success', stats.total - stats.failed.length);
+          this.logger.debug('instagram: with failure', stats.failed);
+        });
+      });
   }
 
   syncAccountHistory(accessToken, lastId) {

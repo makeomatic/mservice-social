@@ -26,6 +26,66 @@ function extractAccount(accum, value) {
  */
 class Twitter {
   /**
+   *  static helpers
+   */
+  static one = new BN('1', 10)
+
+  // isTweet checker
+  static isTweet = conforms({
+    entities: isObject,
+    id_str: isString,
+    text: isString,
+  })
+
+  /**
+   * cursor extractor
+   * @param {object} tweet
+   * @param {string} order
+   */
+  static cursor(tweet, order = 'asc') {
+    const cursor = tweet && (tweet.id || tweet.id_str);
+
+    // no tweet / cursor
+    if (!cursor) {
+      return undefined;
+    }
+
+    if (order === 'desc') {
+      return cursor;
+    }
+
+    return new BN(cursor, 10)
+      .sub(Twitter.one)
+      .toString(10);
+  }
+
+  /**
+   * @param {object} data
+   * @param {boolean} noSerialize
+   */
+  static serializeTweet(data, noSerialize) {
+    const tweet = {
+      id: data.id_str,
+      date: data.created_at,
+      text: data.text,
+    };
+
+    const meta = {
+      id_str: data.id_str,
+      account: data.user.screen_name,
+      account_id: data.user.id_str,
+      entities: data.entities,
+      retweeted_status: data.retweeted_status && Twitter.serializeTweet(data.retweeted_status, true),
+    };
+
+    tweet.meta = noSerialize !== true
+      ? JSON.stringify(meta)
+      : meta;
+
+    return tweet;
+  }
+
+  /**
    * @param {object} config
    * @param {StorageService} storage
    * @param {Logger} logger
@@ -268,53 +328,5 @@ class Twitter {
       .then(accounts => (merge(original, accounts)));
   }
 }
-
-// isTweet checker
-Twitter.isTweet = conforms({
-  entities: isObject,
-  id_str: isString,
-  text: isString,
-});
-
-// static helpers
-Twitter.one = new BN('1', 10);
-
-// cursor extractor
-Twitter.cursor = (tweet, order = 'asc') => {
-  const cursor = tweet && (tweet.id || tweet.id_str);
-
-  // no tweet / cursor
-  if (!cursor) {
-    return undefined;
-  }
-
-  if (order === 'desc') {
-    return cursor;
-  }
-
-  return new BN(cursor, 10).sub(Twitter.one).toString(10);
-};
-
-Twitter.serializeTweet = (data, noSerialize) => {
-  const tweet = {
-    id: data.id_str,
-    date: data.created_at,
-    text: data.text,
-  };
-
-  const meta = {
-    id_str: data.id_str,
-    account: data.user.screen_name,
-    account_id: data.user.id_str,
-    entities: data.entities,
-    retweeted_status: data.retweeted_status && Twitter.serializeTweet(data.retweeted_status, true),
-  };
-
-  tweet.meta = noSerialize !== true
-    ? JSON.stringify(meta)
-    : meta;
-
-  return tweet;
-};
 
 module.exports = Twitter;
