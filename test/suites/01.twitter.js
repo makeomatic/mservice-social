@@ -96,8 +96,12 @@ describe('twitter', function testSuite() {
       'statuses/update',
       { status: 'Test status' },
       (error, tweet) => {
+        if (error) {
+          return done(error);
+        }
+
         tweetId = tweet.id_str;
-        done();
+        return done();
       }
     );
   });
