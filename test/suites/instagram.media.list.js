@@ -1,7 +1,7 @@
 const assert = require('assert');
-const istagramMediaFactory = require('../fixtures/instagram/instagram-media');
 const Promise = require('bluebird');
 const request = require('request-promise');
+const istagramMediaFactory = require('../fixtures/instagram/instagram-media');
 const Social = require('../../src');
 
 const accountId = Date.now().toString();

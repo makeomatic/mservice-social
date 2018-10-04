@@ -14,7 +14,8 @@ RUN \
     curl \
   && apk add openssl ca-certificates \
   && update-ca-certificates \
-  && yarn --production \
+  && yarn --production --frozen-lockfile \
+  && yarn cache clean \
   && apk del \
     .buildDeps \
     wget \

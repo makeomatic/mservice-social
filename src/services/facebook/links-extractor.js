@@ -12,7 +12,7 @@ function getUrlParam(link, param) {
 function extractLink(link) {
   if (/fbcdn\.net\/safe_image\.php/.test(link)) {
     return getUrlParam(link, 'url');
-  } else if (/facebook\.com\/l.php/.test(link)) {
+  } if (/facebook\.com\/l.php/.test(link)) {
     return getUrlParam(link, 'u');
   }
 

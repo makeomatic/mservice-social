@@ -1,8 +1,8 @@
 const Chance = require('chance');
-const mockPageFeeds = require('../mocks/facebook/page-feeds');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const sinon = require('sinon');
+const mockPageFeeds = require('../mocks/facebook/page-feeds');
 const Social = require('../../src');
 
 const chance = new Chance();

@@ -1,7 +1,7 @@
-const getListUrl = require('./media/get-list-url');
-const getMediaUrl = require('./media/get-url');
 const Promise = require('bluebird');
 const request = require('request-promise');
+const getListUrl = require('./media/get-list-url');
+const getMediaUrl = require('./media/get-url');
 const syncAccountHistory = require('./media/sync-account-history');
 
 class Media {
