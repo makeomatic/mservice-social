@@ -8,11 +8,11 @@
     "prepublishOnly": "yarn lint && yarn compile",
     "test:e2e": "mdep test run",
     "test": "yarn lint && yarn test:e2e",
-    "doc": "cd schemas && apidoc -i ./../src/actions -v -o ./../docs",
+    "doc": "cd schemas && apidoc -i ../src/actions -v -o ../docs",
     "docker-release": "mdep docker release",
     "lint": "eslint . --ext .json --ext .js",
     "semantic-release": "semantic-release",
-    "release": "yarn --freze-lockfile && yarn semantic-release && yarn docker-release && yarn doc",
+    "release": "yarn --freze-lockfile && yarn semantic-release",
     "start": "mfleet",
     "commitmsg": "commitlint -e $GIT_PARAMS",
     "preparecommitmsg": "./node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $GIT_PARAMS"

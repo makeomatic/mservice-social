@@ -6,7 +6,7 @@
     "@semantic-release/github"
   ],
   "prepare": [
-    { "path": "@semantic-release/exec", "cmd": "./scripts/docs.sh" },
+    { "path": "@semantic-release/exec", "cmd": "yarn doc" },
     "@semantic-release/changelog",
     "@semantic-release/npm",
     { "path": "@semantic-release/exec", "cmd": "yarn docker-release" },
