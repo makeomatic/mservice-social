@@ -1,8 +1,8 @@
 const assert = require('assert');
-const mockPageFeeds = require('../mocks/facebook/page-feeds');
-const mockSubscribedApps = require('../mocks/facebook/subscribed-apps');
 const request = require('request-promise');
 const sinon = require('sinon');
+const mockPageFeeds = require('../mocks/facebook/page-feeds');
+const mockSubscribedApps = require('../mocks/facebook/subscribed-apps');
 const Social = require('../../src');
 
 const config = {

@@ -2,13 +2,15 @@
 
 // accepts conf through .env file
 // suitable for configuring this in the docker env
-const Social = require('../src');
-const service = new Social(require('ms-conf').get('/'));
+const conf = require('ms-conf').get('/');
 const AMQPTransport = require('@microfleet/transport-amqp');
 const yargs = require('yargs');
 const debug = require('debug')('mservice:social:register');
 
+const Social = require('../src');
+
 // merged configuration
+const service = new Social(conf);
 const { config } = service;
 const { argv } = yargs
   .coerce({

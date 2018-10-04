@@ -7,8 +7,8 @@ module.exports = {
   },
   response: Promise.resolve({
     pagination: {
-      next_url: 'https://api.instagram.com/v1/users/555/media/recent?access_token=555.1&' +
-        'count=200&max_id=1385552885716996590_555',
+      next_url: 'https://api.instagram.com/v1/users/555/media/recent?access_token=555.1&'
+        + 'count=200&max_id=1385552885716996590_555',
       next_max_id: '1385552885716996590_555',
     },
     meta: {

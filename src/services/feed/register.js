@@ -1,5 +1,5 @@
-const getRegisterStrategy = require('./register/strategies');
 const Promise = require('bluebird');
+const getRegisterStrategy = require('./register/strategies');
 
 function saveFeed(internal, network, params) {
   const { logger } = this;

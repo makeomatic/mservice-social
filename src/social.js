@@ -1,13 +1,13 @@
-const addUpsert = require('./utils/knex/upsert');
-const Facebook = require('./services/facebook');
-const Feed = require('./services/feed');
 const { globFiles } = require('ms-conf/lib/load-config');
-const Instagram = require('./services/instagram');
 const merge = require('lodash/merge');
 const MService = require('@microfleet/core');
 const { NotFoundError } = require('common-errors');
 const path = require('path');
 const Promise = require('bluebird');
+const Instagram = require('./services/instagram');
+const Feed = require('./services/feed');
+const Facebook = require('./services/facebook');
+const addUpsert = require('./utils/knex/upsert');
 const Storage = require('./services/storage');
 const Twitter = require('./services/twitter');
 
@@ -82,10 +82,9 @@ class Social extends MService {
     const facebook = new Facebook(config.facebook, storage, feed, log);
 
     if (config.facebook.subscribeOnStart) {
-      this.addConnector(ConnectorsTypes.application, () =>
-        Promise
-          .delay(60000)
-          .then(() => facebook.subscription.subscribe()));
+      this.addConnector(ConnectorsTypes.application, () => Promise
+        .delay(60000)
+        .then(() => facebook.subscription.subscribe()));
     }
 
     if (config.facebook.syncMediaOnStart) {

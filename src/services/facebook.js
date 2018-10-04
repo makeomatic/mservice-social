@@ -1,9 +1,9 @@
-const Media = require('./facebook/media');
 const omit = require('lodash/omit');
-const proofGenerator = require('./facebook/proof-generator');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const retry = require('retry');
+const proofGenerator = require('./facebook/proof-generator');
+const Media = require('./facebook/media');
 const Subscription = require('./facebook/subscription');
 
 class Facebook {

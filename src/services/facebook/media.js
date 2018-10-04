@@ -17,8 +17,7 @@ class Media {
       .feeds()
       .list({ filter: { network: 'facebook' } })
       .map(feed => Promise.join(feed, this.getLast(feed.network_id)))
-      .map(([feed, lastMedia]) =>
-        this.syncPageHistory(feed.network_id, feed.meta.token, lastMedia));
+      .map(([feed, lastMedia]) => this.syncPageHistory(feed.network_id, feed.meta.token, lastMedia));
   }
 
   syncPageHistory(id, accessToken, lastMedia) {

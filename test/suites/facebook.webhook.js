@@ -70,8 +70,8 @@ describe('facebook.webhook', function testSuite() {
 
     return http({ qs: params }).then((response) => {
       assert.equal(response.statusCode, 403);
-      assert.equal(response.body.message, 'An attempt was made to perform an operation that' +
-        ' is not permitted: Verify token invalid-verify-token is invalid');
+      assert.equal(response.body.message, 'An attempt was made to perform an operation that'
+        + ' is not permitted: Verify token invalid-verify-token is invalid');
       return null;
     });
   });
