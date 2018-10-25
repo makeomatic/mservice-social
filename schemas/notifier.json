@@ -4,7 +4,7 @@
     "config": {
       "type": "object",
       "additionalProperties": false,
-      "if": { "properties": { "enabled": true } },
+      "if": { "properties": { "enabled": { "const": true } } },
       "then": { "required": ["enabled", "transport"] },
       "else": { "required": ["enabled"] },
       "properties": {
