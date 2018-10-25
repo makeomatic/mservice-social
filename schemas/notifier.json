@@ -3,8 +3,10 @@
   "definitions": {
     "config": {
       "type": "object",
-      "required": ["enabled", "transport"],
       "additionalProperties": false,
+      "if": { "properties": { "enabled": true } },
+      "then": { "required": ["enabled", "transport"] },
+      "else": { "required": ["enabled"] },
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -15,11 +17,11 @@
           "required": ["exchange"],
           "properties": {
             "exchange": {
-              "type": "string"
+              "type": "string",
+              "default": "example"
             }
           }
-        },
-        "routes": {}
+        }
       }
     }
   }
