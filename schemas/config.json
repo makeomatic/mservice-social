@@ -11,6 +11,9 @@
     },
     "facebook": {
       "$ref": "facebook.json#/definitions/config"
+    },
+    "notifier": {
+      "$ref": "notifier.json#/definitions/config"
     }
   }
 }

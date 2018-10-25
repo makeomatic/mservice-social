@@ -5,6 +5,8 @@ const {
   isObject, isString, conforms, merge, find,
 } = require('lodash');
 
+const Notifier = require('./notifier');
+
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
 
@@ -86,15 +88,17 @@ class Twitter {
   }
 
   /**
+   * @param {Social} core
    * @param {object} config
    * @param {StorageService} storage
    * @param {Logger} logger
    */
-  constructor(config, storage, logger) {
+  constructor(core, config, storage, logger) {
+    this.core = core;
     this.client = new TwitterClient(config);
     this.listener = null;
     this.storage = storage;
-    this.logger = logger;
+    this.logger = logger.child({ namespace: 'social/twitter' });
     this._destroyed = false;
 
     // cheaper than bind
@@ -245,10 +249,22 @@ class Twitter {
   _onData(data) {
     if (Twitter.isTweet(data)) {
       this.logger.debug('inserting tweet', data);
-      this.storage
+      const tweet = Twitter.serializeTweet(data);
+      return this.storage
         .twitterStatuses()
-        .save(Twitter.serializeTweet(data))
-        .return(true);
+        .save(tweet)
+        .tap(this.publish);
+    }
+
+    return false;
+  }
+
+  publish = (tweet) => {
+    try {
+      const { account_id: uid } = tweet.meta;
+      this.core.emit(Notifier.kPublish, `twitter/subscription/${uid}`, tweet);
+    } catch (e) {
+      // do nothing
     }
   }
 
@@ -297,9 +313,10 @@ class Twitter {
             }
 
             const index = order === 'asc' ? length - 1 : 0;
+
             return Promise
-              .bind(twitterStatuses, tweets.map(Twitter.serializeTweet))
-              .map(twitterStatuses.save)
+              .map(tweets, this.onData)
+              // TODO: ensure that we picking a tweet
               .get(index)
               .bind(this)
               .then(fetchedTweets);

@@ -17,7 +17,9 @@ class Facebook {
 
   static throttleCodes = [4, 32];
 
-  constructor(config, storage, feed, logger) {
+  constructor(core, config, storage, feed, logger) {
+    this.core = core;
+
     this.config = config;
     this.feed = feed;
     this.logger = logger;

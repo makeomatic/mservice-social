@@ -25,4 +25,10 @@ global.SERVICES = {
     },
   },
   feed: {},
+  notifier: {
+    enabled: true,
+    transport: {
+      exchange: 'ex.broadcast',
+    },
+  },
 };

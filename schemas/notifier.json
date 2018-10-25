@@ -1,0 +1,26 @@
+{
+  "$id": "notifier.json",
+  "definitions": {
+    "config": {
+      "type": "object",
+      "required": ["enabled", "transport"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "transport": {
+          "type": "object",
+          "required": ["exchange"],
+          "properties": {
+            "exchange": {
+              "type": "string"
+            }
+          }
+        },
+        "routes": {}
+      }
+    }
+  }
+}

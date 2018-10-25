@@ -5,7 +5,8 @@ const comments = new WeakMap();
 const media = new WeakMap();
 
 class InstagramService {
-  constructor(config, storage, feed, logger) {
+  constructor(core, config, storage, logger) {
+    this.core = core;
     this.config = config;
     this.storage = storage;
     this.logger = logger;
