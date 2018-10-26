@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
+const get = require('get-value');
 const {
   isObject, isString, conforms, merge, find,
 } = require('lodash');
@@ -98,7 +99,7 @@ class Twitter {
     this.client = new TwitterClient(config);
     this.listener = null;
     this.storage = storage;
-    this.logger = logger.child({ namespace: 'social/twitter' });
+    this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
 
     // cheaper than bind
@@ -260,11 +261,9 @@ class Twitter {
   }
 
   publish = (tweet) => {
-    try {
-      const { account_id: uid } = tweet.meta;
-      this.core.emit(Notifier.kPublish, `twitter/subscription/${uid}`, tweet);
-    } catch (e) {
-      // do nothing
+    const uid = get(tweet, 'meta.account_id', false);
+    if (uid) {
+      this.core.emit(Notifier.kPublishEvent, `twitter/subscription/${uid}`, tweet);
     }
   }
 

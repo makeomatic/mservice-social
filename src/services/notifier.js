@@ -1,9 +1,12 @@
+const assert = require('assert');
 const AMQPTransport = require('@microfleet/transport-amqp');
+const { HttpStatusError } = require('common-errors');
 
 class Notifier {
   /* eslint-disable lines-between-class-members */
+  static kDupInstance = new HttpStatusError(409, 'Notifier has been already initialized');
   static kInstance = Symbol('notifier');
-  static kPublish = Symbol('notifier::onpublish')
+  static kPublishEvent = Symbol('notifier::onpublish')
   static microfleet = null;
   /* eslint-enable */
 
@@ -25,11 +28,7 @@ class Notifier {
   }
 
   static connector(core) {
-    if (Notifier.microfleet) {
-      throw new Error('Notifier has been already initialized');
-    }
-
-    Notifier.microfleet = core;
+    assert(Notifier.microfleet === null, Notifier.kDupInstance);
 
     function connect() {
       const instance = Notifier.getInstance();
@@ -51,6 +50,9 @@ class Notifier {
       return false;
     }
 
+    // store the link to the parent service
+    Notifier.microfleet = core;
+
     return {
       connect,
       close,
@@ -60,42 +62,46 @@ class Notifier {
   constructor(core) {
     const { log, config } = core;
 
-    this.log = log;
+    this.log = log.child({ namespace: '@social/notifier' });
     this.core = core;
     this.config = config.notifier;
     this.amqpConfig = {
       ...config.amqp.transport,
       ...config.notifier.transport,
     };
+
+    // use the defined microservice prefix as a namespace for publications to the exchange
+    this.namespace = config.router.routes.prefix;
   }
 
   async connect() {
-    this.amqp = await AMQPTransport.connect(this.amqpConfig);
-    this.core.on(Notifier.kPublish, this.publish);
+    this.amqpClient = await AMQPTransport.connect(this.amqpConfig);
+    this.core.on(Notifier.kPublishEvent, this.publish);
   }
 
   async close() {
-    this.core.off(Notifier.kPublish, this.publish);
+    this.core.off(Notifier.kPublishEvent, this.publish);
 
-    if (this.amqp) {
-      await this.amqp.close();
+    if (this.amqpClient) {
+      await this.amqpClient.close();
     }
   }
 
   publish = async (route, data) => {
-    if (!this.amqp) {
-      return;
+    if (!this.amqpClient) {
+      return null;
     }
 
     try {
-      const { prefix } = this.core.config.router.routes;
-
       this.log.debug('publishing %j to %s', data, route);
-      await this.amqp.publish(`/${prefix}/${route}`, data, {
+      // Post notification to a fanout exchange
+      await this.amqpClient.publish(`/${this.namespace}/${route}`, data, {
         confirm: true,
       });
+      return true;
     } catch (e) {
       this.log.error('could not pubslish a notification to %s due to %j', route, e);
+      return false;
     }
   }
 }
