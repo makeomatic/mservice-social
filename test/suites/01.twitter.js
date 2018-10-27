@@ -1,11 +1,14 @@
 const Promise = require('bluebird');
 const assert = require('assert');
 const merge = require('lodash/merge');
+const sinon = require('sinon');
+const AMQPTransport = require('@microfleet/transport-amqp');
 
 describe('twitter', function testSuite() {
   this.retries(20);
 
   const Social = require('../../src');
+  const Notifier = require('../../src/services/notifier');
   const request = require('../helpers/request');
 
   const uri = {
@@ -21,7 +24,7 @@ describe('twitter', function testSuite() {
       internal: 'test@test.ru',
       network: 'twitter',
       accounts: [
-        { username: 'tjholowaychuk' },
+        { username: 'evgenypoyarkov' },
         { id: '2533316504', username: 'v_aminev' },
       ],
     },
@@ -48,6 +51,24 @@ describe('twitter', function testSuite() {
   before('start service', () => {
     const service = this.service = new Social(global.SERVICES);
     return service.connect();
+  });
+
+  before('init spy for amqp.publish', async () => {
+    const listenerConfig = {
+      ...Notifier.getInstance().amqpConfig,
+      listen: '*',
+      queue: 'test',
+      exchangeArgs: {
+        type: 'fanout',
+      },
+    };
+    const broadcastSpy = this.broadcastSpy = sinon.spy();
+    this.listener = await AMQPTransport.connect(listenerConfig, (message, amqp) => {
+      const { account_id: uid } = message.meta;
+      assert(uid);
+      assert(amqp.routingKey === `/social/twitter/subscription/${uid}`);
+      broadcastSpy(message);
+    });
   });
 
   after('cleanup feeds', () => this.service.knex('feeds').delete());
@@ -91,6 +112,10 @@ describe('twitter', function testSuite() {
   // that long?
   it('wait for stream to startup', () => Promise.delay(5000));
 
+  it('verify that spy has been called', () => {
+    assert(this.broadcastSpy.called);
+  });
+
   it('post tweet and wait for it to arrive', (done) => {
     this.service.service('twitter').client.post(
       'statuses/update',
@@ -115,6 +140,9 @@ describe('twitter', function testSuite() {
         assert.equal(statusCode, 200);
         assert.notEqual(body.data.length, 0);
         assert.equal(body.data[0].id, tweetId);
+        assert(this.broadcastSpy.getCalls().find((call) => {
+          return call.args[0].id === tweetId;
+        }));
 
         return null;
       });
@@ -147,6 +175,8 @@ describe('twitter', function testSuite() {
       .client
       .post(`statuses/destroy/${tweetId}`, () => done());
   });
+
+  after('close consumer', () => this.listener.close());
 
   after('shutdown service', () => this.service.close());
 });

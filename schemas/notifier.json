@@ -1,0 +1,28 @@
+{
+  "$id": "notifier.json",
+  "definitions": {
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "if": { "properties": { "enabled": { "const": true } } },
+      "then": { "required": ["enabled", "transport"] },
+      "else": { "required": ["enabled"] },
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "transport": {
+          "type": "object",
+          "required": ["exchange"],
+          "properties": {
+            "exchange": {
+              "type": "string",
+              "default": "example"
+            }
+          }
+        }
+      }
+    }
+  }
+}

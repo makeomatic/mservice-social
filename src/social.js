@@ -10,6 +10,7 @@ const Facebook = require('./services/facebook');
 const addUpsert = require('./utils/knex/upsert');
 const Storage = require('./services/storage');
 const Twitter = require('./services/twitter');
+const Notifier = require('./services/notifier');
 
 const { ConnectorsTypes } = MService;
 const defaultConfig = globFiles(path.resolve(__dirname, 'configs'));
@@ -34,6 +35,10 @@ class Social extends MService {
 
     if (this.config.twitter.enabled) {
       this.initTwitter();
+    }
+
+    if (this.config.notifier.enabled) {
+      this.initNotifier();
     }
 
     // migrations
@@ -79,7 +84,7 @@ class Social extends MService {
     const { config, log } = this;
     const feed = this.service(Social.SERVICE_FEED);
     const storage = this.service(Social.SERVICE_STORAGE);
-    const facebook = new Facebook(config.facebook, storage, feed, log);
+    const facebook = new Facebook(this, config.facebook, storage, feed, log);
 
     if (config.facebook.subscribeOnStart) {
       this.addConnector(ConnectorsTypes.application, () => Promise
@@ -99,7 +104,7 @@ class Social extends MService {
     const { config, log } = this;
     const feed = this.service(Social.SERVICE_FEED);
     const storage = this.service(Social.SERVICE_STORAGE);
-    const instagram = new Instagram(config.instagram, storage, feed, log);
+    const instagram = new Instagram(this, config.instagram, storage, log);
 
     this.addConnector(ConnectorsTypes.application, () => instagram.media().init());
     this.addDestructor(ConnectorsTypes.migration, () => instagram.media().destroy());
@@ -112,7 +117,7 @@ class Social extends MService {
     const { config, log } = this;
     const feed = this.service(Social.SERVICE_FEED);
     const storage = this.service(Social.SERVICE_STORAGE);
-    const twitter = new Twitter(config.twitter, storage, log);
+    const twitter = new Twitter(this, config.twitter, storage, log);
 
     this.addConnector(ConnectorsTypes.application, () => twitter.init());
 
@@ -121,6 +126,16 @@ class Social extends MService {
 
     this.service(Social.SERVICE_TWITTER, twitter);
     feed.service(Social.SERVICE_TWITTER, twitter);
+  }
+
+  initNotifier() {
+    const { connect, close } = Notifier.connector(this);
+
+    // need to start up before any application
+    this.addConnector(ConnectorsTypes.migration, connect);
+
+    // need to close right before shutdown to publish updates
+    this.addDestructor(ConnectorsTypes.essential, close);
   }
 }
 

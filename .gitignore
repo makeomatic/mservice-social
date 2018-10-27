@@ -34,3 +34,4 @@ lib
 .env
 docs
 .idea
+.vscode
