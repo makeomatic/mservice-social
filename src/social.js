@@ -1,24 +1,27 @@
-const { globFiles } = require('ms-conf/lib/load-config');
 const merge = require('lodash/merge');
 const MService = require('@microfleet/core');
-const { NotFoundError } = require('common-errors');
-const path = require('path');
 const Promise = require('bluebird');
-const Instagram = require('./services/instagram');
+const { NotFoundError } = require('common-errors');
+
+const conf = require('./config');
 const Feed = require('./services/feed');
-const Facebook = require('./services/facebook');
-const addUpsert = require('./utils/knex/upsert');
 const Storage = require('./services/storage');
 const Twitter = require('./services/twitter');
+const Facebook = require('./services/facebook');
 const Notifier = require('./services/notifier');
+const Instagram = require('./services/instagram');
+const addUpsert = require('./utils/knex/upsert');
 
-const { ConnectorsTypes } = MService;
-const defaultConfig = globFiles(path.resolve(__dirname, 'configs'));
 const services = new WeakMap();
+const { ConnectorsTypes } = MService;
 
 class Social extends MService {
+  static defaultConfig = conf.get('/', {
+    env: process.env.NODE_ENV,
+  });
+
   constructor(config = {}) {
-    super(merge({}, defaultConfig, config));
+    super(merge({}, Social.defaultConfig, config));
 
     this.initServices();
     this.initKnex();
