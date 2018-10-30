@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/makeomatic/mservice-social.git/compare/v4.1.0...v4.1.1) (2018-10-30)
+
+
+### Bug Fixes
+
+* custom config via NCONF_FILE_PATH ([#35](https://github.com/makeomatic/mservice-social.git/issues/35)) ([744af80](https://github.com/makeomatic/mservice-social.git/commit/744af80))
+
 # [4.1.0](https://github.com/makeomatic/mservice-social/compare/v4.0.0...v4.1.0) (2018-10-27)
 
 
