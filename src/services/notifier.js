@@ -68,6 +68,7 @@ class Notifier {
     this.amqpConfig = {
       ...config.amqp.transport,
       ...config.notifier.transport,
+      listen: undefined,
     };
 
     // use the defined microservice prefix as a namespace for publications to the exchange
