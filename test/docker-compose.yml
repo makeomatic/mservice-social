@@ -50,6 +50,7 @@ services:
     environment:
       NODE_ENV: "test"
       DEBUG: ${DEBUG}
+      NCONF_NAMESPACE: MS_SOCIAL
       TWITTER_KEY: ${TWITTER_KEY}
       TWITTER_SECRET: ${TWITTER_SECRET}
       TWITTER_ACCESS_KEY: ${TWITTER_ACCESS_KEY}
