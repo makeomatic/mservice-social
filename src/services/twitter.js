@@ -7,6 +7,7 @@ const {
 } = require('lodash');
 
 const Notifier = require('./notifier');
+const { transform, TYPE_TWEET } = require('../utils/response');
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
@@ -261,9 +262,11 @@ class Twitter {
   }
 
   publish = (tweet) => {
-    const uid = get(tweet, 'meta.account_id', false);
-    if (uid) {
-      this.core.emit(Notifier.kPublishEvent, `twitter/subscription/${uid}`, tweet);
+    const account = get(tweet, 'meta.account', false);
+    if (account) {
+      const route = `twitter/subscription/${account}`;
+      const payload = transform(tweet, TYPE_TWEET);
+      this.core.emit(Notifier.kPublishEvent, route, payload);
     }
   }
 
