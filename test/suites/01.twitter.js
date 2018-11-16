@@ -64,9 +64,9 @@ describe('twitter', function testSuite() {
     };
     const broadcastSpy = this.broadcastSpy = sinon.spy();
     this.listener = await AMQPTransport.connect(listenerConfig, (message, amqp) => {
-      const { account_id: uid } = message.meta;
-      assert(uid);
-      assert(amqp.routingKey === `/social/twitter/subscription/${uid}`);
+      const { account } = message.attributes.meta;
+      assert(account);
+      assert(amqp.routingKey === `/social/twitter/subscription/${account}`);
       broadcastSpy(message);
     });
   });

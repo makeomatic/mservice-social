@@ -2,11 +2,15 @@ const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
 const get = require('get-value');
+const pLimit = require('p-limit');
+const uuid = require('uuid/v4');
+// const { promisify } = require('util');
 const {
   isObject, isString, conforms, merge, find,
 } = require('lodash');
 
 const Notifier = require('./notifier');
+const { transform, TYPE_TWEET } = require('../utils/response');
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
@@ -88,6 +92,51 @@ class Twitter {
     return tweet;
   }
 
+  static tweetFetcherFactory(twitter, logger) {
+    const limit = pLimit(1);
+    const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback(next => (
+      twitter.get('statuses/user_timeline', {
+        count: 200,
+        screen_name: account,
+        trim_user: false,
+        exclude_replies: false,
+        include_rts: true,
+        [cursorField]: cursor,
+      }, (err, tweets, response) => {
+        if (err) {
+          err.headers = response.headers;
+          err.statusCode = response.statusCode;
+          return next(err);
+        }
+        return next(null, tweets);
+      })
+    ));
+
+    return (cursor, account, cursorField = 'max_id') => {
+      const time = process.hrtime();
+      const quid = uuid();
+      logger.debug('%s => queueing at %s', quid, time);
+      return limit(async () => {
+        logger.debug('fetching tweets for %s based on %s %s', account, cursorField, cursor);
+        logger.debug('%s => starting to fetch tweets: %s', quid, process.hrtime(time));
+        try {
+          return await fetch(cursor, account, cursorField);
+        } catch (err) {
+          if (err.statusCode === 429) {
+            const reset = err.headers['x-rate-limit-reset'] * 1000;
+            logger.warn('Rate limit exceeded and would be refreshed at %s', new Date(reset));
+            await Promise.delay(reset - Date.now());
+            // make one more attempt while holding the same limit
+            return await fetch(cursor, account, cursorField);
+          }
+          throw err;
+        } finally {
+          logger.debug('%s => got response: %s', quid, process.hrtime(time));
+        }
+      });
+    };
+  }
+
   /**
    * @param {Social} core
    * @param {object} config
@@ -101,6 +150,7 @@ class Twitter {
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
+    this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger);
 
     // cheaper than bind
     this.onData = json => this._onData(json);
@@ -261,31 +311,18 @@ class Twitter {
   }
 
   publish = (tweet) => {
-    const uid = get(tweet, 'meta.account_id', false);
-    if (uid) {
-      this.core.emit(Notifier.kPublishEvent, `twitter/subscription/${uid}`, tweet);
+    const account = get(tweet, 'meta.account', false);
+    if (account) {
+      const route = `twitter/subscription/${account}`;
+      const payload = transform(tweet, TYPE_TWEET);
+      this.core.emit(Notifier.kPublishEvent, route, payload);
     }
-  }
-
-  fetchTweets(cursor, account, cursorField = 'max_id') {
-    this.logger.debug('fetching tweets for %s based on %s %s', account, cursorField, cursor);
-    const twitter = this.client;
-
-    return Promise.fromCallback(next => twitter.get('statuses/user_timeline', {
-      count: 200,
-      screen_name: account,
-      trim_user: false,
-      exclude_replies: false,
-      include_rts: true,
-      [cursorField]: cursor,
-    }, next));
   }
 
   syncAccount(account, order = 'asc') {
     const twitterStatuses = this.storage.twitterStatuses();
 
     // recursively syncs account
-    // TODO: subject to rate limit
     return twitterStatuses
       .list({
         filter: {
