@@ -4,7 +4,7 @@ const BN = require('bn.js');
 const get = require('get-value');
 const pLimit = require('p-limit');
 const uuid = require('uuid/v4');
-const { promisify } = require('util');
+// const { promisify } = require('util');
 const {
   isObject, isString, conforms, merge, find,
 } = require('lodash');
@@ -94,15 +94,31 @@ class Twitter {
 
   static tweetFetcherFactory(twitter, logger) {
     const limit = pLimit(1);
-    const timeline = promisify(twitter.get).bind(twitter, 'statuses/user_timeline');
-    const fetch = (cursor, account, cursorField = 'max_id') => timeline({
-      count: 200,
-      screen_name: account,
-      trim_user: false,
-      exclude_replies: false,
-      include_rts: true,
-      [cursorField]: cursor,
-    });
+    // const timeline = promisify(twitter.get).bind(twitter, 'statuses/user_timeline');
+    // const fetch = (cursor, account, cursorField = 'max_id') => timeline({
+    const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback(next => (
+      twitter.get('statuses/user_timeline', {
+        count: 200,
+        screen_name: account,
+        trim_user: false,
+        exclude_replies: false,
+        include_rts: true,
+        [cursorField]: cursor,
+      }, async (err, tweets, response) => {
+        if (err) {
+          // rate limit:
+          if (err.find(it => it.code === 88)) {
+            const reset = response.headers['x-rate-limit-reset'] * 1000;
+            logger.warn('Rate limit exeeded and would be refreshed at %s', new Date(reset));
+            await Promise.delay(Date.now() - reset);
+            // retry
+            return fetch(cursor, account, cursorField);
+          }
+          return next(err);
+        }
+        return next(null, tweets);
+      })
+    ));
 
     return (cursor, account, cursorField = 'max_id') => {
       const time = process.hrtime();
