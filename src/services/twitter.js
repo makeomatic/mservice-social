@@ -125,7 +125,7 @@ class Twitter {
           if (err.statusCode === 429) {
             const reset = err.headers['x-rate-limit-reset'] * 1000;
             logger.warn('Rate limit exceeded and would be refreshed at %s', new Date(reset));
-            await Promise.delay(Date.now() - reset);
+            await Promise.delay(reset - Date.now());
             // make one more attempt while holding the same limit
             return await fetch(cursor, account, cursorField);
           }
