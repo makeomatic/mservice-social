@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/makeomatic/mservice-social.git/compare/v4.1.1...v4.1.2) (2018-11-16)
+
+
+### Bug Fixes
+
+* **twitter:** unify published messages scheme ([#36](https://github.com/makeomatic/mservice-social.git/issues/36)) ([df25d82](https://github.com/makeomatic/mservice-social.git/commit/df25d82))
+
 ## [4.1.1](https://github.com/makeomatic/mservice-social.git/compare/v4.1.0...v4.1.1) (2018-10-30)
 
 
