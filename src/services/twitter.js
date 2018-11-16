@@ -94,8 +94,6 @@ class Twitter {
 
   static tweetFetcherFactory(twitter, logger) {
     const limit = pLimit(1);
-    // const timeline = promisify(twitter.get).bind(twitter, 'statuses/user_timeline');
-    // const fetch = (cursor, account, cursorField = 'max_id') => timeline({
     const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback(next => (
       twitter.get('statuses/user_timeline', {
         count: 200,
@@ -104,16 +102,10 @@ class Twitter {
         exclude_replies: false,
         include_rts: true,
         [cursorField]: cursor,
-      }, async (err, tweets, response) => {
+      }, (err, tweets, response) => {
         if (err) {
-          // rate limit:
-          if (err.find(it => it.code === 88)) {
-            const reset = response.headers['x-rate-limit-reset'] * 1000;
-            logger.warn('Rate limit exeeded and would be refreshed at %s', new Date(reset));
-            await Promise.delay(Date.now() - reset);
-            // retry
-            return fetch(cursor, account, cursorField);
-          }
+          err.headers = response.headers;
+          err.statusCode = response.statusCode;
           return next(err);
         }
         return next(null, tweets);
@@ -129,8 +121,15 @@ class Twitter {
         logger.debug('%s => starting to fetch tweets: %s', quid, process.hrtime(time));
         try {
           return await fetch(cursor, account, cursorField);
-        } catch (e) {
-          throw e;
+        } catch (err) {
+          if (err.statusCode === 429) {
+            const reset = err.headers['x-rate-limit-reset'] * 1000;
+            logger.warn('Rate limit exceeded and would be refreshed at %s', new Date(reset));
+            await Promise.delay(Date.now() - reset);
+            // make one more attempt while holding the same limit
+            return await fetch(cursor, account, cursorField);
+          }
+          throw err;
         } finally {
           logger.debug('%s => got response: %s', quid, process.hrtime(time));
         }
