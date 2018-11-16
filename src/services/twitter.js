@@ -2,6 +2,9 @@ const Promise = require('bluebird');
 const TwitterClient = require('twitter');
 const BN = require('bn.js');
 const get = require('get-value');
+const pLimit = require('p-limit');
+const uuid = require('uuid/v4');
+const { promisify } = require('util');
 const {
   isObject, isString, conforms, merge, find,
 } = require('lodash');
@@ -89,6 +92,36 @@ class Twitter {
     return tweet;
   }
 
+  static tweetFetcherFactory(twitter, logger) {
+    const limit = pLimit(1);
+    const timeline = promisify(twitter.get).bind(twitter, 'statuses/user_timeline');
+    const fetch = (cursor, account, cursorField = 'max_id') => timeline({
+      count: 200,
+      screen_name: account,
+      trim_user: false,
+      exclude_replies: false,
+      include_rts: true,
+      [cursorField]: cursor,
+    });
+
+    return (cursor, account, cursorField = 'max_id') => {
+      const time = process.hrtime();
+      const quid = uuid();
+      logger.debug('%s => queueing at %s', quid, time);
+      return limit(async () => {
+        logger.debug('fetching tweets for %s based on %s %s', account, cursorField, cursor);
+        logger.debug('%s => starting to fetch tweets: %s', quid, process.hrtime(time));
+        try {
+          return await fetch(cursor, account, cursorField);
+        } catch (e) {
+          throw e;
+        } finally {
+          logger.debug('%s => got response: %s', quid, process.hrtime(time));
+        }
+      });
+    };
+  }
+
   /**
    * @param {Social} core
    * @param {object} config
@@ -102,6 +135,7 @@ class Twitter {
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
+    this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger);
 
     // cheaper than bind
     this.onData = json => this._onData(json);
@@ -270,25 +304,10 @@ class Twitter {
     }
   }
 
-  fetchTweets(cursor, account, cursorField = 'max_id') {
-    this.logger.debug('fetching tweets for %s based on %s %s', account, cursorField, cursor);
-    const twitter = this.client;
-
-    return Promise.fromCallback(next => twitter.get('statuses/user_timeline', {
-      count: 200,
-      screen_name: account,
-      trim_user: false,
-      exclude_replies: false,
-      include_rts: true,
-      [cursorField]: cursor,
-    }, next));
-  }
-
   syncAccount(account, order = 'asc') {
     const twitterStatuses = this.storage.twitterStatuses();
 
     // recursively syncs account
-    // TODO: subject to rate limit
     return twitterStatuses
       .list({
         filter: {

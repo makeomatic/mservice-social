@@ -31,4 +31,7 @@ global.SERVICES = {
       exchange: 'ex.broadcast',
     },
   },
+  logger: {
+    debug: true,
+  },
 };
