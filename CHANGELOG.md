@@ -1,3 +1,10 @@
+## [4.1.3](https://github.com/makeomatic/mservice-social.git/compare/v4.1.2...v4.1.3) (2018-11-19)
+
+
+### Bug Fixes
+
+* slightly modified validator config ([#37](https://github.com/makeomatic/mservice-social.git/issues/37)) ([c4167aa](https://github.com/makeomatic/mservice-social.git/commit/c4167aa))
+
 ## [4.1.2](https://github.com/makeomatic/mservice-social.git/compare/v4.1.1...v4.1.2) (2018-11-16)
 
 
