@@ -1,3 +1,10 @@
+# [4.2.0](https://github.com/makeomatic/mservice-social.git/compare/v4.1.3...v4.2.0) (2018-11-29)
+
+
+### Features
+
+* added user image to tweet data ([#38](https://github.com/makeomatic/mservice-social.git/issues/38)) ([6911f81](https://github.com/makeomatic/mservice-social.git/commit/6911f81))
+
 ## [4.1.3](https://github.com/makeomatic/mservice-social.git/compare/v4.1.2...v4.1.3) (2018-11-19)
 
 
