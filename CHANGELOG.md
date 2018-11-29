@@ -1,3 +1,10 @@
+# [4.3.0](https://github.com/makeomatic/mservice-social.git/compare/v4.2.0...v4.3.0) (2018-11-29)
+
+
+### Features
+
+* extended feed.read method ([#39](https://github.com/makeomatic/mservice-social.git/issues/39)) ([d69ee39](https://github.com/makeomatic/mservice-social.git/commit/d69ee39))
+
 # [4.2.0](https://github.com/makeomatic/mservice-social.git/compare/v4.1.3...v4.2.0) (2018-11-29)
 
 
