@@ -10,7 +10,13 @@
       "properties": {
         "account": {
           "description": "Account ID (for twitter — username) to fetch feed for",
-          "type": "string"
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          ]
         },
         "mentions": {
           "description": "Array of mentions to search for",
