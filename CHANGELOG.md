@@ -1,3 +1,10 @@
+## [4.3.1](https://github.com/makeomatic/mservice-social.git/compare/v4.3.0...v4.3.1) (2018-11-30)
+
+
+### Bug Fixes
+
+* edited user image url ([#40](https://github.com/makeomatic/mservice-social.git/issues/40)) ([36d6ec9](https://github.com/makeomatic/mservice-social.git/commit/36d6ec9))
+
 # [4.3.0](https://github.com/makeomatic/mservice-social.git/compare/v4.2.0...v4.3.0) (2018-11-29)
 
 
