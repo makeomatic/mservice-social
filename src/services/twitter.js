@@ -83,6 +83,7 @@ class Twitter {
       account_id: data.user.id_str,
       account_image: data.user.profile_image_url_https,
       entities: data.entities,
+      extended_entities: data.extended_entities,
       retweeted_status: data.retweeted_status && Twitter.serializeTweet(data.retweeted_status, true),
     };
 
