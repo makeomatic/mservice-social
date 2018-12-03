@@ -1,3 +1,10 @@
+# [4.4.0](https://github.com/makeomatic/mservice-social.git/compare/v4.3.1...v4.4.0) (2018-12-03)
+
+
+### Features
+
+* **twitter:** add extended_entities ([#41](https://github.com/makeomatic/mservice-social.git/issues/41)) ([cf80cc1](https://github.com/makeomatic/mservice-social.git/commit/cf80cc1))
+
 ## [4.3.1](https://github.com/makeomatic/mservice-social.git/compare/v4.3.0...v4.3.1) (2018-11-30)
 
 
