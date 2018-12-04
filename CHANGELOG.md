@@ -1,3 +1,11 @@
+## [4.4.2](https://github.com/makeomatic/mservice-social.git/compare/v4.4.1...v4.4.2) (2018-12-04)
+
+
+### Bug Fixes
+
+* releaserc.json ([#44](https://github.com/makeomatic/mservice-social.git/issues/44)) ([8c20a29](https://github.com/makeomatic/mservice-social.git/commit/8c20a29))
+* use timeout.refresh() ([#45](https://github.com/makeomatic/mservice-social.git/issues/45)) ([91f7022](https://github.com/makeomatic/mservice-social.git/commit/91f7022))
+
 ## [4.4.1](https://github.com/makeomatic/mservice-social.git/compare/v4.4.0...v4.4.1) (2018-12-04)
 
 
