@@ -239,13 +239,15 @@ class Twitter {
   }
 
   resetTimeout() {
-    // reset old timeout
-    if (this.timeout) clearTimeout(this.timeout);
-
-    // set new timeout
-    this.timeout = setTimeout(() => {
-      this.listener.emit('error', new Error('timed out, no data in 90 seconds'));
-    }, 90000);
+    if (this.timeout) {
+      // reset old timeout
+      this.timeout.refresh();
+    } else {
+      // set new timeout
+      this.timeout = setTimeout(() => {
+        this.listener.emit('error', new Error('timed out, no data in 90 seconds'));
+      }, 90000);
+    }
   }
 
   connect() {
