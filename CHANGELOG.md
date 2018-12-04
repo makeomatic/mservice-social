@@ -1,3 +1,10 @@
+## [4.4.1](https://github.com/makeomatic/mservice-social.git/compare/v4.4.0...v4.4.1) (2018-12-04)
+
+
+### Bug Fixes
+
+* bump deps ([#43](https://github.com/makeomatic/mservice-social.git/issues/43)) ([7be41d6](https://github.com/makeomatic/mservice-social.git/commit/7be41d6))
+
 # [4.4.0](https://github.com/makeomatic/mservice-social.git/compare/v4.3.1...v4.4.0) (2018-12-03)
 
 
