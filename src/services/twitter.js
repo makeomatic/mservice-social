@@ -192,7 +192,7 @@ class Twitter {
             throw exception;
           })
       ), { concurrency: 2 }) /* to avoid rate limits */
-      .then(this.setFollowing)
+      .tap(this.setFollowing)
       .then(this.listen)
       .catch(this.onError);
   }
