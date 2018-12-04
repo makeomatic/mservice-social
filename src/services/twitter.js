@@ -152,6 +152,7 @@ class Twitter {
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
+    this.following = [];
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger);
 
     // cheaper than bind
@@ -191,8 +192,15 @@ class Twitter {
             throw exception;
           })
       ), { concurrency: 2 }) /* to avoid rate limits */
+      .then(this.setFollowing)
       .then(this.listen)
       .catch(this.onError);
+  }
+
+  setFollowing(accounts) {
+    this.following = accounts && accounts.length > 0
+      ? accounts.map(it => it.account)
+      : [];
   }
 
   listen(accounts) {
@@ -316,7 +324,7 @@ class Twitter {
 
   publish = (tweet) => {
     const account = get(tweet, 'meta.account', false);
-    if (account) {
+    if (account && Array.includes(this.following, account)) {
       const route = `twitter/subscription/${account}`;
       const payload = transform(tweet, TYPE_TWEET);
       this.core.emit(Notifier.kPublishEvent, route, payload);

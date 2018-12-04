@@ -51,11 +51,9 @@ class Feed {
   }
 
   async remove(data) {
-    const facebook = this.service('facebook');
     const storage = this.service('storage');
-    const twitter = this.service('twitter');
-
     const feeds = await storage.feeds().list({ filter: data });
+
     if (feeds.length === 0) {
       return;
     }
@@ -70,18 +68,27 @@ class Feed {
         .remove({ account });
     }
 
-    twitter.connect();
-
-    const acts = [];
-    for (const feed of feeds) { // eslint-disable-line no-restricted-syntax
-      if (feed.network === 'facebook') {
-        const { network_id: pageId, meta: { token } } = feed;
-
-        acts.push(facebook.subscription.unsubscribeApp(pageId, token));
-      }
+    try {
+      // schedule resync
+      this.service('twitter').connect();
+    } catch (e) {
+      this.console.info(e);
     }
 
-    if (acts.length > 0) await Promise.all(acts);
+    try {
+      const facebook = this.service('facebook');
+      const acts = [];
+      for (const feed of feeds) { // eslint-disable-line no-restricted-syntax
+        if (feed.network === 'facebook') {
+          const { network_id: pageId, meta: { token } } = feed;
+          acts.push(facebook.subscription.unsubscribeApp(pageId, token));
+        }
+      }
+
+      if (acts.length > 0) await Promise.all(acts);
+    } catch (e) {
+      this.console.info(e);
+    }
   }
 }
 
