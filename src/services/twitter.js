@@ -192,7 +192,6 @@ class Twitter {
             throw exception;
           })
       ), { concurrency: 2 }) /* to avoid rate limits */
-      .tap(this.setFollowing)
       .then(this.listen)
       .catch(this.onError);
   }
@@ -209,6 +208,8 @@ class Twitter {
       params.follow = accounts
         .map(twAccount => twAccount.account_id)
         .join(',');
+
+      this.setFollowing(accounts);
     }
 
     if (!params.follow) {
@@ -324,7 +325,8 @@ class Twitter {
 
   publish = (tweet) => {
     const account = get(tweet, 'meta.account', false);
-    if (account && Array.includes(this.following, account)) {
+    const { following } = this;
+    if (account && Array.isArray(following) && following.includes(account)) {
       const route = `twitter/subscription/${account}`;
       const payload = transform(tweet, TYPE_TWEET);
       this.core.emit(Notifier.kPublishEvent, route, payload);
