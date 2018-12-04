@@ -3,7 +3,8 @@
   "verifyConditions": [
     "@semantic-release/changelog",
     "@semantic-release/git",
-    "@semantic-release/github"
+    "@semantic-release/github",
+    "@semantic-release/npm"
   ],
   "prepare": [
     { "path": "@semantic-release/exec", "cmd": "yarn doc" },
