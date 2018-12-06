@@ -1,3 +1,10 @@
+## [4.4.3](https://github.com/makeomatic/mservice-social.git/compare/v4.4.2...v4.4.3) (2018-12-06)
+
+
+### Bug Fixes
+
+* feed.remove assertion handling, twitter pub only for following accs ([#46](https://github.com/makeomatic/mservice-social.git/issues/46)) ([4616d12](https://github.com/makeomatic/mservice-social.git/commit/4616d12))
+
 ## [4.4.2](https://github.com/makeomatic/mservice-social.git/compare/v4.4.1...v4.4.2) (2018-12-04)
 
 
