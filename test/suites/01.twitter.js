@@ -112,10 +112,6 @@ describe('twitter', function testSuite() {
   // that long?
   it('wait for stream to startup', () => Promise.delay(5000));
 
-  it('verify that spy has been called', () => {
-    assert(this.broadcastSpy.called);
-  });
-
   it('post tweet and wait for it to arrive', (done) => {
     this.service.service('twitter').client.post(
       'statuses/update',
@@ -146,6 +142,10 @@ describe('twitter', function testSuite() {
 
         return null;
       });
+  });
+
+  it('verify that spy has been called', () => {
+    assert(this.broadcastSpy.called);
   });
 
   it('confirm amqp request to read works', () => {
