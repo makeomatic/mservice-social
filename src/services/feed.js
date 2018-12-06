@@ -72,7 +72,7 @@ class Feed {
       // schedule resync
       this.service('twitter').connect();
     } catch (e) {
-      this.console.info(e);
+      this.logger.info(e);
     }
 
     try {
@@ -87,7 +87,7 @@ class Feed {
 
       if (acts.length > 0) await Promise.all(acts);
     } catch (e) {
-      this.console.info(e);
+      this.logger.info(e);
     }
   }
 }
