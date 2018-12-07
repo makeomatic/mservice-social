@@ -1,3 +1,10 @@
+## [4.4.4](https://github.com/makeomatic/mservice-social.git/compare/v4.4.3...v4.4.4) (2018-12-07)
+
+
+### Bug Fixes
+
+* logger statemensts ([#47](https://github.com/makeomatic/mservice-social.git/issues/47)) ([1b88681](https://github.com/makeomatic/mservice-social.git/commit/1b88681))
+
 ## [4.4.3](https://github.com/makeomatic/mservice-social.git/compare/v4.4.2...v4.4.3) (2018-12-06)
 
 
