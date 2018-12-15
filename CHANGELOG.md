@@ -1,3 +1,10 @@
+## [4.4.5](https://github.com/makeomatic/mservice-social.git/compare/v4.4.4...v4.4.5) (2018-12-15)
+
+
+### Bug Fixes
+
+* **twitter:** add index on account field ([#48](https://github.com/makeomatic/mservice-social.git/issues/48)) ([f24c36f](https://github.com/makeomatic/mservice-social.git/commit/f24c36f))
+
 ## [4.4.4](https://github.com/makeomatic/mservice-social.git/compare/v4.4.3...v4.4.4) (2018-12-07)
 
 
