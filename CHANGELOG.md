@@ -1,3 +1,10 @@
+## [4.4.6](https://github.com/makeomatic/mservice-social.git/compare/v4.4.5...v4.4.6) (2018-12-24)
+
+
+### Bug Fixes
+
+* **facebook.media:** add `page.future` param option ([#49](https://github.com/makeomatic/mservice-social.git/issues/49)) ([8ed2516](https://github.com/makeomatic/mservice-social.git/commit/8ed2516))
+
 ## [4.4.5](https://github.com/makeomatic/mservice-social.git/compare/v4.4.4...v4.4.5) (2018-12-15)
 
 

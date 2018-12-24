@@ -2,7 +2,7 @@
   "name": "mservice-social",
   "description": "mservice-social",
   "main": "./lib/index.js",
-  "version": "4.4.5",
+  "version": "4.4.6",
   "scripts": {
     "compile": "babel -d ./lib --copy-files ./src",
     "prepublishOnly": "yarn lint && yarn compile",
