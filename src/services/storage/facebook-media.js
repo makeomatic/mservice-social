@@ -21,6 +21,10 @@ class FacebookMedia {
       query.where('created_time', cursorDirection, page.cursor);
     }
 
+    if (page.future !== true) {
+      query.where('created_time', '<', (new Date()).toISOString());
+    }
+
     return query.select();
   }
 

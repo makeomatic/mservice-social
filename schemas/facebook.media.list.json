@@ -30,6 +30,10 @@
           "minimum": 1,
           "default": 20,
           "description": "Number of results"
+        },
+        "future": {
+          "type": "boolean",
+          "description": "Include posts to be posted in the future"
         }
       }
     },

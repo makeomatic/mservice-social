@@ -38,6 +38,7 @@ describe('facebook.media.list', function testSuite() {
   before('create facebook media', () => {
     const facebook = service.service('facebook');
     const posts = [
+      { pageId, postId: '1111111111111111110', createdTime: '2030-01-01T01:00:00+0000' },
       { pageId, postId: '1111111111111111111', createdTime: '2016-11-01T20:00:00+0000' },
       { pageId, postId: '1111111111111111112', createdTime: '2016-10-01T20:00:00+0000' },
       { pageId, postId: '1111111111111111113', createdTime: '2016-10-15T20:00:00+0000' },
@@ -126,6 +127,55 @@ describe('facebook.media.list', function testSuite() {
           return null;
         });
     });
+
+    it('should return future posts when requested explicitly', () => {
+      const params = {
+        filter: { pageId },
+        page: { future: true },
+      };
+
+      return service.amqp
+        .publishAndWait('social.facebook.media.list', params)
+        .reflect()
+        .then((response) => {
+          const { meta, data } = response.value();
+          const { count } = meta;
+          const [first] = data;
+
+          assert.equal(count, 4);
+          assert.equal(data.length, 4);
+          assert.equal(first.id, '1111111111111111110');
+
+          return null;
+        });
+    });
+
+    it('should return future posts sorted by asc when requested explicitly', () => {
+      const params = {
+        filter: { pageId },
+        sort: 'created_time',
+        page: {
+          future: true,
+          cursor: '2016-10-15T20:00:00.000Z',
+        },
+      };
+
+      return service.amqp
+        .publishAndWait('social.facebook.media.list', params)
+        .reflect()
+        .then((response) => {
+          const { meta, data } = response.value();
+          const { count, cursor } = meta;
+          const [first] = data;
+
+          assert.equal(count, 2);
+          assert.equal(data.length, 2);
+          assert.equal(cursor, '2030-01-01T01:00:00.000Z');
+          assert.equal(first.id, '1111111111111111111');
+
+          return null;
+        });
+    });
   });
 
   describe('http', () => {
@@ -199,6 +249,28 @@ describe('facebook.media.list', function testSuite() {
           assert.equal(before, '2016-11-01T20:00:00.000Z');
           assert.equal(data.length, 1);
           assert.equal(first.id, '1111111111111111113');
+
+          return null;
+        });
+    });
+
+    it('should be able to get future posts when requested explicitly', () => {
+      const params = {
+        filter: { pageId },
+        page: { future: true },
+      };
+
+      return http({ body: params })
+        .then((response) => {
+          assert.equal(response.statusCode, 200);
+
+          const { meta, data } = response.body;
+          const { count } = meta;
+          const [first] = data;
+
+          assert.equal(count, 4);
+          assert.equal(data.length, 4);
+          assert.equal(first.id, '1111111111111111110');
 
           return null;
         });
