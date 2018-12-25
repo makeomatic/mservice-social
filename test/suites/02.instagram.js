@@ -1,6 +1,7 @@
 const assert = require('assert');
 const Promise = require('bluebird');
 const request = require('request-promise');
+const { StatusCodeError } = require('request-promise/errors');
 const sinon = require('sinon');
 const Social = require('../../src');
 
@@ -196,5 +197,98 @@ describe('instagram', function testSuite() {
     });
 
     stub.reset();
+    stub.restore();
+  });
+
+  it('should invalidate feed on `invalid token` response', async () => {
+    const stub = sinon.stub(request, 'get');
+    stub
+      .withArgs(syncOnReconnectFixture.request)
+      .rejects(new StatusCodeError(400, {
+        meta: {
+          code: 400,
+          error_type: 'OAuthAccessTokenException',
+        },
+      }))
+      .usingPromise(Promise);
+    stub
+      .withArgs({
+        url: 'https://api.instagram.com/v1/users/self/media/recent?access_token=777.1&count=200',
+        json: true,
+      })
+      .resolves({
+        data: [],
+        meta: { code: 200 },
+        pagination: {},
+      })
+      .usingPromise(Promise);
+
+    // register another feed
+    await this.service.amqp
+      .publishAndWait('social.feed.register',
+        {
+          internal: 'bar@instagram.com',
+          network: 'instagram',
+          accounts: [{
+            id: '777',
+            token: '777.1',
+            username: 'bar',
+          }],
+        });
+
+    await this.service.close();
+
+    this.service = new Social({
+      ...config,
+      instagram: {
+        ...config.instagram,
+        syncMediaOnStart: true,
+      },
+    });
+
+    await this.service.connect();
+
+    const { invalid } = await this.service
+      .service(Social.SERVICE_STORAGE)
+      .feeds()
+      .getByNetworkId('instagram', '555');
+
+    assert.equal(invalid, true);
+
+    stub.reset();
+    stub.restore();
+  });
+
+  it('should not sync `invalid` feeds', async () => {
+    const stub = sinon.stub(request, 'get');
+    stub.withArgs(syncOnReconnectFixture.request);
+    stub
+      .withArgs({
+        url: 'https://api.instagram.com/v1/users/self/media/recent?access_token=777.1&count=200',
+        json: true,
+      })
+      .resolves({
+        data: [],
+        meta: { code: 200 },
+        pagination: {},
+      })
+      .usingPromise(Promise);
+
+    await this.service.close();
+
+    this.service = new Social({
+      ...config,
+      instagram: {
+        ...config.instagram,
+        syncMediaOnStart: true,
+      },
+    });
+
+    await this.service.connect();
+
+    assert(stub.calledOnce);
+
+    stub.reset();
+    stub.restore();
   });
 });

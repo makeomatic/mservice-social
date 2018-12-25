@@ -1,15 +1,15 @@
 const Promise = require('bluebird');
-const request = require('request-promise');
 const getListUrl = require('./media/get-list-url');
 const getMediaUrl = require('./media/get-url');
 const syncAccountHistory = require('./media/sync-account-history');
 
 class Media {
-  constructor(config, instagramComments, storage, logger) {
-    this.config = config;
+  constructor(instagram, instagramComments) {
+    this.instagram = instagram;
+    this.config = instagram.config;
+    this.storage = instagram.storage;
+    this.logger = instagram.logger;
     this.comments = instagramComments;
-    this.storage = storage;
-    this.logger = logger;
     this.timeout = null;
   }
 
@@ -35,7 +35,7 @@ class Media {
     this.logger.debug('instagram: sync started');
 
     return feeds
-      .list({ filter: { network: 'instagram' } })
+      .list({ filter: { network: 'instagram', invalid: false } })
       .map(feed => Promise.join(feed, instagramMedia.getLastId(feed.network_id)))
       .tap((toFetch) => {
         stats.total = toFetch.length;
@@ -88,8 +88,8 @@ class Media {
   fetch(id, accessToken) { // eslint-disable-line class-methods-use-this
     const options = { url: getMediaUrl(id, accessToken), json: true };
 
-    return Promise
-      .resolve(request.get(options))
+    return this.instagram
+      .request(options, accessToken)
       .get('data');
   }
 

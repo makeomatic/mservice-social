@@ -1,3 +1,5 @@
+const is = require('is');
+
 class Feeds {
   constructor(knex, table) {
     this.knex = knex;
@@ -29,6 +31,10 @@ class Feeds {
       if (data.filter.network) {
         query.where({ network: data.filter.network });
       }
+
+      if (is.bool(data.filter.invalid)) {
+        query.where({ invalid: data.filter.invalid });
+      }
     }
 
     return query;
@@ -46,6 +52,14 @@ class Feeds {
     }
 
     return query.del();
+  }
+
+  invalidate(network, accessToken, tokenField = 'token') {
+    return this
+      .knex(this.table)
+      .where('network', network)
+      .whereRaw('meta->>? = ?', [tokenField, accessToken])
+      .update('invalid', true);
   }
 
   getByNetworkId(network, networkId) {
