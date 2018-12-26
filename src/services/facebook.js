@@ -1,10 +1,12 @@
 const omit = require('lodash/omit');
+const get = require('lodash/get');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const retry = require('retry');
 const proofGenerator = require('./facebook/proof-generator');
 const Media = require('./facebook/media');
 const Subscription = require('./facebook/subscription');
+const { mangleToken } = require('../utils/logging');
 
 class Facebook {
   static timeoutOptions = {
@@ -15,7 +17,23 @@ class Facebook {
     randomize: true,
   };
 
-  static throttleCodes = [4, 32];
+  static getErrorCode(response) {
+    return get(response, 'error.error.code');
+  }
+
+  static isThrottleError(response) {
+    /**
+     * 4: Application-level throttling 200 calls/person/hour
+     * 32: Page-level throttling 4800 calls/person/24-hours
+     */
+    return [4, 32].includes(Facebook.getErrorCode(response));
+  }
+
+  static isInvalidTokenError(response) {
+    return this.accessToken != null
+      && (response.statusCode === 400)
+      && (Facebook.getErrorCode(response) === 190);
+  }
 
   constructor(core, config, storage, feed, logger) {
     this.core = core;
@@ -29,27 +47,24 @@ class Facebook {
     this.subscription = new Subscription(this);
   }
 
-  handleError(response) {
-    const error = response.error && response.error.error;
+  retry(response) {
     const self = this.ctx;
+    const timeout = retry.createTimeout(this.attempt, Facebook.timeoutOptions);
 
-    /**
-     * 4: Application-level throttling 200 calls/person/hour
-     * 32: Page-level throttling 4800 calls/person/24-hours
-     */
-    if (error && Facebook.throttleCodes.includes(error.code)) {
-      const timeout = retry.createTimeout(this.attempt, Facebook.timeoutOptions);
+    // notify of throttling error
+    self.logger.warn('Trying to repeat request after %d ms because', timeout, response.error.error);
 
-      // notify of throttling error
-      self.logger.warn('Trying to repeat request after %d ms because', timeout, error);
+    return Promise
+      .bind(self, [this.options, this.accessToken, this.attempt + 1])
+      .delay(timeout)
+      .spread(self.request);
+  }
 
-      return Promise
-        .bind(self, [this.options, this.accessToken, this.attempt + 1])
-        .delay(timeout)
-        .spread(self.request);
-    }
+  invalidateToken() {
+    const { ctx, accessToken } = this;
 
-    return Promise.reject(response);
+    ctx.logger.warn('Invalidate facebook token %s', mangleToken(accessToken));
+    return ctx.storage.feeds().invalidate('facebook', accessToken);
   }
 
   request(options, accessToken, attempt = 0) {
@@ -77,7 +92,8 @@ class Facebook {
       .bind({
         options, accessToken, attempt, ctx: this,
       })
-      .catch(this.handleError);
+      .tapCatch(Facebook.isInvalidTokenError, this.invalidateToken)
+      .catch(Facebook.isThrottleError, this.retry);
   }
 }
 

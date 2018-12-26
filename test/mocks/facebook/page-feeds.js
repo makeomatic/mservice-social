@@ -51,7 +51,7 @@ function makeResponse(requestOptions, responseOptions) {
   return response;
 }
 
-function pageFeeds(mock, requestOptions, responseOptions) {
+function mockPageFeeds(mock, requestOptions, responseOptions) {
   return mock
     .expects('get')
     .withArgs(makeRequest(requestOptions))
@@ -59,4 +59,7 @@ function pageFeeds(mock, requestOptions, responseOptions) {
     .once();
 }
 
-module.exports = pageFeeds;
+module.exports = {
+  mockPageFeeds,
+  makeRequest,
+};

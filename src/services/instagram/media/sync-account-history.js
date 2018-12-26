@@ -1,7 +1,6 @@
 /* eslint-disable no-use-before-define */
 
 const BigNumber = require('bn.js');
-const request = require('request-promise');
 const Promise = require('bluebird');
 
 function filterLessThanId(data, lastId) {
@@ -37,8 +36,8 @@ function syncAccountHistory(url, accessToken, lastId) {
   const ctx = [null, accessToken, lastId];
 
   return Promise
-    .bind(this, options)
-    .then(request.get)
+    .bind(this, [options, accessToken])
+    .spread(this.instagram.request)
     .bind(ctx)
     .tap(setPagination)
     .get('data')
