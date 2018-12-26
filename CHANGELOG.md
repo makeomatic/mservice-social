@@ -1,3 +1,10 @@
+# [4.5.0](https://github.com/makeomatic/mservice-social.git/compare/v4.4.6...v4.5.0) (2018-12-26)
+
+
+### Features
+
+* **tokens:** invalidate ig/fb tokens, sync only valid feeds, add tests ([#50](https://github.com/makeomatic/mservice-social.git/issues/50)) ([b5ee751](https://github.com/makeomatic/mservice-social.git/commit/b5ee751))
+
 ## [4.4.6](https://github.com/makeomatic/mservice-social.git/compare/v4.4.5...v4.4.6) (2018-12-24)
 
 
