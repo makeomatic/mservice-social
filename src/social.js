@@ -1,5 +1,5 @@
 const merge = require('lodash/merge');
-const MService = require('@microfleet/core');
+const { Microfleet, ConnectorsTypes } = require('@microfleet/core');
 const Promise = require('bluebird');
 const { NotFoundError } = require('common-errors');
 
@@ -13,9 +13,8 @@ const Instagram = require('./services/instagram');
 const addUpsert = require('./utils/knex/upsert');
 
 const services = new WeakMap();
-const { ConnectorsTypes } = MService;
 
-class Social extends MService {
+class Social extends Microfleet {
   static defaultConfig = conf.get('/', {
     env: process.env.NODE_ENV,
   });
