@@ -6,5 +6,6 @@ module.exports = {
     'amqp',
     'http',
     'knex',
+    'prometheus',
   ],
 };

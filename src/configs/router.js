@@ -13,7 +13,7 @@ module.exports = {
     },
     extensions: {
       enabled: ['postRequest', 'preRequest', 'preResponse'],
-      register: [auditLog],
+      register: [auditLog()],
     },
   },
 };
