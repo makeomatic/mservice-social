@@ -20,6 +20,7 @@
   "dependencies": {
     "@microfleet/core": "^13.6.0",
     "@microfleet/transport-amqp": "^13.1.2",
+    "@microfleet/validation": "^8.1.1",
     "bluebird": "^3.5.2",
     "bn.js": "^4.11.6",
     "boom": "^7.2.0",
@@ -35,7 +36,6 @@
     "lodash": "^4.17.11",
     "moment": "^2.22.2",
     "ms-conf": "^3.3.0",
-    "ms-validation": "^7.2.0",
     "pg": "^7.5.0",
     "prom-client": "^11.2.1",
     "raven": "^2.6.4",
