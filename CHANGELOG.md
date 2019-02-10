@@ -1,3 +1,15 @@
+# [5.0.0](https://github.com/makeomatic/mservice-social/compare/v4.5.0...v5.0.0) (2019-02-10)
+
+
+### Features
+
+* prometheus ([#51](https://github.com/makeomatic/mservice-social/issues/51)) ([70c2bf2](https://github.com/makeomatic/mservice-social/commit/70c2bf2))
+
+
+### BREAKING CHANGES
+
+* upgrade @microfleet/core to 13.x.x series
+
 # [4.5.0](https://github.com/makeomatic/mservice-social.git/compare/v4.4.6...v4.5.0) (2018-12-26)
 
 
