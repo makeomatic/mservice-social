@@ -18,7 +18,7 @@
     "preparecommitmsg": "./node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $GIT_PARAMS"
   },
   "dependencies": {
-    "@microfleet/core": "^10.11.0",
+    "@microfleet/core": "^13.6.0",
     "@microfleet/transport-amqp": "^13.1.2",
     "bluebird": "^3.5.2",
     "bn.js": "^4.11.6",
