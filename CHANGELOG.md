@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/makeomatic/mservice-social/compare/v5.0.0...v5.0.1) (2019-02-18)
+
+
+### Bug Fixes
+
+* node 10.15.1 ([66050bf](https://github.com/makeomatic/mservice-social/commit/66050bf))
+
 # [5.0.0](https://github.com/makeomatic/mservice-social/compare/v4.5.0...v5.0.0) (2019-02-10)
 
 
