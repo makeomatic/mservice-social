@@ -1,3 +1,11 @@
+## [5.0.3](https://github.com/makeomatic/mservice-social/compare/v5.0.2...v5.0.3) (2019-03-11)
+
+
+### Bug Fixes
+
+* improved twitter logs ([8b7d99f](https://github.com/makeomatic/mservice-social/commit/8b7d99f))
+* invalid handling on fb sync, tw error ([3a101dd](https://github.com/makeomatic/mservice-social/commit/3a101dd))
+
 ## [5.0.2](https://github.com/makeomatic/mservice-social/compare/v5.0.1...v5.0.2) (2019-03-11)
 
 
