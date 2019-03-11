@@ -175,8 +175,11 @@ class Twitter {
         try {
           await this.syncAccount(twAccount.account, 'desc');
         } catch (exception) {
+          const isAccountInaccessible = exception.statusCode === 401
+            || (Array.isArray(exception) && exception.find(it => (it.code === 34)));
+
           // removed twitter account
-          if (Array.isArray(exception) && exception.find(it => (it.code === 34))) {
+          if (isAccountInaccessible) {
             this.logger.warn('removing tw %j from database', twAccount);
             await this.storage.feeds().remove({
               internal: twAccount.internal,
