@@ -1,3 +1,10 @@
+## [5.0.4](https://github.com/makeomatic/mservice-social/compare/v5.0.3...v5.0.4) (2019-03-11)
+
+
+### Bug Fixes
+
+* remove inaccessible account ([c3a3185](https://github.com/makeomatic/mservice-social/commit/c3a3185))
+
 ## [5.0.3](https://github.com/makeomatic/mservice-social/compare/v5.0.2...v5.0.3) (2019-03-11)
 
 
