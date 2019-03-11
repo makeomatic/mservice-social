@@ -61,12 +61,12 @@ function applyMediaChangesMapper(entry) {
         });
     })
     // remove unsuccessful actions
-    .filter(change => change !== undefined);
+    .filter(change => change != null);
 }
 
 function webhookResponseReducer(response, changes) {
   changes.forEach((change) => {
-    response[change.action] += 1;
+    if (change) response[change.action] += 1;
   });
 
   return response;
@@ -136,7 +136,7 @@ class Subscription {
     return Promise
       .bind(this, params.entry)
       .map(fetchFeedMapper)
-      .filter(entry => entry.feed !== undefined)
+      .filter(entry => entry.feed != null)
       .map(applyMediaChangesMapper)
       .reduce(webhookResponseReducer, { add: 0, remove: 0, edited: 0 });
   }

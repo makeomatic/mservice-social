@@ -188,6 +188,8 @@ class Twitter {
               return false;
             }
 
+            // augment with the account data
+            exception.account = twAccount;
             this.logger.fatal('unknown error from twitter', exception);
             throw exception;
           })
@@ -333,45 +335,41 @@ class Twitter {
     }
   }
 
-  syncAccount(account, order = 'asc') {
+  async syncAccount(account, order = 'asc') {
     const twitterStatuses = this.storage.twitterStatuses();
+    const fetchedTweets = async (tweet) => {
+      const tweets = await this.fetchTweets(
+        Twitter.cursor(tweet, order),
+        account,
+        order === 'asc' ? 'max_id' : 'since_id'
+      );
+
+      const { length } = tweets;
+      this.logger.debug('fetched %d tweets', length);
+
+      if (length === 0) {
+        return null;
+      }
+
+      const index = order === 'asc' ? length - 1 : 0;
+
+      return Promise
+        .map(tweets, this.onData)
+        .get(index) // TODO: ensure that we are picking a tweet
+        .then(fetchedTweets);
+    };
 
     // recursively syncs account
-    return twitterStatuses
-      .list({
-        filter: {
-          page: 0,
-          account,
-          pageSize: 1,
-          order,
-        },
-      })
-      .bind(this)
-      .spread(function fetchedTweets(tweet) {
-        return this
-          .fetchTweets(
-            Twitter.cursor(tweet, order),
-            account,
-            order === 'asc' ? 'max_id' : 'since_id'
-          )
-          .then((tweets) => {
-            const { length } = tweets;
-            this.logger.debug('fetched %d tweets', length);
+    const [initialTweet] = await twitterStatuses.list({
+      filter: {
+        page: 0,
+        account,
+        pageSize: 1,
+        order,
+      },
+    });
 
-            if (length === 0) {
-              return null;
-            }
-
-            const index = order === 'asc' ? length - 1 : 0;
-
-            return Promise
-              .map(tweets, this.onData)
-              // TODO: ensure that we picking a tweet
-              .get(index)
-              .bind(this)
-              .then(fetchedTweets);
-          });
-      });
+    return fetchedTweets(initialTweet);
   }
 
   fillUserIds(original) {
