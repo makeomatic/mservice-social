@@ -13,9 +13,7 @@
     "lint": "eslint . --ext .json --ext .js",
     "semantic-release": "semantic-release",
     "release": "yarn --freze-lockfile && yarn semantic-release",
-    "start": "mfleet",
-    "commitmsg": "commitlint -e $GIT_PARAMS",
-    "preparecommitmsg": "./node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $GIT_PARAMS"
+    "start": "mfleet"
   },
   "dependencies": {
     "@microfleet/core": "^13.6.0",

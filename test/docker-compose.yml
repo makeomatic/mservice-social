@@ -40,7 +40,7 @@ services:
 
   tester:
     container_name: tester
-    image: makeomatic/node:10.11.0-tester
+    image: makeomatic/node:10.15.3-tester
     links:
       - postgres
       - rabbitmq
@@ -55,5 +55,4 @@ services:
       TWITTER_SECRET: ${TWITTER_SECRET}
       TWITTER_ACCESS_KEY: ${TWITTER_ACCESS_KEY}
       TWITTER_ACCESS_SECRET: ${TWITTER_ACCESS_SECRET}
-      SKIP_REBUILD: ${SKIP_REBUILD}
     command: tail -f /dev/null

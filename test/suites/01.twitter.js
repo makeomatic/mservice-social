@@ -118,6 +118,10 @@ describe('twitter', function testSuite() {
       { status: 'Test status' },
       (error, tweet) => {
         if (error) {
+          if (Array.isArray(error)) {
+            return done(new Error(JSON.stringify(error)));
+          }
+
           return done(error);
         }
 

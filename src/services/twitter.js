@@ -170,30 +170,31 @@ class Twitter {
     return this.storage
       .feeds()
       .fetch({ network: 'twitter' })
-      .bind(this)
       .reduce(extractAccount, [])
-      .filter(twAccount => (
-        this
-          .syncAccount(twAccount.account, 'desc')
-          .return(true)
-          .catch(async (exception) => {
-            // removed twitter account
-            if (Array.isArray(exception) && exception.find(it => (it.code === 34))) {
-              this.logger.warn('removing tw %j from database', twAccount);
-              await this.storage.feeds().remove({
-                internal: twAccount.internal,
-                network: 'twitter',
-                network_id: twAccount.network_id,
-              });
-              return false;
-            }
+      .filter(async (twAccount) => {
+        try {
+          await this.syncAccount(twAccount.account, 'desc');
+        } catch (exception) {
+          // removed twitter account
+          if (Array.isArray(exception) && exception.find(it => (it.code === 34))) {
+            this.logger.warn('removing tw %j from database', twAccount);
+            await this.storage.feeds().remove({
+              internal: twAccount.internal,
+              network: 'twitter',
+              network_id: twAccount.network_id,
+            });
+            return false;
+          }
 
-            // augment with the account data
-            exception.account = twAccount;
-            this.logger.fatal('unknown error from twitter', exception);
-            throw exception;
-          })
-      ), { concurrency: 2 }) /* to avoid rate limits */
+          // augment with the account data
+          exception.account = twAccount;
+          this.logger.fatal('unknown error from twitter', exception);
+          throw exception;
+        }
+
+        return true;
+      }, { concurrency: 2 }) /* to avoid rate limits */
+      .bind(this)
       .then(this.listen)
       .catch(this.onError);
   }
@@ -302,7 +303,7 @@ class Twitter {
       this.logger.warn('stream connection rate limit, reconnect in 10s', exception.message);
       this.reconnect = Promise.bind(this).delay(10000).then(this.init);
     } else {
-      this.logger.error('stream connection failed', exception);
+      this.logger.error({ err: exception }, 'stream connection failed');
       this._destroyAndReconnect();
     }
   }
