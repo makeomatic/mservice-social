@@ -11,7 +11,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["category", "id", "name", "perms", "token"],
+        "required": ["category", "id", "name", "tasks", "token"],
         "properties": {
           "category": {
             "description": "Category of facebook page",
@@ -39,7 +39,7 @@
             "description": "Name of facebook page",
             "type": "string"
           },
-          "perms": {
+          "tasks": {
             "description": "Array of permissions",
             "type": "array",
             "items": {

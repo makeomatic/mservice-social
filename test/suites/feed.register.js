@@ -213,7 +213,7 @@ describe('feed.register', function feedRegisterSuite() {
           category: 'music',
           id: '111111111111111',
           name: 'Music',
-          perms: [],
+          tasks: [],
         }],
       };
 
@@ -241,13 +241,13 @@ describe('feed.register', function feedRegisterSuite() {
           category: 'Website',
           id: firstPageId,
           name: 'Music',
-          perms: [],
+          tasks: [],
           token: 'token1',
         }, {
           category: 'News',
           id: secondPageId,
           name: 'City',
-          perms: [],
+          tasks: [],
           token: 'token2',
         }],
       };
@@ -318,13 +318,13 @@ describe('feed.register', function feedRegisterSuite() {
           category: 'Website',
           id: firstPageId,
           name: 'Music',
-          perms: [],
+          tasks: [],
           token: 'token3',
         }, {
           category: 'News',
           id: secondPageId,
           name: 'City',
-          perms: [],
+          tasks: [],
           token: 'token4',
         }],
       };

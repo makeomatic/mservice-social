@@ -26,7 +26,7 @@ describe('service', function suite() {
             meta: JSON.stringify({
               id: '1',
               name: 'City',
-              perms: [],
+              tasks: [],
               token: 'token1',
               category: 'News',
             }),

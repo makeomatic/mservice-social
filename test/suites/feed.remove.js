@@ -34,7 +34,7 @@ describe('feed.register', function feedRegisterSuite() {
         meta: JSON.stringify({
           id: '1',
           name: 'City',
-          perms: [],
+          tasks: [],
           token: 'token1',
           category: 'News',
         }),

@@ -43,7 +43,7 @@ describe('facebook.webhook', function testSuite() {
       meta: JSON.stringify({
         id: pageId,
         name: 'City',
-        perms: [],
+        tasks: [],
         token: 'token1',
         category: 'News',
       }),
