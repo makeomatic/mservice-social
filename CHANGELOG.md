@@ -1,3 +1,10 @@
+## [5.0.5](https://github.com/makeomatic/mservice-social/compare/v5.0.4...v5.0.5) (2019-03-12)
+
+
+### Bug Fixes
+
+* **fb:** adhere to 3.1 graph api changes ([#52](https://github.com/makeomatic/mservice-social/issues/52)) ([7ee92d9](https://github.com/makeomatic/mservice-social/commit/7ee92d9))
+
 ## [5.0.4](https://github.com/makeomatic/mservice-social/compare/v5.0.3...v5.0.4) (2019-03-11)
 
 
