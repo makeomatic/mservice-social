@@ -23,7 +23,7 @@ class Feeds {
       .from(this.table);
 
     if (data.filter.id) {
-      query.where({ id: data.filter.id });
+      query.whereRaw('id = ?::bigint', data.filter.id);
     } else {
       if (data.filter.internal) {
         query.where({ internal: data.filter.internal });
@@ -46,7 +46,7 @@ class Feeds {
       .from(this.table);
 
     if (data.id) {
-      query.where({ id: data.id });
+      query.whereRaw('id = ?::bigint', data.id);
     } else {
       query.where({ internal: data.internal, network: data.network });
     }
