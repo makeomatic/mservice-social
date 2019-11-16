@@ -1,3 +1,21 @@
+# [6.0.0](https://github.com/makeomatic/mservice-social/compare/v5.0.5...v6.0.0) (2019-11-16)
+
+
+### Bug Fixes
+
+* update deps ([9141ec1](https://github.com/makeomatic/mservice-social/commit/9141ec18a647aaf893ba5a68088188a4c2594b29))
+
+
+### Features
+
+* upgrade deps for node 12 and latest [@microfleet](https://github.com/microfleet) ([#54](https://github.com/makeomatic/mservice-social/issues/54)) ([ed2b911](https://github.com/makeomatic/mservice-social/commit/ed2b911c4fae9e622e83ef6f9c0e9b79195eb5e6))
+
+
+### BREAKING CHANGES
+
+* knex@0.20.x, node 12 as mainline, microfleet/core@15 and so on
+public APIs remain stable, but some underlaying configuration has changed so one must be careful to adjust it. overall upgrade time is small
+
 ## [5.0.5](https://github.com/makeomatic/mservice-social/compare/v5.0.4...v5.0.5) (2019-03-12)
 
 
