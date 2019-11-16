@@ -4,7 +4,7 @@ const BN = require('bn.js');
 const get = require('get-value');
 const pLimit = require('p-limit');
 const uuid = require('uuid/v4');
-// const { promisify } = require('util');
+const { HttpStatusError } = require('common-errors');
 const {
   isObject, isString, conforms, merge, find,
 } = require('lodash');
@@ -191,7 +191,7 @@ class Twitter {
 
           // augment with the account data
           exception.account = twAccount;
-          this.logger.fatal('unknown error from twitter', exception);
+          this.logger.fatal({ err: exception }, 'unknown error from twitter');
           throw exception;
         }
 
@@ -377,18 +377,22 @@ class Twitter {
   }
 
   fillUserIds(original) {
+    const screenNames = original
+      .filter((element) => (element.id === undefined))
+      .map((element) => (element.username))
+      .join(',');
+
     return Promise
       .fromCallback((next) => {
-        const screenNames = original
-          .filter((element) => (element.id === undefined))
-          .map((element) => (element.username))
-          .join(',');
-
         if (screenNames === '') {
           next(null, []);
         } else {
           this.client.get('users/lookup', { screen_name: screenNames }, next);
         }
+      })
+      .catch((e) => Array.isArray(e), (err) => {
+        this.logger.warn({ err }, 'failed to lookup %j', screenNames);
+        throw new HttpStatusError(400, JSON.stringify(err));
       })
       .reduce((acc, value) => {
         acc.push({ id: value.id_str, username: value.screen_name });

@@ -1,6 +1,5 @@
 const Promise = require('bluebird');
 const assert = require('assert');
-const merge = require('lodash/merge');
 const sinon = require('sinon');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
@@ -43,14 +42,24 @@ describe('twitter', function testSuite() {
       network: 'twitter',
     },
 
-    registerFail: {},
+    registerFail: {
+      internal: 'test@test.ru',
+      network: 'twitter',
+      accounts: [
+        { username: 'undefined' },
+        { username: 'test' },
+      ],
+    },
   };
 
   let tweetId;
+  let service;
+  let listener;
+  let broadcastSpy;
 
-  before('start service', () => {
-    const service = this.service = new Social(global.SERVICES);
-    return service.connect();
+  before('start service', async () => {
+    service = new Social(global.SERVICES);
+    await service.connect();
   });
 
   before('init spy for amqp.publish', async () => {
@@ -62,8 +71,9 @@ describe('twitter', function testSuite() {
         type: 'fanout',
       },
     };
-    const broadcastSpy = this.broadcastSpy = sinon.spy();
-    this.listener = await AMQPTransport.connect(listenerConfig, (message, amqp) => {
+
+    broadcastSpy = sinon.spy();
+    listener = await AMQPTransport.connect(listenerConfig, (message, amqp) => {
       const { account } = message.attributes.meta;
       assert(account);
       assert(amqp.routingKey === `/social/twitter/subscription/${account}`);
@@ -71,49 +81,36 @@ describe('twitter', function testSuite() {
     });
   });
 
-  after('cleanup feeds', () => this.service.knex('feeds').delete());
+  after('cleanup feeds', () => service.knex('feeds').delete());
 
-  it('should return error if request to register is not valid', () => {
-    return this.service.amqp.publishAndWait(uri.register, payload.registerFail)
-      .reflect()
-      .then((response) => {
-        assert(response.isRejected());
-        return null;
-      });
+  it('should return error if request to register is not valid', async () => {
+    await assert.rejects(service.amqp.publishAndWait(uri.register, payload.registerFail), {
+      name: 'HttpStatusError',
+      statusCode: 400,
+      message: JSON.stringify([{ code: 17, message: 'No user matches for specified terms.' }]),
+    });
   });
 
-  it('should register feed', () => {
-    return this.service.amqp
-      .publishAndWait(uri.register, payload.register, { timeout: 55000 })
-      .reflect()
-      .then((response) => {
-        assert.doesNotThrow(() => response.value());
-        return null;
-      });
+  it('should register feed', async () => {
+    await service.amqp
+      .publishAndWait(uri.register, payload.register, { timeout: 55000 });
   });
 
-  it('should return newly registered feed', () => {
-    return this.service.amqp
-      .publishAndWait(uri.list, payload.list)
-      .reflect()
-      .then((response) => {
-        assert(response.isFulfilled());
-        const body = response.value();
-        assert.equal(body.data.length, 2);
+  it('should return newly registered feed', async () => {
+    const body = await service.amqp
+      .publishAndWait(uri.list, payload.list);
 
-        payload.register.accounts.forEach((account) => {
-          assert.ok(body.data.find((x) => x.attributes.meta.account === account.username));
-        });
-
-        return null;
-      });
+    assert.equal(body.data.length, 2);
+    payload.register.accounts.forEach((account) => {
+      assert.ok(body.data.find((x) => x.attributes.meta.account === account.username));
+    });
   });
 
   // that long?
   it('wait for stream to startup', () => Promise.delay(5000));
 
   it('post tweet and wait for it to arrive', (done) => {
-    this.service.service('twitter').client.post(
+    service.service('twitter').client.post(
       'statuses/update',
       { status: 'Test status' },
       (error, tweet) => {
@@ -131,56 +128,39 @@ describe('twitter', function testSuite() {
     );
   });
 
-  it('should have collected some tweets', () => {
-    return Promise
-      .delay(1500)
-      .then(() => request(uri.read, merge(payload.read, { token: this.adminToken })))
-      .then((response) => {
-        const { body, statusCode } = response;
-        assert.equal(statusCode, 200);
-        assert.notEqual(body.data.length, 0);
-        assert.equal(body.data[0].id, tweetId);
-        assert(this.broadcastSpy.getCalls().find((call) => {
-          return call.args[0].id === tweetId;
-        }));
+  it('should have collected some tweets', async () => {
+    await Promise.delay(1500);
+    const response = await request(uri.read, payload.read);
 
-        return null;
-      });
+    const { body, statusCode } = response;
+    assert.equal(statusCode, 200);
+    assert.notEqual(body.data.length, 0);
+    assert.equal(body.data[0].id, tweetId);
+    assert(broadcastSpy.getCalls().find((call) => {
+      return call.args[0].id === tweetId;
+    }));
   });
 
   it('verify that spy has been called', () => {
-    assert(this.broadcastSpy.called);
+    assert(broadcastSpy.called);
   });
 
-  it('confirm amqp request to read works', () => {
-    return this.service.amqp.publishAndWait(uri.readAMQP, payload.read)
-      .reflect()
-      .then((response) => {
-        assert(response.isFulfilled());
-        const body = response.value();
-        assert.notEqual(body.data.length, 0);
-
-        return null;
-      });
+  it('confirm amqp request to read works', async () => {
+    const response = await service.amqp.publishAndWait(uri.readAMQP, payload.read);
+    assert.notEqual(response.data.length, 0);
   });
 
-  it('remove feed', () => {
-    return this.service.amqp.publishAndWait(uri.remove, payload.remove)
-      .reflect()
-      .then((response) => {
-        assert(response.isFulfilled());
-        return null;
-      });
+  it('remove feed', async () => {
+    await service.amqp.publishAndWait(uri.remove, payload.remove);
   });
 
   after('delete tweet', (done) => {
-    this.service
+    service
       .service('twitter')
       .client
       .post(`statuses/destroy/${tweetId}`, () => done());
   });
 
-  after('close consumer', () => this.listener.close());
-
-  after('shutdown service', () => this.service.close());
+  after('close consumer', () => listener.close());
+  after('shutdown service', () => service.close());
 });
