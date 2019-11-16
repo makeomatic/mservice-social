@@ -12,7 +12,7 @@ function FeedListAction({ params }) {
   return this
     .service('feed')
     .list(params)
-    .then(feeds => collectionResponse(feeds, TYPE_FEED));
+    .then((feeds) => collectionResponse(feeds, TYPE_FEED));
 }
 
 FeedListAction.schema = 'feed.list';

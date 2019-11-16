@@ -1,3 +1,17 @@
 {
-  "node": "10.15.3"
+  "node": "12.13.0",
+  "auto_compose": true,
+  "with_local_compose": true,
+  "services": [
+    "redisCluster",
+    "rabbitmq",
+    "postgres"
+  ],
+  "extras": {
+    "tester": {
+      "volumes": [
+        "${PWD}:/src:cached"
+      ]
+    }
+  }
 }

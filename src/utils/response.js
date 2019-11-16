@@ -1,6 +1,6 @@
 const omit = require('lodash/omit');
 
-const isfn = fn => typeof fn === 'function';
+const isfn = (fn) => typeof fn === 'function';
 const TYPE_TWEET = 'tweet';
 const TYPE_FEED = 'feed';
 const TYPE_INSTAGRAM_MEDIA = 'instagramMedia';
@@ -24,7 +24,7 @@ function collectionResponse(objects, type, options = {}) {
     meta: {
       count,
     },
-    data: objects.map(object => transform(object, type)),
+    data: objects.map((object) => transform(object, type)),
   };
 
   if (count) {

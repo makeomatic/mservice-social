@@ -34,6 +34,6 @@ debug('amqp configuration: %j', config.amqp.transport);
 
 return AMQPTransport
   .connect(Object.assign(config.amqp.transport, { debug: true }))
-  .then(amqp => (
+  .then((amqp) => (
     amqp.publish(route, message).finally(() => amqp.close())
   ));

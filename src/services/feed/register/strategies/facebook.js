@@ -20,7 +20,7 @@ function getLastId(feed) {
     .service('facebook')
     .media
     .getLast(feed.network_id)
-    .then(media => [feed, media]);
+    .then((media) => [feed, media]);
 }
 
 function syncHistory([feed, lastMedia]) {

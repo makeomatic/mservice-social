@@ -18,7 +18,7 @@ function filterLessThanId(data, lastId) {
 function fetchComments(media, accessToken) {
   return this.comments
     .fetch(media.id, accessToken)
-    .then(comments => ({ media, comments }));
+    .then((comments) => ({ media, comments }));
 }
 
 // first arg is pagination data
@@ -41,9 +41,9 @@ function syncAccountHistory(url, accessToken, lastId) {
     .bind(ctx)
     .tap(setPagination)
     .get('data')
-    .then(data => (lastId ? filterLessThanId(data, lastId) : data))
-    .map(media => fetchComments.call(this, media, accessToken))
-    .map(media => this.save(media))
+    .then((data) => (lastId ? filterLessThanId(data, lastId) : data))
+    .map((media) => fetchComments.call(this, media, accessToken))
+    .map((media) => this.save(media))
     .then(returnContext)
     .bind(this)
     .spread(paginate);

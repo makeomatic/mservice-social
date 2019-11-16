@@ -26,7 +26,7 @@ function applyMediaChangesMapper(entry) {
   const { logger, media: facebookMedia } = this.facebook;
 
   return Promise
-    .filter(changes, change => change.field === 'feed')
+    .filter(changes, (change) => change.field === 'feed')
     .map((change) => {
       const accessToken = feed.meta.token;
       const action = change.value.verb;
@@ -43,7 +43,7 @@ function applyMediaChangesMapper(entry) {
         case 'edited':
           promise = facebookMedia
             .fetch(postId, accessToken)
-            .then(media => facebookMedia.save(media));
+            .then((media) => facebookMedia.save(media));
           break;
 
         case 'remove':
@@ -61,7 +61,7 @@ function applyMediaChangesMapper(entry) {
         });
     })
     // remove unsuccessful actions
-    .filter(change => change != null);
+    .filter((change) => change != null);
 }
 
 function webhookResponseReducer(response, changes) {
@@ -93,7 +93,7 @@ class Subscription {
 
         return this.facebook.request(options);
       })
-      .each(subcription => logger.info('Facebook subcription:', subcription))
+      .each((subcription) => logger.info('Facebook subcription:', subcription))
       .catch((e) => {
         logger.error('Failed to subscribe', e);
       });
@@ -121,7 +121,7 @@ class Subscription {
     const { subscriptions } = this.facebook.config;
     const { 'hub.challenge': challenge, 'hub.verify_token': verifyToken } = params;
 
-    if (subscriptions.map(subscription => subscription.verifyToken).includes(verifyToken)) {
+    if (subscriptions.map((subscription) => subscription.verifyToken).includes(verifyToken)) {
       return challenge;
     }
 
@@ -136,7 +136,7 @@ class Subscription {
     return Promise
       .bind(this, params.entry)
       .map(fetchFeedMapper)
-      .filter(entry => entry.feed != null)
+      .filter((entry) => entry.feed != null)
       .map(applyMediaChangesMapper)
       .reduce(webhookResponseReducer, { add: 0, remove: 0, edited: 0 });
   }

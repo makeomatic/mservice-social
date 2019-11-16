@@ -1,4 +1,4 @@
-module.exports = userId => ({
+module.exports = (userId) => ({
   meta: {
     code: 200,
   },

@@ -1,4 +1,4 @@
-module.exports = userId => ({
+module.exports = (userId) => ({
   internal: 'foo@bar.ru',
   network: 'instagram',
   network_id: userId,

@@ -10,7 +10,7 @@ module.exports = {
   },
   redis: {
     hosts: [{
-      host: 'redis',
+      host: 'redis-cluster',
       port: 7000,
     }],
   },

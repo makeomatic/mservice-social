@@ -12,7 +12,7 @@ function feedRegisterAction({ params }) {
   return this
     .service(Social.SERVICE_FEED)
     .register(params)
-    .then(feeds => collectionResponse(feeds, TYPE_FEED));
+    .then((feeds) => collectionResponse(feeds, TYPE_FEED));
 }
 
 feedRegisterAction.schema = 'feed.register';

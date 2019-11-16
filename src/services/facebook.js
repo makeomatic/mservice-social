@@ -1,5 +1,5 @@
 const omit = require('lodash/omit');
-const get = require('lodash/get');
+const get = require('get-value');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const retry = require('retry');
@@ -72,14 +72,12 @@ class Facebook {
     const path = options.url;
     const { version } = this.config.api;
 
-    const requestOptions = Object.assign(
-      {
-        json: true,
-        qs: {},
-        url: `https://graph.facebook.com/${version}${path}`,
-      },
-      omit(options, 'method', 'url', 'retry', 'attempt')
-    );
+    const requestOptions = {
+      json: true,
+      qs: {},
+      url: `https://graph.facebook.com/${version}${path}`,
+      ...omit(options, 'method', 'url', 'retry', 'attempt'),
+    };
     const handler = request[method];
 
     if (accessToken) {

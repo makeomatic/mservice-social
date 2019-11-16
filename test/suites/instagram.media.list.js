@@ -28,7 +28,7 @@ describe('instagram.media.list', function testSuite() {
     const ids = ['1111111111111111111', '1111111111111111112', '1111111111111111113'];
 
     return Promise
-      .map(ids, id => instagram
+      .map(ids, (id) => instagram
         .media()
         .save({
           media: istagramMediaFactory(id, accountId),

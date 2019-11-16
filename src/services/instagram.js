@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const request = require('request-promise');
-const get = require('lodash/get');
+const get = require('get-value');
 const Comments = require('./instagram/comments');
 const Media = require('./instagram/media');
 const { mangleToken } = require('../utils/logging');

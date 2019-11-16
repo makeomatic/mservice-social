@@ -6,7 +6,7 @@ const url = require('url');
 function filterBeforeDate(data, date) {
   const lastMediaCreatedTime = moment(date);
 
-  return data.filter(media => lastMediaCreatedTime.isBefore(media.created_time));
+  return data.filter((media) => lastMediaCreatedTime.isBefore(media.created_time));
 }
 
 function filterMediaAndSave(data, lastMedia) {
@@ -34,14 +34,14 @@ function needPaginate(response, lastMedia) {
 function syncAccountHistory(requestOptions, accessToken, lastMedia) {
   return this.facebook
     .request(requestOptions, accessToken)
-    .tap(response => filterMediaAndSave.call(this, response.data, lastMedia))
+    .tap((response) => filterMediaAndSave.call(this, response.data, lastMedia))
     .then((response) => {
       if (needPaginate(response, lastMedia) === false) {
         return true;
       }
 
       const { next } = response.paging;
-      const nextRequestOptions = Object.assign({}, requestOptions);
+      const nextRequestOptions = { ...requestOptions };
 
       nextRequestOptions.qs = url.parse(next, true).query;
 

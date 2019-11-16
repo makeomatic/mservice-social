@@ -33,7 +33,7 @@ function register(data) {
   return Promise
     .bind(this, accounts)
     .map(collectFeedParams)
-    .map(params => saveFeed.call(this, internal, network, params))
+    .map((params) => saveFeed.call(this, internal, network, params))
     .map(afterSave)
     .map(getLastId)
     .map(syncHistory);

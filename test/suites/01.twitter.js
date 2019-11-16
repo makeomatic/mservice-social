@@ -102,7 +102,7 @@ describe('twitter', function testSuite() {
         assert.equal(body.data.length, 2);
 
         payload.register.accounts.forEach((account) => {
-          assert.ok(body.data.find(x => x.attributes.meta.account === account.username));
+          assert.ok(body.data.find((x) => x.attributes.meta.account === account.username));
         });
 
         return null;
