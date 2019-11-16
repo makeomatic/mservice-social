@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/makeomatic/mservice-social/compare/v6.0.0...v6.0.1) (2019-11-16)
+
+
+### Bug Fixes
+
+* wrap err array into object ([37d1943](https://github.com/makeomatic/mservice-social/commit/37d1943c81ed03020d79e0863b1d3479766d0f65))
+
 # [6.0.0](https://github.com/makeomatic/mservice-social/compare/v5.0.5...v6.0.0) (2019-11-16)
 
 
