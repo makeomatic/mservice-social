@@ -16,6 +16,7 @@
     "start": "mfleet"
   },
   "dependencies": {
+    "@hapi/boom": "^8.0.1",
     "@hapi/hapi": "^18.1.0",
     "@microfleet/core": "^15.5.1",
     "@microfleet/plugin-knex": "^0.2.3",
@@ -24,7 +25,6 @@
     "@sentry/node": "^5.9.0",
     "bluebird": "^3.7.1",
     "bn.js": "^5.0.0",
-    "boom": "^7.2.0",
     "common-errors": "^1.0.5",
     "debug": "^4.0.1",
     "get-value": "^3.0.1",
