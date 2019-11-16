@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const get = require('lodash/get');
+const get = require('get-value');
 const syncAccountHistory = require('./media/sync-account-history');
 const extractLinks = require('./links-extractor');
 
@@ -16,7 +16,7 @@ class Media {
     return this.facebook.storage
       .feeds()
       .list({ filter: { network: 'facebook', invalid: false } })
-      .map(feed => Promise.join(feed, this.getLast(feed.network_id)))
+      .map((feed) => Promise.join(feed, this.getLast(feed.network_id)))
       .map(([feed, lastMedia]) => this.syncPageHistory(feed.network_id, feed.meta.token, lastMedia));
   }
 
@@ -67,7 +67,7 @@ class Media {
     return this.facebook.storage
       .facebookMedia()
       .save(data)
-      .then(mediaData => logger.info('Save facebook media', mediaData));
+      .then((mediaData) => logger.info('Save facebook media', mediaData));
   }
 
   delete(id) {

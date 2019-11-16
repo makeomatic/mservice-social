@@ -1,6 +1,7 @@
 const { ActionTransport, routerExtension } = require('@microfleet/core');
 const path = require('path');
 
+const metrics = routerExtension('audit/metrics');
 const auditLog = routerExtension('audit/log');
 const { http, amqp } = ActionTransport;
 
@@ -12,8 +13,8 @@ module.exports = {
       transports: [http, amqp],
     },
     extensions: {
-      enabled: ['postRequest', 'preRequest', 'preResponse'],
-      register: [auditLog()],
+      enabled: ['postRequest', 'preRequest', 'preResponse', 'postResponse'],
+      register: [auditLog(), metrics()],
     },
   },
 };

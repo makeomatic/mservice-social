@@ -25,15 +25,11 @@ function attachmentMapper(value, key) {
   }
 
   if (key === 'target') {
-    return Object.assign({}, value, {
-      url: extractLink(value.url),
-    });
+    return { ...value, url: extractLink(value.url) };
   }
 
   if (key === 'media') {
-    return Object.assign({}, value, {
-      image: Object.assign({}, value.image, { src: extractLink(value.image.src) }),
-    });
+    return { ...value, image: { ...value.image, src: extractLink(value.image.src) } };
   }
 
   if (key === 'subattachments') {
@@ -50,9 +46,7 @@ function attachmentsMapper(attachment) {
 function processAttachments(attachments) {
   const { data } = attachments;
 
-  return Object.assign({}, attachments, {
-    data: data.map(attachmentsMapper),
-  });
+  return { ...attachments, data: data.map(attachmentsMapper) };
 }
 
 function mediaMapper(value, key) {

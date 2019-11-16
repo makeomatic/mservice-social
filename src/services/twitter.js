@@ -96,7 +96,7 @@ class Twitter {
 
   static tweetFetcherFactory(twitter, logger) {
     const limit = pLimit(1);
-    const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback(next => (
+    const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
       twitter.get('statuses/user_timeline', {
         count: 200,
         screen_name: account,
@@ -156,8 +156,8 @@ class Twitter {
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger);
 
     // cheaper than bind
-    this.onData = json => this._onData(json);
-    this.onError = err => this._onError(err);
+    this.onData = (json) => this._onData(json);
+    this.onError = (err) => this._onError(err);
     this.onEnd = () => this._onEnd();
   }
 
@@ -176,7 +176,7 @@ class Twitter {
           await this.syncAccount(twAccount.account, 'desc');
         } catch (exception) {
           const isAccountInaccessible = exception.statusCode === 401
-            || (Array.isArray(exception) && exception.find(it => (it.code === 34)));
+            || (Array.isArray(exception) && exception.find((it) => (it.code === 34)));
 
           // removed twitter account
           if (isAccountInaccessible) {
@@ -204,7 +204,7 @@ class Twitter {
 
   setFollowing(accounts) {
     this.following = accounts && accounts.length > 0
-      ? accounts.map(it => it.account)
+      ? accounts.map((it) => it.account)
       : [];
   }
 
@@ -212,7 +212,7 @@ class Twitter {
     const params = {};
     if (accounts.length > 0) {
       params.follow = accounts
-        .map(twAccount => twAccount.account_id)
+        .map((twAccount) => twAccount.account_id)
         .join(',');
 
       this.setFollowing(accounts);
@@ -298,7 +298,7 @@ class Twitter {
   }
 
   _onError(exception) {
-    if (Array.isArray(exception) && exception.find(it => (it.code === 34))) {
+    if (Array.isArray(exception) && exception.find((it) => (it.code === 34))) {
       // do not reconnect, but try to identify account that has been deleted
       this.logger.warn('account erased from', exception);
     } else if (exception.message === 'Status Code: 420') {
@@ -380,8 +380,8 @@ class Twitter {
     return Promise
       .fromCallback((next) => {
         const screenNames = original
-          .filter(element => (element.id === undefined))
-          .map(element => (element.username))
+          .filter((element) => (element.id === undefined))
+          .map((element) => (element.username))
           .join(',');
 
         if (screenNames === '') {
@@ -394,7 +394,7 @@ class Twitter {
         acc.push({ id: value.id_str, username: value.screen_name });
         return acc;
       }, [])
-      .then(accounts => (merge(original, accounts)));
+      .then((accounts) => (merge(original, accounts)));
   }
 }
 

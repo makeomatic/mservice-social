@@ -36,7 +36,7 @@ class Media {
 
     return feeds
       .list({ filter: { network: 'instagram', invalid: false } })
-      .map(feed => Promise.join(feed, instagramMedia.getLastId(feed.network_id)))
+      .map((feed) => Promise.join(feed, instagramMedia.getLastId(feed.network_id)))
       .tap((toFetch) => {
         stats.total = toFetch.length;
       })
@@ -108,7 +108,7 @@ class Media {
     return this.storage
       .instagramMedia()
       .save(data)
-      .then(mediaData => logger.info('Save instagram media', mediaData));
+      .then((mediaData) => logger.info('Save instagram media', mediaData));
   }
 }
 

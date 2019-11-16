@@ -18,7 +18,7 @@ function instagramMediaListAction({ params, method }) {
   return instagramService
     .media()
     .list(params)
-    .then(list => collectionResponse(list, TYPE_INSTAGRAM_MEDIA, { before: params.page.cursor }));
+    .then((list) => collectionResponse(list, TYPE_INSTAGRAM_MEDIA, { before: params.page.cursor }));
 }
 
 instagramMediaListAction.schema = 'instagram.media.list';

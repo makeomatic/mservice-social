@@ -30,7 +30,7 @@ class InstagramMedia {
       .where('user_id', userId)
       .orderBy('id', 'desc')
       .first('id')
-      .then(media => (media ? media.id : null));
+      .then((media) => (media ? media.id : null));
   }
 
   save(data) {

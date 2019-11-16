@@ -17,7 +17,7 @@ function getLastId(feed) {
   return instagram
     .media()
     .getLastId(feed.network_id)
-    .then(id => [feed, id]);
+    .then((id) => [feed, id]);
 }
 
 function syncHistory([feed, lastId]) {

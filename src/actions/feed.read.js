@@ -16,7 +16,7 @@ function FeedReadAction({ params }) {
   return this
     .service('feed')
     .read(params)
-    .then(tweets => collectionResponse(tweets, TYPE_TWEET, opts));
+    .then((tweets) => collectionResponse(tweets, TYPE_TWEET, opts));
 }
 
 FeedReadAction.schema = 'feed.read';

@@ -13,8 +13,8 @@ const addUpsert = (knex) => {
   knex.upsertItem = function upsertItem(tableName, conflictTarget, itemData) {
     const targets = conflictTarget.split(', ');
     const exclusions = Object.keys(itemData)
-      .filter(c => targets.indexOf(c) === -1)
-      .map(c => knex.raw('?? = EXCLUDED.??', [c, c]).toString())
+      .filter((c) => targets.indexOf(c) === -1)
+      .map((c) => knex.raw('?? = EXCLUDED.??', [c, c]).toString())
       .join(', ');
 
     const insertString = knex(tableName).insert(itemData).toString();
@@ -23,7 +23,7 @@ const addUpsert = (knex) => {
       .toString();
     const query = (insertString + conflictString).replace(/\?/g, '\\?');
 
-    return knex.raw(query).then(result => result.rows[0]);
+    return knex.raw(query).then((result) => result.rows[0]);
   };
 
   return knex;

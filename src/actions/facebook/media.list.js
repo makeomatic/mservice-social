@@ -17,7 +17,7 @@ function facebookMediaListAction({ params, method }) {
 
   return facebookService.media
     .list(params)
-    .then(list => collectionResponse(list, TYPE_FACEBOOK_MEDIA, {
+    .then((list) => collectionResponse(list, TYPE_FACEBOOK_MEDIA, {
       before: params.page.cursor,
       cursor: 'created_time',
     }));
