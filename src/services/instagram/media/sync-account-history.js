@@ -3,7 +3,7 @@
 const BigNumber = require('bn.js');
 const Promise = require('bluebird');
 
-function filterLessThanId(data, lastId) {
+function filterLessThanId(data = [], lastId) {
   const [lastMediaIdString] = lastId.split('_');
   const lastMediaId = new BigNumber(lastMediaIdString, 10);
 
@@ -31,6 +31,10 @@ function returnContext() {
   return this;
 }
 
+function logResponse(response) {
+  this.logger.info({ response }, 'received instagram data');
+}
+
 function syncAccountHistory(url, accessToken, lastId) {
   const options = { url, json: true };
   const ctx = [null, accessToken, lastId];
@@ -40,6 +44,9 @@ function syncAccountHistory(url, accessToken, lastId) {
     .spread(this.instagram.request)
     .bind(ctx)
     .tap(setPagination)
+    .bind(this)
+    .tap(logResponse)
+    .bind(ctx)
     .get('data')
     .then((data) => (lastId ? filterLessThanId(data, lastId) : data))
     .map((media) => fetchComments.call(this, media, accessToken))
