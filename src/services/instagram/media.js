@@ -16,6 +16,7 @@ class Media {
   destroy() {
     if (this.timeout) {
       clearTimeout(this.timeout);
+      this.timeout = null;
     }
   }
 
@@ -42,18 +43,16 @@ class Media {
       })
       .map(([feed, lastId]) => (
         this.syncAccountHistory(feed.meta.token, lastId)
-          .catch((error) => {
-            this.logger.error(`Failed to sync account "${feed.network_id}" history`, error);
+          .catch((err) => {
+            this.logger.error({ err }, 'Failed to sync account "%s" history', feed.network_id);
             stats.failed.push(feed.network_id);
           })
       ))
       .tap(() => {
-        setImmediate(() => {
-          this.logger.debug('instagram: sync finished in', process.hrtime(stats.start));
-          this.logger.debug('instagram: total accounts', stats.total);
-          this.logger.debug('instagram: with success', stats.total - stats.failed.length);
-          this.logger.debug('instagram: with failure', stats.failed);
-        });
+        this.logger.debug('instagram: sync finished in', process.hrtime(stats.start));
+        this.logger.debug('instagram: total accounts', stats.total);
+        this.logger.debug('instagram: with success', stats.total - stats.failed.length);
+        this.logger.debug('instagram: with failure', stats.failed);
       });
   }
 
@@ -74,10 +73,17 @@ class Media {
 
     if (syncOnInterval) {
       const intervalSync = async () => {
-        await this.syncAccountsHistory();
+        this.logger.info({ syncInterval }, 'scheduling instagram sync');
+        try {
+          await this.syncAccountsHistory();
+        } catch (err) {
+          this.logger.error({ err }, 'failed to sync instagram');
+        }
+
         this.timeout = setTimeout(intervalSync, syncInterval);
       };
-      this.timeout = setTimeout(intervalSync, syncInterval);
+
+      await intervalSync();
     }
   }
 
@@ -108,7 +114,7 @@ class Media {
     return this.storage
       .instagramMedia()
       .save(data)
-      .then((mediaData) => logger.info('Save instagram media', mediaData));
+      .then((mediaData) => logger.info({ mediaData }, 'Save instagram media'));
   }
 }
 
