@@ -1,3 +1,11 @@
+## [6.0.4](https://github.com/makeomatic/mservice-social/compare/v6.0.3...v6.0.4) (2019-11-26)
+
+
+### Bug Fixes
+
+* do not schedule sync when close called ([d4a905d](https://github.com/makeomatic/mservice-social/commit/d4a905ded3a88167648bcb867885efc316d02984))
+* instagram logging, default data ([e987b9d](https://github.com/makeomatic/mservice-social/commit/e987b9d3f7008b5386d8a65afdb627db9138fa3d))
+
 ## [6.0.3](https://github.com/makeomatic/mservice-social/compare/v6.0.2...v6.0.3) (2019-11-26)
 
 ## [6.0.2](https://github.com/makeomatic/mservice-social/compare/v6.0.1...v6.0.2) (2019-11-26)
