@@ -11,6 +11,7 @@ class Media {
     this.logger = instagram.logger;
     this.comments = instagramComments;
     this.timeout = null;
+    this.closing = false;
   }
 
   destroy() {
@@ -18,6 +19,7 @@ class Media {
       clearTimeout(this.timeout);
       this.timeout = null;
     }
+    this.closing = true;
   }
 
   list(params) {
@@ -83,7 +85,9 @@ class Media {
           this.logger.error({ err }, 'failed to sync instagram');
         }
 
-        this.timeout = setTimeout(intervalSync, syncInterval);
+        if (this.closing === false) {
+          this.timeout = setTimeout(intervalSync, syncInterval);
+        }
       };
 
       await intervalSync();
