@@ -1,3 +1,5 @@
+## [6.0.2](https://github.com/makeomatic/mservice-social/compare/v6.0.1...v6.0.2) (2019-11-26)
+
 ## [6.0.1](https://github.com/makeomatic/mservice-social/compare/v6.0.0...v6.0.1) (2019-11-16)
 
 
