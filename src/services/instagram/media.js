@@ -49,10 +49,13 @@ class Media {
           })
       ))
       .tap(() => {
-        this.logger.debug('instagram: sync finished in', process.hrtime(stats.start));
-        this.logger.debug('instagram: total accounts', stats.total);
-        this.logger.debug('instagram: with success', stats.total - stats.failed.length);
-        this.logger.debug('instagram: with failure', stats.failed);
+        const opts = {
+          finishedIn: process.hrtime(stats.start),
+          total: stats.total,
+          success: stats.total - stats.failed.length,
+          failed: stats.failed,
+        };
+        this.logger.info(opts, 'instagram: sync finished');
       });
   }
 
