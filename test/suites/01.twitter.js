@@ -37,6 +37,11 @@ describe('twitter', function testSuite() {
         account: 'v_aminev',
       },
     },
+    readMultiple: {
+      filter: {
+        account: ['EvgenyPoyarkov', 'v_aminev'],
+      },
+    },
     remove: {
       internal: 'test@test.ru',
       network: 'twitter',
@@ -139,6 +144,23 @@ describe('twitter', function testSuite() {
     assert(broadcastSpy.getCalls().find((call) => {
       return call.args[0].id === tweetId;
     }));
+  });
+
+  it('should have collected some tweets by multiple accounts', () => {
+    return Promise
+      .delay(1500)
+      .then(() => request(uri.readMultiple, merge(payload.read, { token: this.adminToken })))
+      .then((response) => {
+        const { body, statusCode } = response;
+        assert.equal(statusCode, 200);
+        assert.notEqual(body.data.length, 0);
+        assert.equal(body.data[0].id, tweetId);
+        assert(this.broadcastSpy.getCalls().find((call) => {
+          return call.args[0].id === tweetId;
+        }));
+
+        return null;
+      });
   });
 
   it('verify that spy has been called', () => {
