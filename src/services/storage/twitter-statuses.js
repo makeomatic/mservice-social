@@ -24,7 +24,7 @@ class TwitterStatuses {
 
     const query = this.knex(this.table)
       .select(this.knex.raw('meta->>\'account\' as account, *'))
-      .whereRaw(rawQuery, [data.filter.account])
+      .whereRaw(rawQuery, [Array.isArray(data.filter.account) ? data.filter.account.join('|') : data.filter.account])
       .orderBy('id', order)
       .limit(pageSize)
       .offset(offset);
