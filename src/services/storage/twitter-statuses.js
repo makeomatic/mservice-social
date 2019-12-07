@@ -21,8 +21,8 @@ class TwitterStatuses {
     const rawQuery = Array.isArray(data.filter.account)
       ? 'lower(meta->>\'account\') similar to \'(?)\''
       : 'meta->>\'account\' ILIKE ?';
-    const account = Array.isArray(data.filter.account) ? data.filter.account.join('|') : data.filter.account
-    console.log('TwitterStatuses', account)
+    const account = Array.isArray(data.filter.account) ? data.filter.account.join('|') : data.filter.account;
+    console.log('TwitterStatuses', account);
 
     const query = this.knex(this.table)
       .select(this.knex.raw('meta->>\'account\' as account, *'))
@@ -31,7 +31,7 @@ class TwitterStatuses {
       .limit(pageSize)
       .offset(offset);
 
-    console.log('TwitterStatusesQuery', query.toString())
+    console.log('TwitterStatusesQuery', query.toString());
 
     if (cursor) {
       return order === 'desc'
