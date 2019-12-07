@@ -19,9 +19,9 @@ class TwitterStatuses {
     const offset = page * pageSize;
 
     const rawQuery = Array.isArray(data.filter.account)
-      ? 'lower(meta->>\'account\') similar to \'(?)\''
+      ? 'lower(meta->>\'account\') similar to ?'
       : 'meta->>\'account\' ILIKE ?';
-    const account = Array.isArray(data.filter.account) ? data.filter.account.join('|') : data.filter.account;
+    const account = Array.isArray(data.filter.account) ? `(${data.filter.account.join('|')})` : data.filter.account;
     console.log('TwitterStatuses', account);
 
     const query = this.knex(this.table)
