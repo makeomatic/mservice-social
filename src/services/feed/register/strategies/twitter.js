@@ -27,7 +27,7 @@ async function register(data) {
 
     // wait till storage is registered then syncs tweets
     saveAccountJobs.push(storage.feeds().save(feed));
-    syncAccountJobs.push(twitter.syncAccount(expandedAccounts[i].username));
+    syncAccountJobs.push(() => twitter.syncAccount(expandedAccounts[i].username));
   }
 
   await Promise.all(saveAccountJobs);
@@ -37,7 +37,7 @@ async function register(data) {
 
   process.nextTick(async () => {
     try {
-      await Promise.allSettled(syncAccountJobs);
+      await Promise.allSettled(syncAccountJobs.map((job) => job()));
       logger.info(`Synced ${accounts.length} accounts`);
     } catch (err) {
       logger.error('Failed sync accounts', err);
