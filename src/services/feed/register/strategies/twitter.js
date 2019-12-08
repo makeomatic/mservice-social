@@ -38,7 +38,7 @@ async function register(data) {
   process.nextTick(async () => {
     try {
       const results = await Promise.allSettled(syncAccountJobs.map((job) => job()));
-      for (const [idx, result] of results) {
+      for (const [idx, result] of results.entries()) {
         if (result.status !== 'fulfilled') {
           logger.warn({ err: result.reason, account: accounts[idx] }, 'failed to sync');
         }
