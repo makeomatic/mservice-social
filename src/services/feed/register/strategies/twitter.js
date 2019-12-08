@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const clone = require('lodash/clone');
 const omit = require('lodash/omit');
 
@@ -7,8 +8,14 @@ async function register(data) {
   const storage = this.service('storage');
   const twitter = this.service('twitter');
   const original = omit(data, 'accounts');
+
+  /*
+  * Expand and validate accounts
+  */
   const expandedAccounts = await twitter.fillUserIds(accounts);
 
+  const saveAccountJobs = [];
+  const syncAccountJobs = [];
   for (let i = 0; i < accounts.length; i += 1) {
     const feed = clone(original);
 
@@ -18,18 +25,31 @@ async function register(data) {
       account: expandedAccounts[i].username,
     });
 
-    // wait till storage is registered
-    await storage.feeds().save(feed); // eslint-disable-line no-await-in-loop
-
-    // syncs tweets
-    await twitter.syncAccount(expandedAccounts[i].username); // eslint-disable-line no-await-in-loop
+    // wait till storage is registered then syncs tweets
+    saveAccountJobs.push(storage.feeds().save(feed));
+    syncAccountJobs.push(() => twitter.syncAccount(expandedAccounts[i].username));
   }
 
-  // update twitter feed
-  twitter.connect();
+  await Promise.all(saveAccountJobs);
 
   // return amount of accounts
-  logger.info(`Registered ${accounts.length} accounts`);
+  logger.info(`Saved ${accounts.length} accounts`);
+
+  process.nextTick(async () => {
+    try {
+      const results = await Promise.allSettled(syncAccountJobs.map((job) => job()));
+      for (const [idx, result] of results.entries()) {
+        if (result.status !== 'fulfilled') {
+          logger.warn({ err: result.reason, account: accounts[idx] }, 'failed to sync');
+        }
+      }
+
+      // update twitter feed
+      twitter.connect();
+    } catch (e) {
+      logger.error({ err: e }, 'failed to perform async op');
+    }
+  });
 
   return accounts;
 }
