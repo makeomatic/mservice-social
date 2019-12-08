@@ -1,3 +1,10 @@
+# [6.1.0](https://github.com/makeomatic/mservice-social/compare/v6.0.4...v6.1.0) (2019-12-08)
+
+
+### Features
+
+* select tweets ignores case, async first-time add ([#58](https://github.com/makeomatic/mservice-social/issues/58)) ([7675c85](https://github.com/makeomatic/mservice-social/commit/7675c85bae2b74e920ee3185101980b93f3ec6f6))
+
 ## [6.0.4](https://github.com/makeomatic/mservice-social/compare/v6.0.3...v6.0.4) (2019-11-26)
 
 
