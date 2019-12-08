@@ -98,7 +98,7 @@ describe('twitter', function testSuite() {
 
   it('should register feed', async () => {
     await service.amqp
-      .publishAndWait(uri.register, payload.register, { timeout: 55000 });
+      .publishAndWait(uri.register, payload.register, { timeout: 15000 });
   });
 
   it('should return newly registered feed', async () => {
