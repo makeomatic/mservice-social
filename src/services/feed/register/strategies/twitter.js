@@ -37,14 +37,18 @@ async function register(data) {
 
   process.nextTick(async () => {
     try {
-      await Promise.allSettled(syncAccountJobs.map((job) => job()));
-      logger.info(`Synced ${accounts.length} accounts`);
-    } catch (err) {
-      logger.error('Failed sync accounts', err);
-    }
+      const results = await Promise.allSettled(syncAccountJobs.map((job) => job()));
+      for (const [idx, result] of results) {
+        if (result.status !== 'fulfilled') {
+          logger.warn({ err: result.reason, account: accounts[idx] }, 'failed to sync');
+        }
+      }
 
-    // update twitter feed
-    twitter.connect();
+      // update twitter feed
+      twitter.connect();
+    } catch (e) {
+      logger.error({ err: e }, 'failed to perform async op');
+    }
   });
 
   return accounts;
