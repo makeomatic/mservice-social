@@ -1,3 +1,10 @@
+## [6.1.1](https://github.com/makeomatic/mservice-social/compare/v6.1.0...v6.1.1) (2019-12-09)
+
+
+### Bug Fixes
+
+* speed up twitter query on multiple accounts ([71baff0](https://github.com/makeomatic/mservice-social/commit/71baff00c8ebd7a46f9a3880c002d798ad482152))
+
 # [6.1.0](https://github.com/makeomatic/mservice-social/compare/v6.0.4...v6.1.0) (2019-12-08)
 
 
