@@ -10,7 +10,7 @@
     { "path": "@semantic-release/exec", "cmd": "yarn doc" },
     "@semantic-release/changelog",
     "@semantic-release/npm",
-    { "path": "@semantic-release/exec", "cmd": "yarn docker-release" },
+    { "path": "@semantic-release/exec", "cmd": "yarn docker-release --tag_latest" },
     "@semantic-release/git"
   ],
   "publish": [

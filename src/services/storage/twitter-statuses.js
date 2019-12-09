@@ -20,16 +20,19 @@ class TwitterStatuses {
 
     const rawQuery = Array.isArray(data.filter.account)
       ? 'lower(meta->>\'account\') = ANY(?)'
-      : 'meta->>\'account\' ILIKE ?';
+      : 'lower(meta->>\'account\') = ?';
 
     const account = Array.isArray(data.filter.account)
       ? data.filter.account.map((s) => s.toLowerCase())
-      : data.filter.account;
+      : data.filter.account.toLowerCase();
 
     const query = this.knex(this.table)
       .select(this.knex.raw('meta->>\'account\' as account, *'))
       .whereRaw(rawQuery, [account])
-      .orderBy('id', order)
+      .orderBy([
+        { column: 'id', order },
+        { column: 'account' },
+      ])
       .limit(pageSize)
       .offset(offset);
 

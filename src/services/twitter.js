@@ -339,9 +339,9 @@ class Twitter {
     }
   }
 
-  async syncAccount(account, order = 'asc') {
+  async syncAccount(account, order = 'asc', maxPages = 20) {
     const twitterStatuses = this.storage.twitterStatuses();
-    const fetchedTweets = async (tweet) => {
+    const fetchedTweets = async (tweet, page = 1) => {
       const tweets = await this.fetchTweets(
         Twitter.cursor(tweet, order),
         account,
@@ -351,16 +351,16 @@ class Twitter {
       const { length } = tweets;
       this.logger.debug('fetched %d tweets', length);
 
-      if (length === 0) {
-        return null;
+      if (length === 0 || page >= maxPages) {
+        return;
       }
 
       const index = order === 'asc' ? length - 1 : 0;
-
-      return Promise
+      const oldestTweet = await Promise
         .map(tweets, this.onData)
-        .get(index) // TODO: ensure that we are picking a tweet
-        .then(fetchedTweets);
+        .get(index); // TODO: ensure that we are picking a tweet
+
+      await fetchedTweets(oldestTweet, page + 1);
     };
 
     // recursively syncs account
@@ -373,7 +373,7 @@ class Twitter {
       },
     });
 
-    return fetchedTweets(initialTweet);
+    await fetchedTweets(initialTweet);
   }
 
   fillUserIds(original) {
