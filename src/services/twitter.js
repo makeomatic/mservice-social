@@ -324,14 +324,19 @@ class Twitter {
     this._destroyAndReconnect();
   }
 
-  _onData(data) {
+  async _onData(data) {
     if (Twitter.isTweet(data)) {
-      this.logger.debug('inserting tweet', data);
-      const tweet = Twitter.serializeTweet(data);
-      return this.storage
-        .twitterStatuses()
-        .save(tweet)
-        .tap(this.publish);
+      this.logger.debug({ data }, 'inserting tweet');
+      try {
+        const tweet = Twitter.serializeTweet(data);
+        const saved = await this.storage
+          .twitterStatuses()
+          .save(tweet);
+        this.publish(saved);
+        return saved;
+      } catch (err) {
+        this.logger.warn({ err }, 'failed to save tweet');
+      }
     }
 
     return false;
