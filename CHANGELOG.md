@@ -1,3 +1,10 @@
+## [6.1.2](https://github.com/makeomatic/mservice-social/compare/v6.1.1...v6.1.2) (2020-03-27)
+
+
+### Bug Fixes
+
+* crash on lack of response, latest microfleet version ([#62](https://github.com/makeomatic/mservice-social/issues/62)) ([04f46cc](https://github.com/makeomatic/mservice-social/commit/04f46ccc36bb3d9bff4634487925b4d3e12b8efc))
+
 ## [6.1.1](https://github.com/makeomatic/mservice-social/compare/v6.1.0...v6.1.1) (2019-12-09)
 
 
