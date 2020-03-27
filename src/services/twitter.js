@@ -106,8 +106,11 @@ class Twitter {
         [cursorField]: cursor,
       }, (err, tweets, response) => {
         if (err) {
-          err.headers = response.headers;
-          err.statusCode = response.statusCode;
+          if (response) {
+            err.headers = response.headers;
+            err.statusCode = response.statusCode;
+          }
+
           return next(err);
         }
         return next(null, tweets);
