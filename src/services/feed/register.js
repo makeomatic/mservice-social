@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const getRegisterStrategy = require('./register/strategies');
 
-function saveFeed(internal, network, params) {
+async function saveFeed(internal, network, params) {
   const { logger } = this;
   const feed = {
     internal,
@@ -10,11 +10,15 @@ function saveFeed(internal, network, params) {
     meta: JSON.stringify(params.meta),
   };
 
-  return this
+  const response = await this
     .service('storage')
     .feeds()
-    .save(feed)
-    .tap(({ id }) => logger.info(`Save ${network} feed #${id}`));
+    .save(feed);
+
+  const { id } = response;
+  logger.info({ id, network }, `Save ${network} feed #${id}`);
+
+  return response;
 }
 
 function register(data) {

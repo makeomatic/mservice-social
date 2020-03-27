@@ -12,12 +12,15 @@ class Media {
     return this.facebook.storage.facebookMedia().list(params);
   }
 
-  syncPagesHistory() {
-    return this.facebook.storage
+  async syncPagesHistory() {
+    const feeds = await this.facebook.storage
       .feeds()
-      .list({ filter: { network: 'facebook', invalid: false } })
-      .map((feed) => Promise.join(feed, this.getLast(feed.network_id)))
-      .map(([feed, lastMedia]) => this.syncPageHistory(feed.network_id, feed.meta.token, lastMedia));
+      .list({ filter: { network: 'facebook', invalid: false } });
+
+    return Promise.map(feeds, async (feed) => {
+      const lastMedia = await this.getLast(feed.network_id);
+      return this.syncPageHistory(feed.network_id, feed.meta.token, lastMedia);
+    });
   }
 
   syncPageHistory(id, accessToken, lastMedia) {

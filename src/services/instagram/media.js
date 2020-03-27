@@ -26,7 +26,7 @@ class Media {
     return this.storage.instagramMedia().list(params);
   }
 
-  syncAccountsHistory() {
+  async syncAccountsHistory() {
     const feeds = this.storage.feeds();
     const instagramMedia = this.storage.instagramMedia();
     const stats = {
@@ -37,28 +37,28 @@ class Media {
 
     this.logger.debug('instagram: sync started');
 
-    return feeds
-      .list({ filter: { network: 'instagram', invalid: false } })
-      .map((feed) => Promise.join(feed, instagramMedia.getLastId(feed.network_id)))
-      .tap((toFetch) => {
-        stats.total = toFetch.length;
-      })
-      .map(([feed, lastId]) => (
-        this.syncAccountHistory(feed.meta.token, lastId)
-          .catch((err) => {
-            this.logger.error({ err }, 'Failed to sync account "%s" history', feed.network_id);
-            stats.failed.push(feed.network_id);
-          })
-      ))
-      .tap(() => {
-        const opts = {
-          finishedIn: process.hrtime(stats.start),
-          total: stats.total,
-          success: stats.total - stats.failed.length,
-          failed: stats.failed,
-        };
-        this.logger.info(opts, 'instagram: sync finished');
-      });
+    const networks = await feeds
+      .list({ filter: { network: 'instagram', invalid: false } });
+
+    await Promise.map(networks, async (feed) => {
+      const lastId = await instagramMedia.getLastId(feed.network_id);
+      stats.total += 1;
+      try {
+        await this.syncAccountHistory(feed.meta.token, lastId);
+      } catch (err) {
+        this.logger.error({ err }, 'Failed to sync account "%s" history', feed.network_id);
+        stats.failed.push(feed.network_id);
+      }
+    });
+
+    const opts = {
+      finishedIn: process.hrtime(stats.start),
+      total: stats.total,
+      success: stats.total - stats.failed.length,
+      failed: stats.failed,
+    };
+
+    this.logger.info(opts, 'instagram: sync finished');
   }
 
   syncAccountHistory(accessToken, lastId) {

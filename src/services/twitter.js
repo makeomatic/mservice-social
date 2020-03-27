@@ -106,8 +106,11 @@ class Twitter {
         [cursorField]: cursor,
       }, (err, tweets, response) => {
         if (err) {
-          err.headers = response.headers;
-          err.statusCode = response.statusCode;
+          if (response) {
+            err.headers = response.headers;
+            err.statusCode = response.statusCode;
+          }
+
           return next(err);
         }
         return next(null, tweets);
@@ -161,45 +164,50 @@ class Twitter {
     this.onEnd = () => this._onEnd();
   }
 
-  init() {
+  async init() {
     /* draining */
-    if (this._destroyed) return null;
+    if (this._destroyed) return;
 
     this.reconnect = null;
 
-    return this.storage
-      .feeds()
-      .fetch({ network: 'twitter' })
-      .reduce(extractAccount, [])
-      .filter(async (twAccount) => {
-        try {
-          await this.syncAccount(twAccount.account, 'desc');
-        } catch (exception) {
-          const isAccountInaccessible = exception.statusCode === 401
-            || (Array.isArray(exception) && exception.find((it) => (it.code === 34)));
+    try {
+      const accounts = await this.storage
+        .feeds()
+        .fetch({ network: 'twitter' });
 
-          // removed twitter account
-          if (isAccountInaccessible) {
-            this.logger.warn('removing tw %j from database', twAccount);
-            await this.storage.feeds().remove({
-              internal: twAccount.internal,
-              network: 'twitter',
-              network_id: twAccount.network_id,
-            });
-            return false;
+      const validAccounts = await Promise
+        .reduce(accounts, extractAccount, [])
+        .filter(async (twAccount) => {
+          try {
+            await this.syncAccount(twAccount.account, 'desc');
+          } catch (exception) {
+            const isAccountInaccessible = exception.statusCode === 401
+              || (Array.isArray(exception) && exception.find((it) => (it.code === 34)));
+
+            // removed twitter account
+            if (isAccountInaccessible) {
+              this.logger.warn('removing tw %j from database', twAccount);
+              await this.storage.feeds().remove({
+                internal: twAccount.internal,
+                network: 'twitter',
+                network_id: twAccount.network_id,
+              });
+              return false;
+            }
+
+            // augment with the account data
+            exception.account = twAccount;
+            this.logger.fatal({ err: exception }, 'unknown error from twitter');
+            throw exception;
           }
 
-          // augment with the account data
-          exception.account = twAccount;
-          this.logger.fatal({ err: exception }, 'unknown error from twitter');
-          throw exception;
-        }
+          return true;
+        }, { concurrency: 2 }); /* to avoid rate limits */
 
-        return true;
-      }, { concurrency: 2 }) /* to avoid rate limits */
-      .bind(this)
-      .then(this.listen)
-      .catch(this.onError);
+      this.listen(validAccounts);
+    } catch (e) {
+      this.onError(e);
+    }
   }
 
   setFollowing(accounts) {
@@ -316,14 +324,19 @@ class Twitter {
     this._destroyAndReconnect();
   }
 
-  _onData(data) {
+  async _onData(data) {
     if (Twitter.isTweet(data)) {
-      this.logger.debug('inserting tweet', data);
-      const tweet = Twitter.serializeTweet(data);
-      return this.storage
-        .twitterStatuses()
-        .save(tweet)
-        .tap(this.publish);
+      this.logger.debug({ data }, 'inserting tweet');
+      try {
+        const tweet = Twitter.serializeTweet(data);
+        const saved = await this.storage
+          .twitterStatuses()
+          .save(tweet);
+        this.publish(saved);
+        return saved;
+      } catch (err) {
+        this.logger.warn({ err }, 'failed to save tweet');
+      }
     }
 
     return false;

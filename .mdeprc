@@ -1,5 +1,5 @@
 {
-  "node": "12.13.0",
+  "node": "12.16.1",
   "auto_compose": true,
   "with_local_compose": true,
   "services": [
