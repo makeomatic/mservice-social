@@ -19,15 +19,15 @@ class TwitterStatuses {
     const offset = page * pageSize;
 
     const rawQuery = Array.isArray(data.filter.account)
-      ? 'lower(meta->>\'account\') = ANY(?)'
-      : 'lower(meta->>\'account\') = ?';
+      ? 'account = ANY(?)'
+      : 'account = ?';
 
     const account = Array.isArray(data.filter.account)
       ? data.filter.account.map((s) => s.toLowerCase())
       : data.filter.account.toLowerCase();
 
     const query = this.knex(this.table)
-      .select(this.knex.raw('meta->>\'account\' as account, *'))
+      .select(this.knex.raw('*'))
       .whereRaw(rawQuery, [account])
       .orderBy([
         { column: 'id', order },
@@ -46,7 +46,7 @@ class TwitterStatuses {
   }
 
   remove(data) {
-    return this.knex(this.table).whereRaw('meta->>\'account\' = ?', [data.account]).del();
+    return this.knex(this.table).whereRaw('account = ?', [data.account]).del();
   }
 }
 
