@@ -27,7 +27,7 @@ class TwitterStatuses {
       : data.filter.account.toLowerCase();
 
     const query = this.knex(this.table)
-      .select(this.knex.raw('*'))
+      .select()
       .whereRaw(rawQuery, [account])
       .orderBy([
         { column: 'id', order },
@@ -46,7 +46,7 @@ class TwitterStatuses {
   }
 
   remove(data) {
-    return this.knex(this.table).whereRaw('account = ?', [data.account]).del();
+    return this.knex(this.table).where('account', data.account).del();
   }
 }
 
