@@ -75,6 +75,7 @@ class Twitter {
       id: data.id_str,
       date: data.created_at,
       text: data.text,
+      account: data.user.screen_name.toLowerCase(),
     };
 
     const meta = {
