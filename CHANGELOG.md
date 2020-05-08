@@ -1,3 +1,10 @@
+# [6.2.0](https://github.com/makeomatic/mservice-social/compare/v6.1.2...v6.2.0) (2020-05-08)
+
+
+### Features
+
+* added account column to statuses ([#63](https://github.com/makeomatic/mservice-social/issues/63)) ([456f9d9](https://github.com/makeomatic/mservice-social/commit/456f9d995b6507b3cf389f858d2e440f2247f638))
+
 ## [6.1.2](https://github.com/makeomatic/mservice-social/compare/v6.1.1...v6.1.2) (2020-03-27)
 
 
