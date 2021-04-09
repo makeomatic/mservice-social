@@ -1,3 +1,10 @@
+# [6.3.0](https://github.com/makeomatic/mservice-social/compare/v6.2.0...v6.3.0) (2021-04-09)
+
+
+### Features
+
+* configure user tweets sync ([#74](https://github.com/makeomatic/mservice-social/issues/74)) ([1642e9e](https://github.com/makeomatic/mservice-social/commit/1642e9eaabad03fc7e5fa3f2a5712a5072171a25))
+
 # [6.2.0](https://github.com/makeomatic/mservice-social/compare/v6.1.2...v6.2.0) (2020-05-08)
 
 
