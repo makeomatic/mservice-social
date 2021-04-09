@@ -150,6 +150,25 @@
           }
         }
       }
+    },
+    "twitter_api": {
+      "description": "twitter api configuration",
+      "type": "object",
+      "properties": {
+        "user_timeline": {
+          "type": "object",
+          "properties": {
+            "exclude_replies": {
+              "type": "boolean",
+              "default": false
+            },
+            "include_rts": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
     }
   }
 }
