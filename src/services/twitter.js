@@ -25,6 +25,18 @@ function extractAccount(accum, value) {
   return accum;
 }
 
+const TWITTER_API_DEFAULTS = {
+  // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline
+  user_timeline: {
+    exclude_replies: false,
+    include_rts: true,
+  },
+};
+
+function twitterApiConfig(config) {
+  return merge(TWITTER_API_DEFAULTS, config.api);
+}
+
 /**
  * @property {TwitterClient} client
  * @property {array} listeners
@@ -95,15 +107,14 @@ class Twitter {
     return tweet;
   }
 
-  static tweetFetcherFactory(twitter, logger) {
+  static tweetFetcherFactory(twitter, logger, apiConfig) {
     const limit = pLimit(1);
     const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
       twitter.get('statuses/user_timeline', {
         count: 200,
         screen_name: account,
         trim_user: false,
-        exclude_replies: false,
-        include_rts: true,
+        ...apiConfig.user_timeline,
         [cursorField]: cursor,
       }, (err, tweets, response) => {
         if (err) {
@@ -157,7 +168,7 @@ class Twitter {
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
     this.following = [];
-    this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger);
+    this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);

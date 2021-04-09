@@ -29,6 +29,9 @@
           "type": "boolean",
           "default": false
         },
+        "api": {
+          "$ref": "common.json#/definitions/twitter_api"
+        },
         "consumer_key": {
           "type": "string"
         },
