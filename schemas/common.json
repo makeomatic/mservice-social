@@ -151,7 +151,23 @@
         }
       }
     },
+    "twitter_stream_filters": {
+      "additionalProperties": false,
+      "description": "filters for realtime tweets",
+      "type": "object",
+      "properties": {
+        "replies": {
+          "type": "boolean",
+          "default": false
+        },
+        "retweets": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
     "twitter_api": {
+      "additionalProperties": false,
       "description": "twitter api configuration",
       "type": "object",
       "properties": {

@@ -6,7 +6,7 @@ const pLimit = require('p-limit');
 const uuid = require('uuid/v4');
 const { HttpStatusError } = require('common-errors');
 const {
-  isObject, isString, conforms, merge, find,
+  isObject, isString, conforms, merge, find, isNil,
 } = require('lodash');
 
 const Notifier = require('./notifier');
@@ -25,16 +25,23 @@ function extractAccount(accum, value) {
   return accum;
 }
 
-const TWITTER_API_DEFAULTS = {
-  // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline
-  user_timeline: {
-    exclude_replies: false,
-    include_rts: true,
-  },
-};
-
 function twitterApiConfig(config) {
+  const TWITTER_API_DEFAULTS = {
+    // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline
+    user_timeline: {
+      exclude_replies: false,
+      include_rts: true,
+    },
+  };
   return merge(TWITTER_API_DEFAULTS, config.api);
+}
+
+function streamFilterOptions(config) {
+  const STREAM_FILTERS_DEFAULTS = {
+    replies: false,
+    retweets: false,
+  };
+  return merge({}, STREAM_FILTERS_DEFAULTS, config.stream_filters);
 }
 
 /**
@@ -55,6 +62,27 @@ class Twitter {
     id_str: isString,
     text: isString,
   })
+
+  static isRetweet = (data) => {
+    const retweet = data.retweeted_status;
+    if (isNil(retweet)) {
+      return false;
+    }
+    // Keep the tweets which are retweeted by the user
+    return get(retweet, 'user.id') !== data.user.id;
+  }
+
+  static isReply = (data) => {
+    const toUserId = data.in_reply_to_user_id;
+    if (isNil(toUserId)) {
+      return false;
+    }
+    // Keep the tweets which are replied by the user
+    if (toUserId === data.user.id) {
+      return false;
+    }
+    return !isNil(data.in_reply_to_status_id);
+  }
 
   /**
    * cursor extractor
@@ -164,6 +192,7 @@ class Twitter {
     this.core = core;
     this.client = new TwitterClient(config);
     this.listener = null;
+    this.filterOptions = streamFilterOptions(config);
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
@@ -336,8 +365,22 @@ class Twitter {
     this._destroyAndReconnect();
   }
 
+  shouldFilterTweet(data) {
+    const { replies, retweets } = this.filterOptions;
+    if (replies && Twitter.isReply(data)) {
+      return true;
+    }
+    if (retweets && Twitter.isRetweet(data)) {
+      return true;
+    }
+    return false;
+  }
+
   async _onData(data) {
     if (Twitter.isTweet(data)) {
+      if (this.shouldFilterTweet(data)) {
+        return false;
+      }
       this.logger.debug({ data }, 'inserting tweet');
       try {
         const tweet = Twitter.serializeTweet(data);
