@@ -1,3 +1,10 @@
+# [6.4.0](https://github.com/makeomatic/mservice-social/compare/v6.3.0...v6.4.0) (2021-04-13)
+
+
+### Features
+
+* filter realtime tweets ([#78](https://github.com/makeomatic/mservice-social/issues/78)) ([0f04485](https://github.com/makeomatic/mservice-social/commit/0f04485a67abd6241aef29de2ae5b104e7bc0e12))
+
 # [6.3.0](https://github.com/makeomatic/mservice-social/compare/v6.2.0...v6.3.0) (2021-04-09)
 
 
