@@ -7,5 +7,9 @@ module.exports = {
         include_rts: true,
       },
     },
+    stream_filters: {
+      replies: false,
+      retweets: false,
+    },
   },
 };
