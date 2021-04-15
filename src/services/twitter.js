@@ -12,6 +12,7 @@ const {
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
 
+
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
 
@@ -68,8 +69,9 @@ class Twitter {
     if (isNil(retweet)) {
       return false;
     }
+    const tweetOwnerId = get(retweet, 'user.id');
     // Keep the tweets which are retweeted by the user
-    return get(retweet, 'user.id') !== data.user.id;
+    return tweetOwnerId !== data.user.id;
   }
 
   static isReply = (data) => {
@@ -197,6 +199,8 @@ class Twitter {
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
     this.following = [];
+    this.accountIds = {};
+
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
 
     // cheaper than bind
@@ -257,6 +261,14 @@ class Twitter {
       : [];
   }
 
+  fillAccountIds(accounts = []) {
+    this.accountIds = accounts.reduce(
+      (map, it) => ({ ...map, [it.account_id]: true }),
+      {}
+    );
+    Object.setPrototypeOf(this.accountIds, null);
+  }
+
   listen(accounts) {
     const params = {};
     if (accounts.length > 0) {
@@ -265,6 +277,7 @@ class Twitter {
         .join(',');
 
       this.setFollowing(accounts);
+      this.fillAccountIds(accounts);
     }
 
     if (!params.follow) {
@@ -366,7 +379,12 @@ class Twitter {
   }
 
   shouldFilterTweet(data) {
-    const { replies, retweets } = this.filterOptions;
+    const { replies, retweets, skipValidAccounts } = this.filterOptions;
+
+    // Don't filter retweets posted by the valid users
+    if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
+      return false;
+    }
     if (replies && Twitter.isReply(data)) {
       return true;
     }
