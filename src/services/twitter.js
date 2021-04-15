@@ -263,8 +263,7 @@ class Twitter {
 
   fillAccountIds(accounts = []) {
     this.accountIds = accounts.reduce(
-      // eslint-disable-next-line camelcase
-      (map, { account_id }) => ({ ...map, [account_id]: true }),
+      (map, it) => ({ ...map, [it.account_id]: true }),
       {}
     );
     Object.setPrototypeOf(this.accountIds, null);
@@ -380,11 +379,10 @@ class Twitter {
   }
 
   shouldFilterTweet(data) {
-    // eslint-disable-next-line camelcase
-    const { replies, retweets, skip_valid_accounts: skipValidAccounts } = this.filterOptions;
+    const { replies, retweets } = this.filterOptions;
 
     // Don't filter retweets posted by the valid users
-    if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
+    if (this.filterOptions.skip_valid_accounts && this.accountIds[data.user.id] !== undefined) {
       return false;
     }
     if (replies && Twitter.isReply(data)) {
