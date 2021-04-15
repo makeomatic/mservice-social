@@ -5,22 +5,19 @@ const get = require('get-value');
 const pLimit = require('p-limit');
 const uuid = require('uuid/v4');
 const { HttpStatusError } = require('common-errors');
-const { find } = require('lodash/fp');
 const {
-  isObject, isString, conforms, merge, isNil,
+  isObject, isString, conforms, merge, find, isNil,
 } = require('lodash');
 
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
 
-const byAccountId = (accountId) => find({ account_id: accountId });
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
-  const findAccount = byAccountId(accountId);
 
   // if we have accountId & we dont have it yet
-  if (accountId && !findAccount(accum)) {
+  if (accountId && !find(accum, { account_id: accountId })) {
     value.meta.internal = value.internal;
     value.meta.network_id = value.network_id;
     accum.push(value.meta);
@@ -202,6 +199,8 @@ class Twitter {
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
     this.following = [];
+    this.accountIds = {};
+
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
 
     // cheaper than bind
@@ -262,6 +261,15 @@ class Twitter {
       : [];
   }
 
+  fillAccountIds(accounts = []) {
+    this.accountIds = accounts.reduce(
+      // eslint-disable-next-line camelcase
+      (map, { account_id }) => ({ ...map, [account_id]: true }),
+      {}
+    );
+    Object.setPrototypeOf(this.accountIds, null);
+  }
+
   listen(accounts) {
     const params = {};
     if (accounts.length > 0) {
@@ -270,6 +278,7 @@ class Twitter {
         .join(',');
 
       this.setFollowing(accounts);
+      this.fillAccountIds(accounts);
     }
 
     if (!params.follow) {
@@ -371,18 +380,17 @@ class Twitter {
   }
 
   shouldFilterTweet(data) {
-    const { replies, retweets } = this.filterOptions;
+    // eslint-disable-next-line camelcase
+    const { replies, retweets, skip_valid_accounts: skipValidAccounts } = this.filterOptions;
+
+    // Don't filter retweets posted by the valid users
+    if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
+      return false;
+    }
     if (replies && Twitter.isReply(data)) {
       return true;
     }
     if (retweets && Twitter.isRetweet(data)) {
-      // Don't filter retweets posted by the valid users
-      if (this.filterOptions.skip_valid_accounts) {
-        const findUser = byAccountId(data.user.id);
-        if (findUser(this.validAccounts) !== undefined) {
-          return false;
-        }
-      }
       return true;
     }
     return false;
