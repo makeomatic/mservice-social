@@ -1,3 +1,10 @@
+# [6.5.0](https://github.com/makeomatic/mservice-social/compare/v6.4.0...v6.5.0) (2021-04-15)
+
+
+### Features
+
+* **twitter:** skip filtering for the valid accounts ([#80](https://github.com/makeomatic/mservice-social/issues/80)) ([9c755d0](https://github.com/makeomatic/mservice-social/commit/9c755d08e1f1056e7aab408ea68e992c44dc5565))
+
 # [6.4.0](https://github.com/makeomatic/mservice-social/compare/v6.3.0...v6.4.0) (2021-04-13)
 
 
