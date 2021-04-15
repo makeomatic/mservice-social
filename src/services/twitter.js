@@ -5,18 +5,22 @@ const get = require('get-value');
 const pLimit = require('p-limit');
 const uuid = require('uuid/v4');
 const { HttpStatusError } = require('common-errors');
+const { find } = require('lodash/fp');
 const {
-  isObject, isString, conforms, merge, find, isNil,
+  isObject, isString, conforms, merge, isNil,
 } = require('lodash');
 
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
 
+const byAccountId = (accountId) => find({ account_id: accountId });
+
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
+  const findAccount = byAccountId(accountId);
 
   // if we have accountId & we dont have it yet
-  if (accountId && !find(accum, { account_id: accountId })) {
+  if (accountId && !findAccount(accum)) {
     value.meta.internal = value.internal;
     value.meta.network_id = value.network_id;
     accum.push(value.meta);
@@ -68,8 +72,9 @@ class Twitter {
     if (isNil(retweet)) {
       return false;
     }
+    const tweetOwnerId = get(retweet, 'user.id');
     // Keep the tweets which are retweeted by the user
-    return get(retweet, 'user.id') !== data.user.id;
+    return tweetOwnerId !== data.user.id;
   }
 
   static isReply = (data) => {
@@ -371,6 +376,13 @@ class Twitter {
       return true;
     }
     if (retweets && Twitter.isRetweet(data)) {
+      // Don't filter retweets posted by the valid users
+      if (this.filterOptions.skip_valid_accounts) {
+        const findUser = byAccountId(data.user.id);
+        if (findUser(this.validAccounts) !== undefined) {
+          return false;
+        }
+      }
       return true;
     }
     return false;
