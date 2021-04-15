@@ -164,7 +164,7 @@
           "type": "boolean",
           "default": false
         },
-        "skip_valid_accounts": {
+        "skipValidAccounts": {
           "description": "skip filtering for valid accounts",
           "type": "boolean",
           "default": false

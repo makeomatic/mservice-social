@@ -10,7 +10,7 @@ module.exports = {
     stream_filters: {
       replies: false,
       retweets: false,
-      skip_valid_accounts: false,
+      skipValidAccounts: false,
     },
   },
 };

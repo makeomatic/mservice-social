@@ -379,10 +379,10 @@ class Twitter {
   }
 
   shouldFilterTweet(data) {
-    const { replies, retweets } = this.filterOptions;
+    const { replies, retweets, skipValidAccounts } = this.filterOptions;
 
     // Don't filter retweets posted by the valid users
-    if (this.filterOptions.skip_valid_accounts && this.accountIds[data.user.id] !== undefined) {
+    if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
       return false;
     }
     if (replies && Twitter.isReply(data)) {
