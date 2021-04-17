@@ -40,7 +40,7 @@ async function register(data) {
       const results = await Promise.allSettled(syncAccountJobs.map((job) => job()));
       for (const [idx, result] of results.entries()) {
         if (result.status !== 'fulfilled') {
-          logger.warn({ err: result.reason, account: accounts[idx] }, 'failed to sync');
+          logger.warn('failed to sync for %j with %s', accounts[idx], result.reason);
         }
       }
 

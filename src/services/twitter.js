@@ -80,10 +80,45 @@ class Twitter {
       return false;
     }
     // Keep the tweets which are replied by the user
-    if (toUserId === data.user.id) {
+    if (toUserId === get(data, 'user.id')) {
       return false;
     }
-    return !isNil(data.in_reply_to_status_id);
+
+    // reply to status
+    if (!isNil(data.in_reply_to_status_id)) {
+      return true;
+    }
+    // reply by mention using @screen_name
+    const mentions = get(data, 'entities.user_mentions', false);
+    return Array.isArray(mentions) && mentions.length > 0;
+  }
+
+
+  static tweetFilterFactory(filterOptions) {
+    const { replies, retweets, skipValidAccounts } = filterOptions;
+
+    if (!replies && !retweets) {
+      return () => false;
+    }
+
+    return (data, accountsIds = {}) => {
+      if (skipValidAccounts) {
+        const id = get(data, 'user.id');
+        if (accountsIds[id] !== undefined) {
+          // Don't filter tweets based by accounts whitelist
+          return false;
+        }
+      }
+
+      if (replies && Twitter.isReply(data)) {
+        return true;
+      }
+
+      if (retweets && Twitter.isRetweet(data)) {
+        return true;
+      }
+      return false;
+    };
   }
 
   /**
@@ -176,6 +211,7 @@ class Twitter {
             // make one more attempt while holding the same limit
             return await fetch(cursor, account, cursorField);
           }
+          logger.warn('fetching for %s failed with %d: %s', account, err.statusCode, err.message);
           throw err;
         } finally {
           logger.debug('%s => got response: %s', quid, process.hrtime(time));
@@ -194,7 +230,7 @@ class Twitter {
     this.core = core;
     this.client = new TwitterClient(config);
     this.listener = null;
-    this.filterOptions = streamFilterOptions(config);
+
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
@@ -202,6 +238,7 @@ class Twitter {
     this.accountIds = {};
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
+    this.filterTweets = Twitter.tweetFilterFactory(streamFilterOptions(config));
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);
@@ -378,25 +415,9 @@ class Twitter {
     this._destroyAndReconnect();
   }
 
-  shouldFilterTweet(data) {
-    const { replies, retweets, skipValidAccounts } = this.filterOptions;
-
-    // Don't filter retweets posted by the valid users
-    if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
-      return false;
-    }
-    if (replies && Twitter.isReply(data)) {
-      return true;
-    }
-    if (retweets && Twitter.isRetweet(data)) {
-      return true;
-    }
-    return false;
-  }
-
   async _onData(data) {
     if (Twitter.isTweet(data)) {
-      if (this.shouldFilterTweet(data)) {
+      if (this.filterTweets(data, this.validAccounts)) {
         return false;
       }
       this.logger.debug({ data }, 'inserting tweet');
