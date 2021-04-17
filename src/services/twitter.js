@@ -238,7 +238,7 @@ class Twitter {
     this.accountIds = {};
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
-    this.filterTweets = Twitter.tweetFilterFactory(streamFilterOptions(config));
+    this.shouldFilterTweet = Twitter.tweetFilterFactory(streamFilterOptions(config));
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);
@@ -417,7 +417,7 @@ class Twitter {
 
   async _onData(data) {
     if (Twitter.isTweet(data)) {
-      if (this.filterTweets(data, this.validAccounts)) {
+      if (this.shouldFilterTweet(data, this.validAccounts)) {
         return false;
       }
       this.logger.debug({ data }, 'inserting tweet');
