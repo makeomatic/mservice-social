@@ -424,7 +424,7 @@ class Twitter {
 
   async _onData(data) {
     if (Twitter.isTweet(data)) {
-      if (this.tweetFilter.match(data, this.validAccounts)) {
+      if (this.tweetFilter.match(data, this.accountIds)) {
         return false;
       }
 
