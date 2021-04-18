@@ -98,10 +98,10 @@ class Twitter {
   static makeTweetFilter(filterOptions) {
     const { replies, retweets, skipValidAccounts } = filterOptions;
 
-    const shouldFilterTweet = (data, accountsIds = {}) => {
+    const shouldFilterTweet = (data, accountIds = {}) => {
       if (skipValidAccounts) {
         const id = get(data, 'user.id');
-        if (accountsIds[id] !== undefined) {
+        if (accountIds[id] !== undefined) {
           // Don't filter tweets based by accounts whitelist
           return false;
         }
