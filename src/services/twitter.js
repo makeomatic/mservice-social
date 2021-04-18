@@ -89,9 +89,8 @@ class Twitter {
     if (!isNil(data.in_reply_to_status_id)) {
       return true;
     }
-    // reply by mention using @screen_name
-    const mentions = get(data, 'entities.user_mentions', false);
-    return Array.isArray(mentions) && mentions.length > 0;
+
+    return !isNil(data.in_reply_to_screen_name);
   }
 
 
