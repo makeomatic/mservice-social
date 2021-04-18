@@ -41,6 +41,7 @@ function streamFilterOptions(config) {
   const STREAM_FILTERS_DEFAULTS = {
     replies: false,
     retweets: false,
+    skipValidAccounts: false,
   };
   return merge({}, STREAM_FILTERS_DEFAULTS, config.stream_filters);
 }
@@ -94,14 +95,10 @@ class Twitter {
   }
 
 
-  static tweetFilterFactory(filterOptions) {
+  static makeTweetFilter(filterOptions) {
     const { replies, retweets, skipValidAccounts } = filterOptions;
 
-    if (!replies && !retweets) {
-      return () => false;
-    }
-
-    return (data, accountsIds = {}) => {
+    const shouldFilterTweet = (data, accountsIds = {}) => {
       if (skipValidAccounts) {
         const id = get(data, 'user.id');
         if (accountsIds[id] !== undefined) {
@@ -118,6 +115,13 @@ class Twitter {
         return true;
       }
       return false;
+    };
+
+    const isActive = retweets || replies;
+
+    return {
+      isActive,
+      match: isActive ? shouldFilterTweet : () => false,
     };
   }
 
@@ -238,7 +242,7 @@ class Twitter {
     this.accountIds = {};
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
-    this.shouldFilterTweet = Twitter.tweetFilterFactory(streamFilterOptions(config));
+    this.tweetFilter = Twitter.makeTweetFilter(streamFilterOptions(config));
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);
@@ -314,7 +318,10 @@ class Twitter {
         .join(',');
 
       this.setFollowing(accounts);
-      this.fillAccountIds(accounts);
+
+      if (this.tweetFilter.isActive) {
+        this.fillAccountIds(accounts);
+      }
     }
 
     if (!params.follow) {
@@ -417,9 +424,10 @@ class Twitter {
 
   async _onData(data) {
     if (Twitter.isTweet(data)) {
-      if (this.shouldFilterTweet(data, this.validAccounts)) {
+      if (this.filterTweet.match(data, this.validAccounts)) {
         return false;
       }
+
       this.logger.debug({ data }, 'inserting tweet');
       try {
         const tweet = Twitter.serializeTweet(data);
