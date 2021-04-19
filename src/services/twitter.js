@@ -34,7 +34,7 @@ function twitterApiConfig(config) {
       include_rts: true,
     },
   };
-  return merge(TWITTER_API_DEFAULTS, config.api);
+  return merge({}, TWITTER_API_DEFAULTS, config.api);
 }
 
 function streamFilterOptions(config) {
@@ -94,8 +94,9 @@ class Twitter {
   }
 
 
-  static makeTweetFilter(filterOptions) {
+  static makeTweetFilter(logger, filterOptions) {
     const { replies, retweets, skipValidAccounts } = filterOptions;
+    logger.debug('initialize filter with %j options', filterOptions);
 
     // Don't filter tweets based by valid accounts whitelist
     const hasInWhitelist = (user = {}, accountIds) => {
@@ -175,6 +176,7 @@ class Twitter {
 
   static tweetFetcherFactory(twitter, logger, apiConfig) {
     const limit = pLimit(1);
+    logger.debug('initialize fetch with %j options', apiConfig);
     const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
       twitter.get('statuses/user_timeline', {
         count: 200,
@@ -239,7 +241,7 @@ class Twitter {
     this.accountIds = {};
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
-    this.tweetFilter = Twitter.makeTweetFilter(streamFilterOptions(config));
+    this.tweetFilter = Twitter.makeTweetFilter(this.logger, streamFilterOptions(config));
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);
