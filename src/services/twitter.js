@@ -34,13 +34,14 @@ function twitterApiConfig(config) {
       include_rts: true,
     },
   };
-  return merge(TWITTER_API_DEFAULTS, config.api);
+  return merge({}, TWITTER_API_DEFAULTS, config.api);
 }
 
 function streamFilterOptions(config) {
   const STREAM_FILTERS_DEFAULTS = {
     replies: false,
     retweets: false,
+    skipValidAccounts: false,
   };
   return merge({}, STREAM_FILTERS_DEFAULTS, config.stream_filters);
 }
@@ -80,10 +81,46 @@ class Twitter {
       return false;
     }
     // Keep the tweets which are replied by the user
-    if (toUserId === data.user.id) {
+    if (toUserId === get(data, 'user.id')) {
       return false;
     }
-    return !isNil(data.in_reply_to_status_id);
+
+    // reply to status
+    if (!isNil(data.in_reply_to_status_id)) {
+      return true;
+    }
+
+    return !isNil(data.in_reply_to_screen_name);
+  }
+
+
+  static makeTweetFilter(logger, filterOptions) {
+    const { replies, retweets, skipValidAccounts } = filterOptions;
+    logger.debug('initialize filter with %j options', filterOptions);
+
+    // Don't filter tweets based by valid accounts whitelist
+    const hasInWhitelist = (user = {}, accountIds) => {
+      return skipValidAccounts && accountIds[user.id_str] !== undefined;
+    };
+
+    const shouldFilterTweet = (data, accountIds = {}) => {
+      if (replies && Twitter.isReply(data)) {
+        return !hasInWhitelist(data.user, accountIds);
+      }
+
+      if (retweets && Twitter.isRetweet(data)) {
+        return !hasInWhitelist(data.user, accountIds);
+      }
+
+      return false;
+    };
+
+    const isActive = retweets || replies;
+
+    return {
+      isActive,
+      match: isActive ? shouldFilterTweet : () => false,
+    };
   }
 
   /**
@@ -139,6 +176,7 @@ class Twitter {
 
   static tweetFetcherFactory(twitter, logger, apiConfig) {
     const limit = pLimit(1);
+    logger.debug('initialize fetch with %j options', apiConfig);
     const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
       twitter.get('statuses/user_timeline', {
         count: 200,
@@ -176,6 +214,7 @@ class Twitter {
             // make one more attempt while holding the same limit
             return await fetch(cursor, account, cursorField);
           }
+          logger.warn('fetching for %s failed with %d: %s', account, err.statusCode, err.message);
           throw err;
         } finally {
           logger.debug('%s => got response: %s', quid, process.hrtime(time));
@@ -194,7 +233,7 @@ class Twitter {
     this.core = core;
     this.client = new TwitterClient(config);
     this.listener = null;
-    this.filterOptions = streamFilterOptions(config);
+
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
@@ -202,6 +241,7 @@ class Twitter {
     this.accountIds = {};
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
+    this.tweetFilter = Twitter.makeTweetFilter(this.logger, streamFilterOptions(config));
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);
@@ -277,7 +317,11 @@ class Twitter {
         .join(',');
 
       this.setFollowing(accounts);
-      this.fillAccountIds(accounts);
+
+      if (this.tweetFilter.isActive) {
+        this.fillAccountIds(accounts);
+        this.logger.info('Valid accounts map populated: %s', Object.keys(this.accountIds).join(','));
+      }
     }
 
     if (!params.follow) {
@@ -378,27 +422,12 @@ class Twitter {
     this._destroyAndReconnect();
   }
 
-  shouldFilterTweet(data) {
-    const { replies, retweets, skipValidAccounts } = this.filterOptions;
-
-    // Don't filter retweets posted by the valid users
-    if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
-      return false;
-    }
-    if (replies && Twitter.isReply(data)) {
-      return true;
-    }
-    if (retweets && Twitter.isRetweet(data)) {
-      return true;
-    }
-    return false;
-  }
-
   async _onData(data) {
     if (Twitter.isTweet(data)) {
-      if (this.shouldFilterTweet(data)) {
+      if (this.tweetFilter.match(data, this.accountIds)) {
         return false;
       }
+
       this.logger.debug({ data }, 'inserting tweet');
       try {
         const tweet = Twitter.serializeTweet(data);
