@@ -97,22 +97,20 @@ class Twitter {
   static makeTweetFilter(filterOptions) {
     const { replies, retweets, skipValidAccounts } = filterOptions;
 
-    const shouldFilterTweet = (data, accountIds = {}) => {
-      if (skipValidAccounts) {
-        const id = get(data, 'user.id');
-        if (accountIds[id] !== undefined) {
-          // Don't filter tweets based by accounts whitelist
-          return false;
-        }
-      }
+    // Don't filter tweets based by valid accounts whitelist
+    const hasInWhitelist = (user = {}, accountIds) => {
+      return skipValidAccounts && accountIds[user.id_str] !== undefined;
+    };
 
+    const shouldFilterTweet = (data, accountIds = {}) => {
       if (replies && Twitter.isReply(data)) {
-        return true;
+        return !hasInWhitelist(data.user, accountIds);
       }
 
       if (retweets && Twitter.isRetweet(data)) {
-        return true;
+        return !hasInWhitelist(data.user, accountIds);
       }
+
       return false;
     };
 
@@ -320,6 +318,7 @@ class Twitter {
 
       if (this.tweetFilter.isActive) {
         this.fillAccountIds(accounts);
+        this.logger.info('Valid accounts map populated: %s', Object.keys(this.accountIds).join(','));
       }
     }
 
