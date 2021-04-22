@@ -4,14 +4,29 @@ const BN = require('bn.js');
 const get = require('get-value');
 const pLimit = require('p-limit');
 const uuid = require('uuid/v4');
+const fp = require('lodash/fp');
 const { HttpStatusError } = require('common-errors');
 const {
-  isObject, isString, conforms, merge, find, isNil,
+  isObject, isString, conforms, merge, find, isNil, pick, compact,
 } = require('lodash');
 
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
 
+const kReplies = 'replies';
+const kRetweets = 'retweets';
+const kIgnoreForFollowed = 'ingoreForFollowed';
+const kNotTweetError = new Error('not a tweet');
+
+// ['mls', 'twitter'] => { mls: true, twitter: true }
+const setFollowedAccounts = fp.reduce(fp.flip(fp.partial(fp.assoc, [fp.__, true])), {});
+const shouldFilterReplies = fp.matches({ [kReplies]: true });
+const shouldFilterRetweets = fp.matches({ [kRetweets]: true });
+const shouldSkipValid = fp.matches({ [kIgnoreForFollowed]: true });
+const toSnakeCaseKeys = fp.compose(
+  fp.reduce((acc, key, value) => ({ ...acc, [fp.snakeCase(key)]: value }), {}),
+  Object.entries
+);
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
@@ -24,26 +39,6 @@ function extractAccount(accum, value) {
   }
 
   return accum;
-}
-
-function twitterApiConfig(config) {
-  const TWITTER_API_DEFAULTS = {
-    // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline
-    user_timeline: {
-      exclude_replies: false,
-      include_rts: true,
-    },
-  };
-  return merge({}, TWITTER_API_DEFAULTS, config.api);
-}
-
-function streamFilterOptions(config) {
-  const STREAM_FILTERS_DEFAULTS = {
-    replies: false,
-    retweets: false,
-    skipValidAccounts: false,
-  };
-  return merge({}, STREAM_FILTERS_DEFAULTS, config.stream_filters);
 }
 
 /**
@@ -59,17 +54,26 @@ class Twitter {
   static one = new BN('1', 10)
 
   // isTweet checker
+  // is required to ensure if we actually received a tweet, but not an error or something similar
+  // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/filter-realtime/overview
   static isTweet = conforms({
     entities: isObject,
     id_str: isString,
     text: isString,
   })
 
+  static ensureIsTweet = fp.compose(
+    (isTweet) => isTweet === false && throw kNotTweetError,
+    Twitter.isTweet
+  )
+
   static isRetweet = (data) => {
     const retweet = data.retweeted_status;
+
     if (isNil(retweet)) {
       return false;
     }
+
     const tweetOwnerId = get(retweet, 'user.id');
     // Keep the tweets which are retweeted by the user
     return tweetOwnerId !== data.user.id;
@@ -77,9 +81,11 @@ class Twitter {
 
   static isReply = (data) => {
     const toUserId = data.in_reply_to_user_id;
+
     if (isNil(toUserId)) {
       return false;
     }
+
     // Keep the tweets which are replied by the user
     if (toUserId === get(data, 'user.id')) {
       return false;
@@ -93,34 +99,53 @@ class Twitter {
     return !isNil(data.in_reply_to_screen_name);
   }
 
+  static isFollowedAccount = (accounts, idStr) => {
+    return accounts[idStr] === true;
+  }
 
-  static makeTweetFilter(logger, filterOptions) {
-    const { replies, retweets, skipValidAccounts } = filterOptions;
-    logger.debug('initialize filter with %j options', filterOptions);
+  static getFilterConditions(following) {
+    return [
+      [shouldSkipValid, fp.partial(Twitter.isFollowedAccount, following)],
+      [shouldFilterReplies, Twitter.isReply],
+      [shouldFilterRetweets, Twitter.isRetweet],
+      [fp.stubFalse],
+    ];
+  }
 
-    // Don't filter tweets based by valid accounts whitelist
-    const hasInWhitelist = (user = {}, accountIds) => {
-      return skipValidAccounts && accountIds[user.id_str] !== undefined;
-    };
+  static conditionOrNull(filterOptions, [predicate, condition]) {
+    return predicate(filterOptions) ? condition : null;
+  }
 
-    const shouldFilterTweet = (data, accountIds = {}) => {
-      if (replies && Twitter.isReply(data)) {
-        return !hasInWhitelist(data.user, accountIds);
-      }
+  static applyFilter(data, filter) {
+    return filter(data);
+  }
 
-      if (retweets && Twitter.isRetweet(data)) {
-        return !hasInWhitelist(data.user, accountIds);
-      }
+  static getStreamFilters(following = {}) {
+    const conditions = Twitter.getFilterConditions(following);
+    return fp.compose(
+      // Array<condition || null> => condition[]
+      fp.compact,
+      // iterator, filterOptions => Array<condition || null>
+      fp.partial(fp.map, [fp.__, conditions]),
+      // filterOptions => iterator: ([ predicate, condition ]) => condition || null
+      fp.curry(Twitter.conditionOrNull)
+    );
+  }
 
-      return false;
-    };
+  static getAppliedStreamFilters(filters) {
+    return fp.compose(
+      // tweet => boolean
+      fp.partial(fp.find, [fp.__, filters]),
+      // iterator:: tweet => boolean
+      fp.curry(Twitter.applyFilter)
+    );
+  }
 
-    const isActive = retweets || replies;
+  static getTweetId = (tweet) => tweet && (tweet.id || tweet.id_str);
 
-    return {
-      isActive,
-      match: isActive ? shouldFilterTweet : () => false,
-    };
+  static getOldestTweet = (order = 'asc') => {
+    const lookup = order === 'asc' ? fp.findLast : fp.find;
+    return lookup(Twitter.getTweetId);
   }
 
   /**
@@ -129,7 +154,7 @@ class Twitter {
    * @param {string} order
    */
   static cursor(tweet, order = 'asc') {
-    const cursor = tweet && (tweet.id || tweet.id_str);
+    const cursor = Twitter.getTweetId(tweet);
 
     // no tweet / cursor
     if (!cursor) {
@@ -175,14 +200,16 @@ class Twitter {
   }
 
   static tweetFetcherFactory(twitter, logger, apiConfig) {
-    const limit = pLimit(1);
     logger.debug('initialize fetch with %j options', apiConfig);
+
+    const limit = pLimit(1);
     const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
       twitter.get('statuses/user_timeline', {
         count: 200,
         screen_name: account,
         trim_user: false,
-        ...apiConfig.user_timeline,
+        include_rts: apiConfig.userTimeline.includeRts,
+        exclude_replies: apiConfig.userTimeline.excludeReplies,
         [cursorField]: cursor,
       }, (err, tweets, response) => {
         if (err) {
@@ -223,6 +250,21 @@ class Twitter {
     };
   }
 
+  static getServiceConfig(logger, config) {
+    // check for deprecated fields
+    const snakeCasedFields = Object.keys(config).filter((it) => it.includes('_'));
+    for (const field of snakeCasedFields) {
+      logger.warn(`DEPRECATED: ${field}, provide it via twitter.client`);
+    }
+
+    return {
+      apis: config.apis,
+      client: config.client || pick(config, snakeCasedFields),
+      notificationPolicy: config.notificationPolicy,
+      streamFilters: config.streamFilters,
+    };
+  }
+
   /**
    * @param {Social} core
    * @param {object} config
@@ -231,20 +273,27 @@ class Twitter {
    */
   constructor(core, config, storage, logger) {
     this.core = core;
-    this.client = new TwitterClient(config);
+    this.logger = logger.child({ namespace: '@social/twitter' });
+    this.config = Twitter.getServiceConfig(this.logger, config);
+    this.client = new TwitterClient(toSnakeCaseKeys(this.config.client));
     this.listener = null;
 
     this.storage = storage;
-    this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
-    this.following = [];
-    this.accountIds = {};
+    this.following = {};
 
-    this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
-    this.tweetFilter = Twitter.makeTweetFilter(this.logger, streamFilterOptions(config));
+    this.fetchTweets = Twitter.tweetFetcherFactory(
+      this.client,
+      this.logger,
+      this.config.apis
+    );
+
+    // init stream filter
+    this.setStreamFilter();
 
     // cheaper than bind
-    this.onData = (json) => this._onData(json);
+    this.setSyncDataHandler();
+    this.setStreamDataHandler();
     this.onError = (err) => this._onError(err);
     this.onEnd = () => this._onEnd();
   }
@@ -295,18 +344,23 @@ class Twitter {
     }
   }
 
-  setFollowing(accounts) {
-    this.following = accounts && accounts.length > 0
-      ? accounts.map((it) => it.account)
-      : [];
+  setFollowing(accounts = []) {
+    this.following = setFollowedAccounts(accounts);
+    Object.setPrototypeOf(this.following, null);
   }
 
-  fillAccountIds(accounts = []) {
-    this.accountIds = accounts.reduce(
-      (map, it) => ({ ...map, [it.account_id]: true }),
-      {}
-    );
-    Object.setPrototypeOf(this.accountIds, null);
+  setStreamFilter() {
+    const builder = Twitter.getStreamFilters(this.following);
+    const filters = builder(this.config.streamFilters);
+    this.filter = Twitter.getAppliedStreamFilters(filters);
+  }
+
+  setStreamDataHandler() {
+    this.onStreamData = this.setupDataHandler(true);
+  }
+
+  setSyncDataHandler() {
+    this.onData = this.setupDataHandler(false);
   }
 
   listen(accounts) {
@@ -317,11 +371,9 @@ class Twitter {
         .join(',');
 
       this.setFollowing(accounts);
-
-      if (this.tweetFilter.isActive) {
-        this.fillAccountIds(accounts);
-        this.logger.info('Valid accounts map populated: %s', Object.keys(this.accountIds).join(','));
-      }
+      this.setStreamFilter();
+      this.setStreamDataHandler();
+      this.logger.info('following these accounts: %s', accounts.join(', '));
     }
 
     if (!params.follow) {
@@ -334,7 +386,7 @@ class Twitter {
     // setup new listener while old is still active
     const listener = this.listener = this.client.stream('statuses/filter', params);
 
-    listener.on('data', this.onData);
+    listener.on('data', this.onStreamData);
     listener.on('error', this.onError);
     listener.on('end', this.onEnd);
 
@@ -422,39 +474,69 @@ class Twitter {
     this._destroyAndReconnect();
   }
 
-  async _onData(data) {
-    if (Twitter.isTweet(data)) {
-      if (this.tweetFilter.match(data, this.accountIds)) {
-        return false;
-      }
-
-      this.logger.debug({ data }, 'inserting tweet');
-      try {
-        const tweet = Twitter.serializeTweet(data);
-        const saved = await this.storage
-          .twitterStatuses()
-          .save(tweet);
-        this.publish(saved);
-        return saved;
-      } catch (err) {
-        this.logger.warn({ err }, 'failed to save tweet');
-      }
-    }
-
-    return false;
-  }
-
   publish = (tweet) => {
     const account = get(tweet, 'meta.account', false);
-    const { following } = this;
-    if (account && Array.isArray(following) && following.includes(account)) {
+
+    if (this.shouldPublish(tweet)) {
+      return;
+    }
+
+    if (account && this.following[account] === true) {
       const route = `twitter/subscription/${account}`;
       const payload = transform(tweet, TYPE_TWEET);
       this.core.emit(Notifier.kPublishEvent, route, payload);
     }
   }
 
+  shouldPublish = (tweet) => {
+    try {
+      const createdAt = get(tweet, 'created_at', false);
+
+      if (createdAt === false) {
+        return false;
+      }
+
+      const now = Date.now();
+      const then = new Date(createdAt);
+      return now - then <= this.config.notificationPolicy.limitMaxAgeMs;
+    } catch (err) {
+      this.logger.debug({ err, tweet }, 'cannot decide if I should publish that');
+      return false;
+    }
+  }
+
+  setupDataHandler = (useFilter = false) => {
+    const pipe = compact([
+      // force-check if data is a tweet
+      fp.tap(Twitter.ensureIsTweet),
+      // apply extra filters if it is required
+      useFilter ? this.filter : null,
+      // store the tweet
+      this.insertTweet,
+      // notify subscribers if it is required
+      this.config.notificationPolicy.limitMaxAgeMs > 0 ? fp.tap(this.publish) : null,
+    ]);
+
+    return fp.pipe(...pipe);
+  }
+
+  insertTweet = async (data) => {
+    this.logger.debug({ data }, 'inserting tweet');
+    try {
+      const tweet = Twitter.serializeTweet(data);
+      const saved = await this.storage
+        .twitterStatuses()
+        .save(tweet);
+
+      return saved;
+    } catch (err) {
+      this.logger.warn({ err }, 'failed to save tweet');
+      throw err;
+    }
+  }
+
   async syncAccount(account, order = 'asc', maxPages = 20) {
+    const getOldestTweet = Twitter.getOldestTweet(order);
     const twitterStatuses = this.storage.twitterStatuses();
     const fetchedTweets = async (tweet, page = 1) => {
       const tweets = await this.fetchTweets(
@@ -467,13 +549,20 @@ class Twitter {
       this.logger.debug('fetched %d tweets', length);
 
       if (length === 0 || page >= maxPages) {
+        this.logger.info('account [%s] synced', account);
         return;
       }
 
-      const index = order === 'asc' ? length - 1 : 0;
-      const oldestTweet = await Promise
-        .map(tweets, this.onData)
-        .get(index); // TODO: ensure that we are picking a tweet
+      const results = await Promise
+        .map(tweets, this.onData);
+      const oldestTweet = getOldestTweet(results);
+
+      if (!oldestTweet) {
+        this.logger.info('no tweets saved, account [%s] seems to be synced', account);
+        this.logger.debug('searched among %d records', results.length);
+        this.logger.debug({ results }, 'records itself');
+        return;
+      }
 
       await fetchedTweets(oldestTweet, page + 1);
     };

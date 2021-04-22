@@ -29,23 +29,33 @@
           "type": "boolean",
           "default": false
         },
-        "api": {
-          "$ref": "common.json#/definitions/twitter_api"
+        "apis": {
+          "$ref": "common.json#/definitions/twitterApis"
         },
-        "stream_filters": {
-          "$ref":"common.json#/definitions/twitter_stream_filters"
+        "client": {
+          "$ref": "common.json#/definitions/twitterClientConfig"
+        },
+        "streamFilters": {
+          "$ref": "common.json#/definitions/twitterStreamFilters"
+        },
+        "notificationPolicy": {
+          "$ref": "common.json#/definitions/twitterNotificationPolicy"
         },
         "consumer_key": {
-          "type": "string"
+          "type": "string",
+          "description": "DEPRECATED, provide config via `client` property"
         },
         "consumer_secret": {
-          "type": "string"
+          "type": "string",
+          "description": "DEPRECATED, provide config via `client` property"
         },
         "access_token_key": {
-          "type": "string"
+          "type": "string",
+          "description": "DEPRECATED, provide config via `client` property"
         },
         "access_token_secret": {
-          "type": "string"
+          "type": "string",
+          "description": "DEPRECATED, provide config via `client` property"
         }
       }
     }
