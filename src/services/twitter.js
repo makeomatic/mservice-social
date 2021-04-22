@@ -63,7 +63,12 @@ class Twitter {
   })
 
   static ensureIsTweet = fp.compose(
-    (isTweet) => isTweet === false && throw kNotTweetError,
+    (isTweet) => {
+      if (isTweet === false) {
+        throw kNotTweetError;
+      }
+      return true;
+    },
     Twitter.isTweet
   )
 
