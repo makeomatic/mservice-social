@@ -172,7 +172,7 @@
       }
     },
     "twitterNotificationPolicy": {
-      "additionalProperties": "false",
+      "additionalProperties": false,
       "description": "twitter-specific options for notifications",
       "type": "object",
       "properties": {
