@@ -179,7 +179,7 @@
         "limitMaxAgeMs": {
           "type": "number",
           "description": "do not notify about tweets older than specified amount of milliseconds. 0 to turn off, default is 10s",
-          "min": 0,
+          "minimum": 0,
           "default": 10000
         }
       }
