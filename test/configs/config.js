@@ -10,16 +10,18 @@ global.SERVICES = {
   },
   twitter: {
     enabled: true,
-    api: {
-      user_timeline: {
-        exclude_replies: false,
-        include_rts: true,
+    apis: {
+      userTimeline: {
+        excludeReplies: false,
+        includeRts: false,
       },
     },
-    consumer_key: process.env.TWITTER_KEY,
-    consumer_secret: process.env.TWITTER_SECRET,
-    access_token_key: process.env.TWITTER_ACCESS_KEY,
-    access_token_secret: process.env.TWITTER_ACCESS_SECRET,
+    client: {
+      consumerKey: process.env.TWITTER_KEY,
+      consumerSecret: process.env.TWITTER_SECRET,
+      accessTokenKey: process.env.TWITTER_ACCESS_KEY,
+      accessTokenSecret: process.env.TWITTER_ACCESS_SECRET,
+    },
   },
   facebook: {
     enabled: true,

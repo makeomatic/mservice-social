@@ -151,7 +151,7 @@
         }
       }
     },
-    "twitter_stream_filters": {
+    "twitterStreamFilters": {
       "additionalProperties": false,
       "description": "filters for realtime tweets",
       "type": "object",
@@ -164,30 +164,63 @@
           "type": "boolean",
           "default": false
         },
-        "skipValidAccounts": {
-          "description": "skip filtering for valid accounts",
+        "ignoreForFollowed": {
+          "description": "do not apply filtering for followed accounts",
           "type": "boolean",
-          "default": false
+          "default": true
         }
       }
     },
-    "twitter_api": {
+    "twitterNotificationPolicy": {
       "additionalProperties": false,
-      "description": "twitter api configuration",
+      "description": "twitter-specific options for notifications",
       "type": "object",
       "properties": {
-        "user_timeline": {
+        "limitMaxAgeMs": {
+          "type": "number",
+          "description": "do not notify about tweets older than specified amount of milliseconds. 0 to turn off, default is 10s",
+          "minimum": 0,
+          "default": 10000
+        }
+      }
+    },
+    "twitterApis": {
+      "additionalProperties": false,
+      "description": "twitter apis configuration",
+      "type": "object",
+      "properties": {
+        "userTimeline": {
           "type": "object",
+          "description": "https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline",
           "properties": {
-            "exclude_replies": {
+            "excludeReplies": {
               "type": "boolean",
               "default": false
             },
-            "include_rts": {
+            "includeRts": {
               "type": "boolean",
               "default": true
             }
           }
+        }
+      }
+    },
+    "twitterClientConfig": {
+      "additionalProperties": false,
+      "description": "twitter client configuration",
+      "type": "object",
+      "properties": {
+        "consumerKey": {
+          "type": "string"
+        },
+        "consumerSecret": {
+          "type": "string"
+        },
+        "accessTokenKey": {
+          "type": "string"
+        },
+        "accessTokenSecret": {
+          "type": "string"
         }
       }
     }

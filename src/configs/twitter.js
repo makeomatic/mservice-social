@@ -1,16 +1,19 @@
 module.exports = {
   twitter: {
     enabled: false,
-    api: {
-      user_timeline: {
-        exclude_replies: false,
-        include_rts: true,
+    apis: {
+      userTimeline: {
+        excludeReplies: false,
+        includeRts: true,
       },
     },
-    stream_filters: {
+    streamFilters: {
       replies: false,
       retweets: false,
-      skipValidAccounts: false,
+      ignoreForFollowed: true,
+    },
+    notificationPolicy: {
+      limitMaxAgeMs: 10000,
     },
   },
 };
