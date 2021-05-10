@@ -10,6 +10,12 @@ global.SERVICES = {
   },
   twitter: {
     enabled: true,
+    api: {
+      user_timeline: {
+        exclude_replies: false,
+        include_rts: true,
+      },
+    },
     consumer_key: process.env.TWITTER_KEY,
     consumer_secret: process.env.TWITTER_SECRET,
     access_token_key: process.env.TWITTER_ACCESS_KEY,

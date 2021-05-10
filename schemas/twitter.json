@@ -29,6 +29,12 @@
           "type": "boolean",
           "default": false
         },
+        "api": {
+          "$ref": "common.json#/definitions/twitter_api"
+        },
+        "stream_filters": {
+          "$ref":"common.json#/definitions/twitter_stream_filters"
+        },
         "consumer_key": {
           "type": "string"
         },

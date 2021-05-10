@@ -1,3 +1,24 @@
+# [6.5.0](https://github.com/makeomatic/mservice-social/compare/v6.4.0...v6.5.0) (2021-04-15)
+
+
+### Features
+
+* **twitter:** skip filtering for the valid accounts ([#80](https://github.com/makeomatic/mservice-social/issues/80)) ([9c755d0](https://github.com/makeomatic/mservice-social/commit/9c755d08e1f1056e7aab408ea68e992c44dc5565))
+
+# [6.4.0](https://github.com/makeomatic/mservice-social/compare/v6.3.0...v6.4.0) (2021-04-13)
+
+
+### Features
+
+* filter realtime tweets ([#78](https://github.com/makeomatic/mservice-social/issues/78)) ([0f04485](https://github.com/makeomatic/mservice-social/commit/0f04485a67abd6241aef29de2ae5b104e7bc0e12))
+
+# [6.3.0](https://github.com/makeomatic/mservice-social/compare/v6.2.0...v6.3.0) (2021-04-09)
+
+
+### Features
+
+* configure user tweets sync ([#74](https://github.com/makeomatic/mservice-social/issues/74)) ([1642e9e](https://github.com/makeomatic/mservice-social/commit/1642e9eaabad03fc7e5fa3f2a5712a5072171a25))
+
 # [6.2.0](https://github.com/makeomatic/mservice-social/compare/v6.1.2...v6.2.0) (2020-05-08)
 
 

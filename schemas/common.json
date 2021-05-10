@@ -150,6 +150,46 @@
           }
         }
       }
+    },
+    "twitter_stream_filters": {
+      "additionalProperties": false,
+      "description": "filters for realtime tweets",
+      "type": "object",
+      "properties": {
+        "replies": {
+          "type": "boolean",
+          "default": false
+        },
+        "retweets": {
+          "type": "boolean",
+          "default": false
+        },
+        "skipValidAccounts": {
+          "description": "skip filtering for valid accounts",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "twitter_api": {
+      "additionalProperties": false,
+      "description": "twitter api configuration",
+      "type": "object",
+      "properties": {
+        "user_timeline": {
+          "type": "object",
+          "properties": {
+            "exclude_replies": {
+              "type": "boolean",
+              "default": false
+            },
+            "include_rts": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
     }
   }
 }
