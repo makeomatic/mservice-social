@@ -12,5 +12,8 @@ module.exports = {
       retweets: false,
       skipValidAccounts: false,
     },
+    feed_filters: {
+      date: 3600,
+    },
   },
 };
