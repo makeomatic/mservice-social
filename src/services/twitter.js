@@ -418,7 +418,7 @@ class Twitter {
         // Moment throws: value provided is not in a recognized RFC2822 or ISO format, that's why Date constructor is used.
         const tweetDate = moment(new Date(tweet.date));
         const now = moment();
-        const diff = now.diff(tweetDate, 'seconds')
+        const diff = now.diff(tweetDate, 'seconds');
 
         if (diff <= this.feedFilterOptions.date) {
           this.publish(saved);
