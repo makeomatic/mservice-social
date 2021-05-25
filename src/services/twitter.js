@@ -8,6 +8,7 @@ const { HttpStatusError } = require('common-errors');
 const {
   isObject, isString, conforms, merge, find, isNil,
 } = require('lodash');
+const moment = require('moment');
 
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
@@ -43,6 +44,13 @@ function streamFilterOptions(config) {
     retweets: false,
   };
   return merge({}, STREAM_FILTERS_DEFAULTS, config.stream_filters);
+}
+
+function feedFilters(config) {
+  const FEED_FILTERS_DEFAULTS = {
+    date: 3600,
+  };
+  return merge({}, FEED_FILTERS_DEFAULTS, config.feed_filters);
 }
 
 /**
@@ -195,6 +203,7 @@ class Twitter {
     this.client = new TwitterClient(config);
     this.listener = null;
     this.filterOptions = streamFilterOptions(config);
+    this.feedFilterOptions = feedFilters(config);
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
@@ -405,7 +414,14 @@ class Twitter {
         const saved = await this.storage
           .twitterStatuses()
           .save(tweet);
-        this.publish(saved);
+
+        const tweetDate = moment(tweet.date);
+        const now = moment();
+        const diff = now.diff(tweetDate, 'seconds');
+
+        if (diff <= this.feedFilterOptions.date) {
+          this.publish(saved);
+        }
         return saved;
       } catch (err) {
         this.logger.warn({ err }, 'failed to save tweet');
