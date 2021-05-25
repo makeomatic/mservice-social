@@ -415,8 +415,7 @@ class Twitter {
           .twitterStatuses()
           .save(tweet);
 
-        // Moment throws: value provided is not in a recognized RFC2822 or ISO format, that's why Date constructor is used.
-        const tweetDate = moment(new Date(tweet.date));
+        const tweetDate = moment(tweet.date);
         const now = moment();
         const diff = now.diff(tweetDate, 'seconds');
 
