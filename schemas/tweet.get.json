@@ -7,7 +7,7 @@
   ],
   "properties": {
     "tweetId": {
-      "$ref": "#/definitions/tweetId"
+      "$ref": "common.json#/definitions/tweetId"
     }
   }
 }
