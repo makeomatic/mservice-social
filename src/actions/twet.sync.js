@@ -1,0 +1,20 @@
+const { modelResponse, TYPE_TWEET } = require('../utils/response');
+
+/**
+ * @api {http} <prefix>.tweet.sync Sync tweet by id
+ * @apiVersion 1.0.0
+ * @apiName tweet.sync
+ * @apiGroup Feed
+ * @apiSchema {jsonschema=../../schemas/tweet.sync.json} apiParam
+ */
+function TweetSyncAction({ params }) {
+  return this
+    .service('feed')
+    .syncTweet(params)
+    .then((tweet) => modelResponse(tweet, TYPE_TWEET));
+}
+
+TweetSyncAction.schema = 'tweet.sync';
+TweetSyncAction.transports = ['amqp'];
+
+module.exports = TweetSyncAction;

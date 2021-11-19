@@ -137,6 +137,27 @@ class Twitter {
     return tweet;
   }
 
+  static tweetSyncFactory(twitter, logger) {
+    const fetch = (tweetId) => Promise.fromCallback((next) => (
+      // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-statuses-show-id
+      twitter.get(
+        'statuses/show.json',
+        { id: tweetId },
+        (err, tweet) => {
+          if (err) {
+            return next(err);
+          }
+          return next(null, tweet);
+        }
+      )
+    ));
+
+    return (tweetId) => {
+      logger.debug('fetching tweet by id %s', tweetId);
+      return fetch(tweetId);
+    };
+  }
+
   static tweetFetcherFactory(twitter, logger, apiConfig) {
     const limit = pLimit(1);
     const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
@@ -202,6 +223,7 @@ class Twitter {
     this.accountIds = {};
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
+    this.fetchTweetById = Twitter.tweetSyncFactory(this.client, this.logger);
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);
@@ -394,6 +416,14 @@ class Twitter {
     return false;
   }
 
+  async _saveToStatuses(data) {
+    const tweet = Twitter.serializeTweet(data);
+
+    return this.storage
+      .twitterStatuses()
+      .save(tweet);
+  }
+
   async _onData(data) {
     if (Twitter.isTweet(data)) {
       if (this.shouldFilterTweet(data)) {
@@ -401,10 +431,8 @@ class Twitter {
       }
       this.logger.debug({ data }, 'inserting tweet');
       try {
-        const tweet = Twitter.serializeTweet(data);
-        const saved = await this.storage
-          .twitterStatuses()
-          .save(tweet);
+        const saved = await this._saveToStatuses(data);
+
         this.publish(saved);
         return saved;
       } catch (err) {
@@ -422,6 +450,22 @@ class Twitter {
       const route = `twitter/subscription/${account}`;
       const payload = transform(tweet, TYPE_TWEET);
       this.core.emit(Notifier.kPublishEvent, route, payload);
+    }
+  }
+
+  async syncTweet(tweetId) {
+    try {
+      const data = await this.fetchTweetById(tweetId);
+      if (Twitter.isTweet(data)) {
+        const saved = await this._saveToStatuses(data);
+        this.logger.debug('tweet synced');
+        return saved;
+      }
+
+      return false;
+    } catch (err) {
+      this.logger.warn({ tweetId, err }, 'failed to sync tweet');
+      return false;
     }
   }
 
