@@ -10,7 +10,7 @@ const { modelResponse, TYPE_TWEET } = require('../utils/response');
 function TweetGetAction({ params }) {
   return this
     .service('feed')
-    .getTweet(params)
+    .getOne(params)
     .then((tweet) => modelResponse(tweet, TYPE_TWEET));
 }
 

@@ -138,11 +138,11 @@ class Twitter {
   }
 
   static tweetSyncFactory(twitter, logger) {
-    const fetch = (tweetId) => Promise.fromCallback((next) => (
-      // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-statuses-show-id
+    // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-statuses-show-id
+    const fetch = (id) => Promise.fromCallback((next) => (
       twitter.get(
         'statuses/show.json',
-        { id: tweetId },
+        { id },
         (err, tweet) => {
           if (err) {
             return next(err);
@@ -152,9 +152,10 @@ class Twitter {
       )
     ));
 
-    return (tweetId) => {
-      logger.debug('fetching tweet by id %s', tweetId);
-      return fetch(tweetId);
+    return async (tweetId) => {
+      logger.debug({ tweetId }, 'fetching tweet by id');
+      const tweet = await fetch(tweetId);
+      return tweet;
     };
   }
 
@@ -223,7 +224,7 @@ class Twitter {
     this.accountIds = {};
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
-    this.fetchTweetById = Twitter.tweetSyncFactory(this.client, this.logger);
+    this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);
@@ -455,10 +456,10 @@ class Twitter {
 
   async syncTweet(tweetId) {
     try {
-      const data = await this.fetchTweetById(tweetId);
+      const data = await this.fetchById(tweetId);
       if (Twitter.isTweet(data)) {
         const saved = await this._saveToStatuses(data);
-        this.logger.debug('tweet synced');
+        this.logger.debug({ tweetId }, 'tweet synced');
         return saved;
       }
 

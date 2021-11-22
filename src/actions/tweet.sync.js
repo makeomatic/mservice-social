@@ -10,7 +10,7 @@ const { modelResponse, TYPE_TWEET } = require('../utils/response');
 function TweetSyncAction({ params }) {
   return this
     .service('feed')
-    .syncTweet(params)
+    .syncOne(params)
     .then((tweet) => modelResponse(tweet, TYPE_TWEET));
 }
 

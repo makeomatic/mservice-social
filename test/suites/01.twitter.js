@@ -16,6 +16,8 @@ describe('twitter', function testSuite() {
     readAMQP: 'social.feed.read',
     remove: 'social.feed.remove',
     read: 'http://0.0.0.0:3000/api/social/feed/read',
+    syncOne: 'social.tweet.sync',
+    getOne: 'social.tweet.get',
   };
 
   const payload = {
@@ -55,6 +57,10 @@ describe('twitter', function testSuite() {
         { username: 'test' },
       ],
     },
+
+    oneTweet: {
+      tweetId: '20',
+    },
   };
 
   let tweetId;
@@ -91,7 +97,7 @@ describe('twitter', function testSuite() {
   it.skip('should return error if request to register is not valid', async () => {
     await assert.rejects(service.amqp.publishAndWait(uri.register, payload.registerFail), {
       name: 'HttpStatusError',
-      statusCode: 404,
+      statusCode: 400,
       message: JSON.stringify([{ code: 17, message: 'No user matches for specified terms.' }]),
     });
   });
@@ -177,6 +183,28 @@ describe('twitter', function testSuite() {
       .service('twitter')
       .client
       .post(`statuses/destroy/${tweetId}`, () => done());
+  });
+
+  it('sync one tweet by id', async () => {
+    const { data } = await service.amqp.publishAndWait(uri.syncOne, payload.oneTweet);
+    assert(data);
+    assert.strictEqual(data.id, payload.oneTweet.tweetId);
+    assert.strictEqual(data.type, 'tweet');
+
+    const { text, account, meta } = data.attributes;
+    assert.strictEqual(account, 'jack');
+    assert.strictEqual(text, 'just setting up my twttr');
+    assert(meta);
+    assert.strictEqual(meta.id_str, payload.oneTweet.tweetId);
+  });
+
+
+  it('get one tweet by id', async () => {
+    const { data } = await service.amqp.publishAndWait(uri.getOne, payload.oneTweet);
+    assert(data);
+    assert.strictEqual(data.id, payload.oneTweet.tweetId);
+    assert.strictEqual(data.type, 'tweet');
+    assert.strictEqual(data.attributes.text, 'just setting up my twttr');
   });
 
   after('close consumer', () => listener.close());

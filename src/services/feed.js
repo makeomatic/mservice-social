@@ -1,7 +1,6 @@
 const { NotFoundError } = require('common-errors');
 const Promise = require('bluebird');
 const register = require('./feed/register');
-const Social = require('../');
 
 const services = new WeakMap();
 
@@ -93,14 +92,14 @@ class Feed {
   }
 
 
-  syncTweet(data) {
-    return this.service(Social.SERVICE_TWITTER)
+  async syncOne(data) {
+    return this.service('twitter')
       .syncTweet(data.tweetId);
   }
 
-  getTweet(data) {
+  async getOne(data) {
     return this
-      .service(Social.SERVICE_STORAGE)
+      .service('storage')
       .twitterStatuses()
       .byId(data.tweetId);
   }
