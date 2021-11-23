@@ -141,7 +141,7 @@ class Twitter {
     // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-statuses-show-id
     const fetch = (id) => Promise.fromCallback((next) => (
       twitter.get(
-        'statuses/show.json',
+        'statuses/show',
         { id },
         (err, tweet) => {
           if (err) {
