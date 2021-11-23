@@ -54,6 +54,14 @@ describe('twitter', function testSuite() {
       network: 'twitter',
       accounts: [
         { username: 'undefined' },
+      ],
+    },
+
+    registerFiltered: {
+      internal: 'test@test.ru',
+      network: 'twitter',
+      accounts: [
+        { username: 'undefined' },
         { username: 'test' },
       ],
     },
@@ -94,12 +102,27 @@ describe('twitter', function testSuite() {
 
   after('cleanup feeds', () => service.knex('feeds').delete());
 
-  it.skip('should return error if request to register is not valid', async () => {
+  it('should return error if request to register is not valid', async () => {
     await assert.rejects(service.amqp.publishAndWait(uri.register, payload.registerFail), {
       name: 'HttpStatusError',
       statusCode: 400,
       message: JSON.stringify([{ code: 17, message: 'No user matches for specified terms.' }]),
     });
+  });
+
+  it('should register feed for only valid accounts', async () => {
+    const res = await service.amqp.publishAndWait(uri.register, payload.registerFiltered);
+    assert(res);
+
+    const byName = (name) => (accounts) => accounts.find(({ attributes }) => attributes.username === name);
+
+    const [invalid, valid] = payload.registerFiltered.accounts;
+    const findValid = byName(valid.username);
+    const findInvalid = byName(invalid.username);
+
+    const accounts = res.data;
+    assert(findValid(accounts));
+    assert(findInvalid(accounts) === undefined);
   });
 
   it('should register feed', async () => {
