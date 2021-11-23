@@ -114,11 +114,11 @@ describe('twitter', function testSuite() {
     const res = await service.amqp.publishAndWait(uri.register, payload.registerFiltered);
     assert(res);
 
-    const byName = (name) => (accounts) => accounts.find(({ attributes }) => attributes.username === name);
+    const byUserName = (username) => (accounts) => accounts.find(({ attributes }) => attributes.username === username);
 
     const [invalid, valid] = payload.registerFiltered.accounts;
-    const findValid = byName(valid.username);
-    const findInvalid = byName(invalid.username);
+    const findValid = byUserName(valid.username);
+    const findInvalid = byUserName(invalid.username);
 
     const accounts = res.data;
     assert(findValid(accounts));
