@@ -6,7 +6,7 @@ const pLimit = require('p-limit');
 const uuid = require('uuid/v4');
 const { HttpStatusError } = require('common-errors');
 const {
-  isObject, isString, conforms, merge, find, isNil, differenceWith,
+  isObject, isString, conforms, merge, find, isNil,
 } = require('lodash');
 
 const Notifier = require('./notifier');
@@ -510,19 +510,30 @@ class Twitter {
   fillUserIds(original) {
     const screenNames = original
       .filter((element) => (element.id === undefined))
-      .map((element) => (element.username))
-      .join(',');
+      .map((element) => (element.username));
+
+    const usersParams = screenNames.join(',');
+
+    const validateAccounts = (userNames, accounts) => {
+      for (const username of userNames) {
+        const account = find(accounts, { username });
+        if (account === undefined) {
+          throw new HttpStatusError(400, `Users lookup failed for '${username}'`);
+        }
+      }
+      return true;
+    };
 
     return Promise
       .fromCallback((next) => {
         if (screenNames === '') {
           next(null, []);
         } else {
-          this.client.get('users/lookup', { screen_name: screenNames }, next);
+          this.client.get('users/lookup', { screen_name: usersParams }, next);
         }
       })
       .catch((e) => Array.isArray(e), (err) => {
-        this.logger.warn({ err }, 'failed to lookup %j', screenNames);
+        this.logger.warn({ err }, 'failed to lookup %j', usersParams);
         throw new HttpStatusError(400, JSON.stringify(err));
       })
       .reduce((acc, value) => {
@@ -530,11 +541,8 @@ class Twitter {
         return acc;
       }, [])
       .then((accounts) => {
-        if (original.length !== accounts.length) {
-          const invalid = differenceWith(original, accounts, (a, b) => a.username === b.username);
-          const users = invalid.map((x) => x.username).join(',');
-          throw new HttpStatusError(400, `Users lookup failed for '${users}'`);
-        }
+        validateAccounts(screenNames, accounts);
+
         return merge(original, accounts);
       });
   }
