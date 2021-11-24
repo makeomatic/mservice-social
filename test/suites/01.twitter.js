@@ -57,7 +57,7 @@ describe('twitter', function testSuite() {
       ],
     },
 
-    registerFailMultiple: {
+    registerValidation: {
       internal: 'test@test.ru',
       network: 'twitter',
       accounts: [
@@ -112,7 +112,7 @@ describe('twitter', function testSuite() {
 
   it('should register feed for only valid accounts', async () => {
     await assert.rejects(service.amqp
-      .publishAndWait(uri.register, payload.registerFailMultiple), /Users lookup failed for 'undefined'/);
+      .publishAndWait(uri.register, payload.registerValidation), /Users lookup failed for 'undefined'/);
   });
 
   it('should register feed', async () => {
