@@ -57,7 +57,7 @@ describe('twitter', function testSuite() {
       ],
     },
 
-    registerFiltered: {
+    registerFailMultiple: {
       internal: 'test@test.ru',
       network: 'twitter',
       accounts: [
@@ -111,18 +111,8 @@ describe('twitter', function testSuite() {
   });
 
   it('should register feed for only valid accounts', async () => {
-    const res = await service.amqp.publishAndWait(uri.register, payload.registerFiltered);
-    assert(res);
-
-    const byUserName = (username) => (accounts) => accounts.find(({ attributes }) => attributes.username === username);
-
-    const [invalid, valid] = payload.registerFiltered.accounts;
-    const findValid = byUserName(valid.username);
-    const findInvalid = byUserName(invalid.username);
-
-    const accounts = res.data;
-    assert(findValid(accounts));
-    assert(findInvalid(accounts) === undefined);
+    await assert.rejects(service.amqp
+      .publishAndWait(uri.register, payload.registerFailMultiple), /Users lookup failed for 'undefined'/);
   });
 
   it('should register feed', async () => {

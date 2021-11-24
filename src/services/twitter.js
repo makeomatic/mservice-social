@@ -6,7 +6,7 @@ const pLimit = require('p-limit');
 const uuid = require('uuid/v4');
 const { HttpStatusError } = require('common-errors');
 const {
-  isObject, isString, conforms, merge, find, isNil,
+  isObject, isString, conforms, merge, find, isNil, differenceWith,
 } = require('lodash');
 
 const Notifier = require('./notifier');
@@ -529,7 +529,14 @@ class Twitter {
         acc.push({ id: value.id_str, username: value.screen_name });
         return acc;
       }, [])
-      .then((accounts) => (merge(original, accounts)));
+      .then((accounts) => {
+        if (original.length !== accounts.length) {
+          const invalid = differenceWith(original, accounts, (a, b) => a.username === b.username);
+          const users = invalid.map((x) => x.username).join(',');
+          throw new HttpStatusError(400, `Users lookup failed for '${users}'`);
+        }
+        return merge(original, accounts);
+      });
   }
 }
 
