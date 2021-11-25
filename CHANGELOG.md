@@ -1,3 +1,10 @@
+# [6.6.0](https://github.com/makeomatic/mservice-social/compare/v6.5.0...v6.6.0) (2021-11-25)
+
+
+### Features
+
+* add tweet sync and get endpoints ([#94](https://github.com/makeomatic/mservice-social/issues/94)) ([e0f5df4](https://github.com/makeomatic/mservice-social/commit/e0f5df432f780790bbf6dd409492dcb3042bf84d))
+
 # [6.5.0](https://github.com/makeomatic/mservice-social/compare/v6.4.0...v6.5.0) (2021-04-15)
 
 
