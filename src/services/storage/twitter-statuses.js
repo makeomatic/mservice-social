@@ -48,6 +48,12 @@ class TwitterStatuses {
   remove(data) {
     return this.knex(this.table).where('account', data.account).del();
   }
+
+  byId(tweetId) {
+    return this.knex(this.table)
+      .where('id', tweetId)
+      .first();
+  }
 }
 
 module.exports = TwitterStatuses;

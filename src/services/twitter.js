@@ -137,6 +137,28 @@ class Twitter {
     return tweet;
   }
 
+  static tweetSyncFactory(twitter, logger) {
+    // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-statuses-show-id
+    const fetch = (id) => Promise.fromCallback((next) => (
+      twitter.get(
+        'statuses/show',
+        { id },
+        (err, tweet) => {
+          if (err) {
+            return next(err);
+          }
+          return next(null, tweet);
+        }
+      )
+    ));
+
+    return async (tweetId) => {
+      logger.debug({ tweetId }, 'fetching tweet by id');
+      const tweet = await fetch(tweetId);
+      return tweet;
+    };
+  }
+
   static tweetFetcherFactory(twitter, logger, apiConfig) {
     const limit = pLimit(1);
     const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
@@ -202,6 +224,7 @@ class Twitter {
     this.accountIds = {};
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
+    this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);
@@ -394,6 +417,14 @@ class Twitter {
     return false;
   }
 
+  async _saveToStatuses(data) {
+    const tweet = Twitter.serializeTweet(data);
+
+    return this.storage
+      .twitterStatuses()
+      .save(tweet);
+  }
+
   async _onData(data) {
     if (Twitter.isTweet(data)) {
       if (this.shouldFilterTweet(data)) {
@@ -401,10 +432,8 @@ class Twitter {
       }
       this.logger.debug({ data }, 'inserting tweet');
       try {
-        const tweet = Twitter.serializeTweet(data);
-        const saved = await this.storage
-          .twitterStatuses()
-          .save(tweet);
+        const saved = await this._saveToStatuses(data);
+
         this.publish(saved);
         return saved;
       } catch (err) {
@@ -422,6 +451,22 @@ class Twitter {
       const route = `twitter/subscription/${account}`;
       const payload = transform(tweet, TYPE_TWEET);
       this.core.emit(Notifier.kPublishEvent, route, payload);
+    }
+  }
+
+  async syncTweet(tweetId) {
+    try {
+      const data = await this.fetchById(tweetId);
+      if (Twitter.isTweet(data)) {
+        const saved = await this._saveToStatuses(data);
+        this.logger.debug({ tweetId }, 'tweet synced');
+        return saved;
+      }
+
+      return false;
+    } catch (err) {
+      this.logger.warn({ tweetId, err }, 'failed to sync tweet');
+      return false;
     }
   }
 
@@ -465,26 +510,41 @@ class Twitter {
   fillUserIds(original) {
     const screenNames = original
       .filter((element) => (element.id === undefined))
-      .map((element) => (element.username))
-      .join(',');
+      .map((element) => (element.username));
+
+    const usersParams = screenNames.join(',');
+
+    const validateAccounts = (userNames, accounts) => {
+      for (const username of userNames) {
+        const account = find(accounts, { username });
+        if (account === undefined) {
+          throw new HttpStatusError(400, `Users lookup failed for '${username}'`);
+        }
+      }
+      return true;
+    };
 
     return Promise
       .fromCallback((next) => {
         if (screenNames === '') {
           next(null, []);
         } else {
-          this.client.get('users/lookup', { screen_name: screenNames }, next);
+          this.client.get('users/lookup', { screen_name: usersParams }, next);
         }
       })
       .catch((e) => Array.isArray(e), (err) => {
-        this.logger.warn({ err }, 'failed to lookup %j', screenNames);
+        this.logger.warn({ err }, 'failed to lookup %j', usersParams);
         throw new HttpStatusError(400, JSON.stringify(err));
       })
       .reduce((acc, value) => {
         acc.push({ id: value.id_str, username: value.screen_name });
         return acc;
       }, [])
-      .then((accounts) => (merge(original, accounts)));
+      .then((accounts) => {
+        validateAccounts(screenNames, accounts);
+
+        return merge(original, accounts);
+      });
   }
 }
 

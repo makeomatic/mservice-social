@@ -1,0 +1,13 @@
+{
+  "$id": "tweet.get",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tweetId"
+  ],
+  "properties": {
+    "tweetId": {
+      "$ref": "common.json#/definitions/tweetId"
+    }
+  }
+}

@@ -90,6 +90,19 @@ class Feed {
       this.logger.info(e);
     }
   }
+
+
+  async syncOne(data) {
+    return this.service('twitter')
+      .syncTweet(data.tweetId);
+  }
+
+  async getOne(data) {
+    return this
+      .service('storage')
+      .twitterStatuses()
+      .byId(data.tweetId);
+  }
 }
 
 module.exports = Feed;
