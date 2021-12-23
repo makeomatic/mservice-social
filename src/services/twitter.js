@@ -125,9 +125,13 @@ class Twitter {
       account: data.user.screen_name,
       account_id: data.user.id_str,
       account_image: data.user.profile_image_url_https,
+      account_name: data.user.name,
+      account_verified: data.user.verified,
       entities: data.entities,
       extended_entities: data.extended_entities,
       retweeted_status: data.retweeted_status && Twitter.serializeTweet(data.retweeted_status, true),
+      retweet_count: data.retweet_count,
+      favorite_count: data.favorite_count,
     };
 
     tweet.meta = noSerialize !== true

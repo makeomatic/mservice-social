@@ -217,7 +217,14 @@ describe('twitter', function testSuite() {
     assert(data);
     assert.strictEqual(data.id, payload.oneTweet.tweetId);
     assert.strictEqual(data.type, 'tweet');
-    assert.strictEqual(data.attributes.text, 'just setting up my twttr');
+    const { text, meta } = data.attributes;
+    assert.strictEqual(text, 'just setting up my twttr');
+    assert(meta.account_id, '12');
+    assert(meta.account);
+    assert(meta.account_name);
+    assert(meta.account_verified);
+    assert(meta.retweet_count);
+    assert(meta.favorite_count);
   });
 
   after('close consumer', () => listener.close());
