@@ -69,6 +69,10 @@ describe('twitter', function testSuite() {
     oneTweet: {
       tweetId: '20',
     },
+
+    invalidTweet: {
+      tweetId: 'not-numerical-id',
+    },
   };
 
   let tweetId;
@@ -211,6 +215,13 @@ describe('twitter', function testSuite() {
     assert.strictEqual(meta.id_str, payload.oneTweet.tweetId);
   });
 
+  it('reject with error on sync with incorrect id', async () => {
+    assert.rejects(service.amqp.publishAndWait(uri.syncOne, payload.invalidTweet), {
+      name: 'HttpStatusError',
+      statusCode: 400,
+      message: JSON.stringify([{ code: 8, message: 'No data available for specified ID.' }])
+    })
+  });
 
   it('get one tweet by id', async () => {
     const { data } = await service.amqp.publishAndWait(uri.getOne, payload.oneTweet);
