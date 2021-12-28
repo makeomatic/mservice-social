@@ -219,8 +219,8 @@ describe('twitter', function testSuite() {
     assert.rejects(service.amqp.publishAndWait(uri.syncOne, payload.invalidTweet), {
       name: 'HttpStatusError',
       statusCode: 400,
-      message: JSON.stringify([{ code: 8, message: 'No data available for specified ID.' }])
-    })
+      message: JSON.stringify([{ code: 8, message: 'No data available for specified ID.' }]),
+    });
   });
 
   it('get one tweet by id', async () => {
