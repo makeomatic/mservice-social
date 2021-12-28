@@ -1,3 +1,10 @@
+## [6.7.1](https://github.com/makeomatic/mservice-social/compare/v6.7.0...v6.7.1) (2021-12-28)
+
+
+### Bug Fixes
+
+* **twitter:** throw error on incorrect tweet fetching ([#101](https://github.com/makeomatic/mservice-social/issues/101)) ([31c2eb8](https://github.com/makeomatic/mservice-social/commit/31c2eb81519cef51a59f7bfef8a755ad7a82907b))
+
 # [6.7.0](https://github.com/makeomatic/mservice-social/compare/v6.6.0...v6.7.0) (2021-12-23)
 
 
