@@ -470,7 +470,7 @@ class Twitter {
       return false;
     } catch (err) {
       this.logger.warn({ tweetId, err }, 'failed to sync tweet');
-      return false;
+      throw new HttpStatusError(400, JSON.stringify(err));
     }
   }
 
