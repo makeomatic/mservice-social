@@ -6,7 +6,7 @@ const pLimit = require('p-limit');
 const uuid = require('uuid/v4');
 const { HttpStatusError } = require('common-errors');
 const {
-  isObject, isString, conforms, merge, find, isNil, toLower,
+  isObject, isString, conforms, merge, find, isNil,
 } = require('lodash');
 
 const Notifier = require('./notifier');
@@ -520,7 +520,7 @@ class Twitter {
 
     const validateAccounts = (userNames, accounts) => {
       for (const username of userNames) {
-        const account = find(accounts, (x) => toLower(x.username) === toLower(username));
+        const account = find(accounts, (x) => x.username.toLowerCase() === username.toLowerCase());
         if (account === undefined) {
           throw new HttpStatusError(400, `Users lookup failed for '${username}'`);
         }
