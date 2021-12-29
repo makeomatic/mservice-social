@@ -138,7 +138,7 @@ describe('twitter', function testSuite() {
 
     const { username: requested } = payload.registerCaseInsensitive.accounts[0];
     assert.strictEqual(requested, 'streamlayer');
-    assert.strictEqual(body.data.attributes.username, 'StreamLayer');
+    assert.strictEqual(body.data[0].attributes.username, 'StreamLayer');
   });
 
   it('should return newly registered feed', async () => {
