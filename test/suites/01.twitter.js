@@ -70,7 +70,7 @@ describe('twitter', function testSuite() {
       internal: 'test@test.ru',
       network: 'twitter',
       accounts: [
-        { username: 'streamlayer' },
+        { username: 'EvgenyPoyarkov' },
       ],
     },
 
@@ -130,15 +130,6 @@ describe('twitter', function testSuite() {
   it('should register feed', async () => {
     await service.amqp
       .publishAndWait(uri.register, payload.register, { timeout: 15000 });
-  });
-
-  it.skip('should register with case insensitive', async () => {
-    const body = await service.amqp
-      .publishAndWait(uri.register, payload.registerCaseInsensitive, { timeout: 15000 });
-
-    const { username: requested } = payload.registerCaseInsensitive.accounts[0];
-    assert.strictEqual(requested, 'streamlayer');
-    assert.strictEqual(body.data[0].attributes.username, 'StreamLayer');
   });
 
   it('should return newly registered feed', async () => {
@@ -211,6 +202,16 @@ describe('twitter', function testSuite() {
   it('remove feed', async () => {
     await service.amqp.publishAndWait(uri.remove, payload.remove);
   });
+
+  it('should register with case insensitive', async () => {
+    const body = await service.amqp
+      .publishAndWait(uri.register, payload.registerCaseInsensitive, { timeout: 15000 });
+
+    const { username } = payload.registerCaseInsensitive.accounts[0];
+    assert.strictEqual(username, 'EvgenyPoyarkov');
+    assert.strictEqual(body.data[0].attributes.username, 'evgenypoyarkov');
+  });
+
 
   after('delete tweet', (done) => {
     service
