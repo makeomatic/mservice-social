@@ -132,7 +132,7 @@ describe('twitter', function testSuite() {
       .publishAndWait(uri.register, payload.register, { timeout: 15000 });
   });
 
-  it('should register with case insensitive', async () => {
+  it.skip('should register with case insensitive', async () => {
     const body = await service.amqp
       .publishAndWait(uri.register, payload.registerCaseInsensitive, { timeout: 15000 });
 
