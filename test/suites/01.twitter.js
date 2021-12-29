@@ -78,8 +78,12 @@ describe('twitter', function testSuite() {
       tweetId: '20',
     },
 
+    nonExistentTweet: {
+      tweetId: '10',
+    },
+
     invalidTweet: {
-      tweetId: 'not-numerical-id',
+      tweetId: '123-not-number',
     },
   };
 
@@ -233,11 +237,19 @@ describe('twitter', function testSuite() {
     assert.strictEqual(meta.id_str, payload.oneTweet.tweetId);
   });
 
-  it('reject with error on sync with incorrect id', async () => {
-    assert.rejects(service.amqp.publishAndWait(uri.syncOne, payload.invalidTweet), {
+  it('rejects with error on sync non-existing tweet', async () => {
+    await assert.rejects(service.amqp.publishAndWait(uri.syncOne, payload.nonExistentTweet), {
       name: 'HttpStatusError',
       statusCode: 400,
-      message: JSON.stringify([{ code: 8, message: 'No data available for specified ID.' }]),
+      message: JSON.stringify([{ code: 144, message: 'No status found with that ID.' }]),
+    });
+  });
+
+  it('rejects with error on sync tweet validation', async () => {
+    await assert.rejects(service.amqp.publishAndWait(uri.syncOne, payload.invalidTweet), {
+      name: 'HttpStatusError',
+      statusCode: 400,
+      message: /validation failed: data.tweetId should match pattern/,
     });
   });
 
@@ -254,6 +266,14 @@ describe('twitter', function testSuite() {
     assert(meta.account_verified);
     assert(meta.retweet_count);
     assert(meta.favorite_count);
+  });
+
+  it('rejects with error on get tweet validation', async () => {
+    await assert.rejects(service.amqp.publishAndWait(uri.getOne, payload.invalidTweet), {
+      name: 'HttpStatusError',
+      statusCode: 400,
+      message: /validation failed: data.tweetId should match pattern/,
+    });
   });
 
   after('close consumer', () => listener.close());
