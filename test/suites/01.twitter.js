@@ -66,6 +66,14 @@ describe('twitter', function testSuite() {
       ],
     },
 
+    registerCaseInsensitive: {
+      internal: 'test@test.ru',
+      network: 'twitter',
+      accounts: [
+        { username: 'streamlayer' },
+      ],
+    },
+
     oneTweet: {
       tweetId: '20',
     },
@@ -122,6 +130,15 @@ describe('twitter', function testSuite() {
   it('should register feed', async () => {
     await service.amqp
       .publishAndWait(uri.register, payload.register, { timeout: 15000 });
+  });
+
+  it('should register with case insensitive', async () => {
+    const body = await service.amqp
+      .publishAndWait(uri.register, payload.registerCaseInsensitive, { timeout: 15000 });
+
+    const { username: requested } = payload.registerCaseInsensitive.accounts[0];
+    assert.strictEqual(requested, 'streamlayer');
+    assert.strictEqual(body.data.attributes.username, 'StreamLayer');
   });
 
   it('should return newly registered feed', async () => {
