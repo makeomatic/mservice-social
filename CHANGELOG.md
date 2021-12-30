@@ -1,3 +1,10 @@
+## [6.7.2](https://github.com/makeomatic/mservice-social/compare/v6.7.1...v6.7.2) (2021-12-30)
+
+
+### Bug Fixes
+
+* **twitter:** allow case insensitive on register feed ([#102](https://github.com/makeomatic/mservice-social/issues/102)) ([f3e52c4](https://github.com/makeomatic/mservice-social/commit/f3e52c4705a2d96e725c84b590f6799de2bbbf82))
+
 ## [6.7.1](https://github.com/makeomatic/mservice-social/compare/v6.7.0...v6.7.1) (2021-12-28)
 
 
