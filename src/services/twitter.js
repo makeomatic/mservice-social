@@ -520,7 +520,7 @@ class Twitter {
 
     const validateAccounts = (userNames, accounts) => {
       for (const username of userNames) {
-        const account = find(accounts, { username });
+        const account = find(accounts, (x) => x.username.toLowerCase() === username.toLowerCase());
         if (account === undefined) {
           throw new HttpStatusError(400, `Users lookup failed for '${username}'`);
         }
