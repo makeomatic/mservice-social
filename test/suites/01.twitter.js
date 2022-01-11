@@ -152,7 +152,7 @@ describe('twitter', function testSuite() {
   it('post tweet and wait for it to arrive', (done) => {
     service.service('twitter').client.post(
       'statuses/update',
-      { status: 'test'.repeat(220/4) }, // so we have between 140 and 280 characters
+      { status: 'test'.repeat(220 / 4) }, // so we have between 140 and 280 characters
       (error, tweet) => {
         if (error) {
           if (Array.isArray(error)) {
