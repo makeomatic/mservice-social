@@ -113,10 +113,12 @@ class Twitter {
    * @param {boolean} noSerialize
    */
   static serializeTweet(data, noSerialize) {
+    console.log('tweet to serialize: %j', data);
+    
     const tweet = {
       id: data.id_str,
       date: data.created_at,
-      text: data.text,
+      text: data.full_text || data.text,
       account: data.user.screen_name.toLowerCase(),
     };
 
