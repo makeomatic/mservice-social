@@ -118,7 +118,7 @@ class Twitter {
     const tweet = {
       id: data.id_str,
       date: data.created_at,
-      text: data.full_text || data.text,
+      text: data.extended_tweet ? data.extended_tweet.full_text : data.text,
       account: data.user.screen_name.toLowerCase(),
     };
 
