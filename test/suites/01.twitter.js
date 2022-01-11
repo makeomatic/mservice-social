@@ -152,7 +152,7 @@ describe('twitter', function testSuite() {
   it('post tweet and wait for it to arrive', (done) => {
     service.service('twitter').client.post(
       'statuses/update',
-      { status: 'Test status' },
+      { status: 'test'.repeat(220 / 4) }, // so we have between 140 and 280 characters
       (error, tweet) => {
         if (error) {
           if (Array.isArray(error)) {
@@ -176,6 +176,7 @@ describe('twitter', function testSuite() {
     assert.equal(statusCode, 200);
     assert.notEqual(body.data.length, 0);
     assert.equal(body.data[0].id, tweetId);
+    assert.equal(body.data[0].attributes.text.length, 220);
     assert(broadcastSpy.getCalls().find((call) => {
       return call.args[0].id === tweetId;
     }));
@@ -189,6 +190,7 @@ describe('twitter', function testSuite() {
     assert.equal(statusCode, 200);
     assert.notEqual(body.data.length, 0);
     assert.equal(body.data[0].id, tweetId);
+    assert.equal(body.data[0].attributes.text.length, 220);
     assert(broadcastSpy.getCalls().find((call) => {
       return call.args[0].id === tweetId;
     }));
