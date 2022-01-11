@@ -297,7 +297,9 @@ class Twitter {
   }
 
   listen(accounts) {
-    const params = {};
+    const params = {
+      tweet_mode: 'extended',
+    };
     if (accounts.length > 0) {
       params.follow = accounts
         .map((twAccount) => twAccount.account_id)
