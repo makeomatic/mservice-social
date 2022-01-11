@@ -1,3 +1,10 @@
+# [6.8.0](https://github.com/makeomatic/mservice-social/compare/v6.7.2...v6.8.0) (2022-01-11)
+
+
+### Features
+
+* use extended tweets ([#103](https://github.com/makeomatic/mservice-social/issues/103)) ([feeb5aa](https://github.com/makeomatic/mservice-social/commit/feeb5aa795cdb1d13efdeaacda0b49e0da7be3b8))
+
 ## [6.7.2](https://github.com/makeomatic/mservice-social/compare/v6.7.1...v6.7.2) (2021-12-30)
 
 
