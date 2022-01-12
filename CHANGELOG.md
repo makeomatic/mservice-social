@@ -1,3 +1,10 @@
+## [6.8.1](https://github.com/makeomatic/mservice-social/compare/v6.8.0...v6.8.1) (2022-01-12)
+
+
+### Bug Fixes
+
+* **twitter:** pass tweet_mode to GET requests ([#104](https://github.com/makeomatic/mservice-social/issues/104)) ([08256d6](https://github.com/makeomatic/mservice-social/commit/08256d670f1abb28a4f8816921e3221fe7fd2ae6))
+
 # [6.8.0](https://github.com/makeomatic/mservice-social/compare/v6.7.2...v6.8.0) (2022-01-11)
 
 
