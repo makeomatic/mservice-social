@@ -12,6 +12,9 @@ const {
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
 
+const EXTENDED_TWEET_MODE = {
+  tweet_mode: 'extended',
+};
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
@@ -113,7 +116,7 @@ class Twitter {
    * @param {boolean} noSerialize
    */
   static serializeTweet(data, noSerialize) {
-    console.log('tweet to serialize: %j', data);
+    // console.log('tweet to serialize: %j', data);
 
     const tweet = {
       id: data.id_str,
@@ -146,16 +149,15 @@ class Twitter {
   static tweetSyncFactory(twitter, logger) {
     // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-statuses-show-id
     const fetch = (id) => Promise.fromCallback((next) => (
-      twitter.get(
-        'statuses/show',
-        { id },
-        (err, tweet) => {
-          if (err) {
-            return next(err);
-          }
-          return next(null, tweet);
+      twitter.get('statuses/show', {
+        ...EXTENDED_TWEET_MODE,
+        id,
+      }, (err, tweet) => {
+        if (err) {
+          return next(err);
         }
-      )
+        return next(null, tweet);
+      })
     ));
 
     return async (tweetId) => {
@@ -169,6 +171,7 @@ class Twitter {
     const limit = pLimit(1);
     const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
       twitter.get('statuses/user_timeline', {
+        ...EXTENDED_TWEET_MODE,
         count: 200,
         screen_name: account,
         trim_user: false,
@@ -300,7 +303,7 @@ class Twitter {
 
   listen(accounts) {
     const params = {
-      tweet_mode: 'extended',
+      ...EXTENDED_TWEET_MODE,
     };
     if (accounts.length > 0) {
       params.follow = accounts
