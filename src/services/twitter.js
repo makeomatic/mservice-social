@@ -64,7 +64,7 @@ class Twitter {
   static isTweet = conforms({
     entities: isObject,
     id_str: isString,
-    text: isString,
+    // TODO text or full_text: isString,
   })
 
   static isRetweet = (data) => {
