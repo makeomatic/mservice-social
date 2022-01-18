@@ -232,9 +232,10 @@ describe('twitter', function testSuite() {
     assert.strictEqual(data.id, payload.oneTweet.tweetId);
     assert.strictEqual(data.type, 'tweet');
 
-    const { text, account, meta } = data.attributes;
+    const { text, account, meta, explicit } = data.attributes;
     assert.strictEqual(account, 'jack');
     assert.strictEqual(text, 'just setting up my twttr');
+    assert(explicit);
     assert(meta);
     assert.strictEqual(meta.id_str, payload.oneTweet.tweetId);
   });
@@ -260,8 +261,9 @@ describe('twitter', function testSuite() {
     assert(data);
     assert.strictEqual(data.id, payload.oneTweet.tweetId);
     assert.strictEqual(data.type, 'tweet');
-    const { text, meta } = data.attributes;
+    const { text, meta, explicit } = data.attributes;
     assert.strictEqual(text, 'just setting up my twttr');
+    assert(explicit);
     assert(meta.account_id, '12');
     assert(meta.account);
     assert(meta.account_name);
