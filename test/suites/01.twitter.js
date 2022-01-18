@@ -232,12 +232,12 @@ describe('twitter', function testSuite() {
     assert.strictEqual(data.id, payload.oneTweet.tweetId);
     assert.strictEqual(data.type, 'tweet');
 
-    const { text, account, meta, explicit } = data.attributes;
+    const { text, account, meta } = data.attributes;
     assert.strictEqual(account, 'jack');
     assert.strictEqual(text, 'just setting up my twttr');
-    assert(explicit);
     assert(meta);
     assert.strictEqual(meta.id_str, payload.oneTweet.tweetId);
+    assert(data.attributes.explicit);
   });
 
   it('rejects with error on sync non-existing tweet', async () => {
