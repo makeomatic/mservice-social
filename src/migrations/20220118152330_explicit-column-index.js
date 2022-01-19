@@ -1,13 +1,13 @@
 exports.up = function up(knex) {
   return knex.schema.alterTable('statuses', (table) => {
     table.boolean('explicit').notNullable().defaultTo(false);
-    table.index(['explicit']);
+    table.index(['account', 'explicit']);
   });
 };
 
 exports.down = function up(knex) {
   return knex.schema.alterTable('statuses', (table) => {
     table.dropColumn('explicit');
-    table.dropIndex(['explicit']);
+    table.dropIndex(['account', 'explicit']);
   });
 };
