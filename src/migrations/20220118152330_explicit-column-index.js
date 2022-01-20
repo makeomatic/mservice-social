@@ -1,9 +1,10 @@
 const kTable = 'statuses';
 
 exports.up = async (knex) => {
-  await knex.schema.alterTable('statuses', (table) => {
-    table.boolean('explicit').notNullable().defaultTo(false);
-  });
+  await knex.schema
+    .alterTable('statuses', (table) => {
+      table.boolean('explicit').notNullable().defaultTo(false);
+    });
 
   await knex.schema
     .raw(`CREATE INDEX IF NOT EXISTS idx_tweets_id_asc_account on ${kTable} using BTREE (id, account)`);
