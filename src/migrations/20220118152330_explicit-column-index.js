@@ -6,13 +6,13 @@ exports.up = function up(knex) {
   });
 
   knex.schema
-  .raw(`CREATE INDEX IF NOT EXISTS idx_tweets_id_asc_account on ${kTable} using BTREE (id, 'account')`);
+    .raw(`CREATE INDEX IF NOT EXISTS idx_tweets_id_asc_account on ${kTable} using BTREE (id, 'account')`);
 
   knex.schema
-  .raw(`CREATE INDEX IF NOT EXISTS idx_tweets_id_desc_account on ${kTable} using BTREE (id DESC, 'account')`);
+    .raw(`CREATE INDEX IF NOT EXISTS idx_tweets_id_desc_account on ${kTable} using BTREE (id DESC, 'account')`);
 
   knex.schema
-  .raw(`CREATE INDEX IF NOT EXISTS idx_account_explicit on ${kTable} using BTREE ('account', 'expilicit' )`);
+    .raw(`CREATE INDEX IF NOT EXISTS idx_account_explicit on ${kTable} using BTREE ('account', 'expilicit' )`);
 };
 
 exports.down = function up(knex) {
