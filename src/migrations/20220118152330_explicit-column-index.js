@@ -1,21 +1,21 @@
 const kTable = 'statuses';
 
-exports.up = function up(knex) {
-  knex.schema.alterTable('statuses', (table) => {
+exports.up = async (knex) => {
+  await knex.schema.alterTable('statuses', (table) => {
     table.boolean('explicit').notNullable().defaultTo(false);
   });
 
-  knex.schema
-    .raw(`CREATE INDEX IF NOT EXISTS idx_tweets_id_asc_account on ${kTable} using BTREE (id, 'account')`);
+  await knex.schema
+    .raw(`CREATE INDEX IF NOT EXISTS idx_tweets_id_asc_account on ${kTable} using BTREE (id, account)`);
 
-  knex.schema
-    .raw(`CREATE INDEX IF NOT EXISTS idx_tweets_id_desc_account on ${kTable} using BTREE (id DESC, 'account')`);
+  await knex.schema
+    .raw(`CREATE INDEX IF NOT EXISTS idx_tweets_id_desc_account on ${kTable} using BTREE (id DESC, account)`);
 
-  knex.schema
-    .raw(`CREATE INDEX IF NOT EXISTS idx_account_explicit on ${kTable} using BTREE ('account', 'expilicit' )`);
+  await knex.schema
+    .raw(`CREATE INDEX IF NOT EXISTS idx_account_explicit on ${kTable} using BTREE (account, explicit)`);
 };
 
-exports.down = function up(knex) {
+exports.down = async (knex) => {
   return knex.schema.alterTable('statuses', (table) => {
     table.dropColumn('explicit');
     table.dropIndex(null, 'idx_account_explicit');
