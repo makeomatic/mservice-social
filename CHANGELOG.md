@@ -1,3 +1,10 @@
+## [6.8.3](https://github.com/makeomatic/mservice-social/compare/v6.8.2...v6.8.3) (2022-01-26)
+
+
+### Bug Fixes
+
+* **twitter:** add explicit column, index for directly inserted tweets ([#107](https://github.com/makeomatic/mservice-social/issues/107)) ([7e8d018](https://github.com/makeomatic/mservice-social/commit/7e8d018afa06d83d09a0c8ffe5acee87fb9f32d2))
+
 ## [6.8.2](https://github.com/makeomatic/mservice-social/compare/v6.8.1...v6.8.2) (2022-01-13)
 
 
