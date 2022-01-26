@@ -428,12 +428,14 @@ class Twitter {
     return false;
   }
 
-  async _saveToStatuses(data) {
+  async _saveToStatuses(data, directlyInserted = false) {
     const tweet = Twitter.serializeTweet(data);
+
+    const status = directlyInserted ? { ...tweet, explicit: true } : tweet;
 
     return this.storage
       .twitterStatuses()
-      .save(tweet);
+      .save(status);
   }
 
   async _onData(data) {
@@ -469,7 +471,8 @@ class Twitter {
     try {
       const data = await this.fetchById(tweetId);
       if (Twitter.isTweet(data)) {
-        const saved = await this._saveToStatuses(data);
+        // inserted directly using api/sync
+        const saved = await this._saveToStatuses(data, true);
         this.logger.debug({ tweetId }, 'tweet synced');
         return saved;
       }
