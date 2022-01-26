@@ -89,6 +89,8 @@ class Twitter {
     return !isNil(data.in_reply_to_status_id);
   }
 
+  static isDeleted = (data) => !isNil(data.is_deleted) && data.is_deleted;
+
   /**
    * cursor extractor
    * @param {object} tweet
@@ -239,6 +241,7 @@ class Twitter {
     this.onData = (json) => this._onData(json);
     this.onError = (err) => this._onError(err);
     this.onEnd = () => this._onEnd();
+    this.onDelete = (json) => this._onDelete(json);
   }
 
   async init() {
@@ -280,7 +283,6 @@ class Twitter {
 
           return true;
         }, { concurrency: 2 }); /* to avoid rate limits */
-
       this.listen(validAccounts);
     } catch (e) {
       this.onError(e);
@@ -323,7 +325,6 @@ class Twitter {
 
     // setup new listener while old is still active
     const listener = this.listener = this.client.stream('statuses/filter', params);
-
     listener.on('data', this.onData);
     listener.on('error', this.onError);
     listener.on('end', this.onEnd);
@@ -331,9 +332,7 @@ class Twitter {
     // attach params
     listener.params = params;
 
-    // TODO: do this!
-    // add 'delete' handler
-    // listener.on('delete', this.onDelete);
+    listener.on('delete', this.onDelete);
 
     // remap stream receiver to add 90 sec timeout
     const { receive } = listener;
@@ -347,6 +346,16 @@ class Twitter {
 
     this.logger.info('Listening for %d accounts. Account list: %s', accounts.length, params.follow);
     return true;
+  }
+
+  async _onDelete(data) {
+    this.logger.debug({ data }, 'deleting tweet');
+
+    const { id } = data.status;
+
+    return this.storage
+      .twitterStatuses()
+      .markDeleted({ id });
   }
 
   resetTimeout() {
@@ -379,7 +388,6 @@ class Twitter {
       this.listener.destroy();
       this.listener = null;
     }
-
     if (this.timeout) clearTimeout(this.timeout);
     if (this.reconnect) {
       this.reconnect.cancel();

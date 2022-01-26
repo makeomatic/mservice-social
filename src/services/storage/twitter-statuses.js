@@ -8,6 +8,10 @@ class TwitterStatuses {
     return this.knex.upsertItem(this.table, 'id', data);
   }
 
+  markDeleted(data) {
+    return this.knex.upsertItem(this.table, 'id', { ...data, is_deleted: true });
+  }
+
   list(data) {
     const {
       page,
@@ -28,6 +32,7 @@ class TwitterStatuses {
 
     const query = this.knex(this.table)
       .select()
+      .where({ is_deleted: false })
       .whereRaw(rawQuery, [account])
       .orderBy([
         { column: 'id', order },
@@ -51,7 +56,10 @@ class TwitterStatuses {
 
   byId(tweetId) {
     return this.knex(this.table)
-      .where('id', tweetId)
+      .where({
+        id: tweetId,
+        is_deleted: false,
+      })
       .first();
   }
 }
