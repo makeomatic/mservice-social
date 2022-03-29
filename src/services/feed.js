@@ -91,7 +91,6 @@ class Feed {
     }
   }
 
-
   async syncOne(data) {
     return this.service('twitter')
       .syncTweet(data.tweetId);

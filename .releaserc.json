@@ -1,5 +1,5 @@
 {
-  "branch": "master",
+  "branches": ["main"],
   "verifyConditions": [
     "@semantic-release/changelog",
     "@semantic-release/git",
@@ -7,10 +7,10 @@
     "@semantic-release/npm"
   ],
   "prepare": [
-    { "path": "@semantic-release/exec", "cmd": "yarn doc" },
+    { "path": "@semantic-release/exec", "cmd": "pnpm run doc" },
     "@semantic-release/changelog",
     "@semantic-release/npm",
-    { "path": "@semantic-release/exec", "cmd": "yarn docker-release --tag_latest" },
+    { "path": "@semantic-release/exec", "cmd": "pnpm run -- docker-release --tl" },
     "@semantic-release/git"
   ],
   "publish": [

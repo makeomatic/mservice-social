@@ -1,3 +1,4 @@
+const { ActionTransport } = require('@microfleet/plugin-router');
 const { NotSupportedError } = require('common-errors');
 
 /**
@@ -26,6 +27,6 @@ function webhookAction({ params, query, method }) {
 }
 
 webhookAction.schema = 'facebook.webhook';
-webhookAction.transports = ['http'];
+webhookAction.transports = [ActionTransport.http];
 
 module.exports = webhookAction;

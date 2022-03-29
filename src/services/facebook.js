@@ -9,14 +9,6 @@ const Subscription = require('./facebook/subscription');
 const { mangleToken } = require('../utils/logging');
 
 class Facebook {
-  static timeoutOptions = {
-    retries: Infinity,
-    factor: 2,
-    minTimeout: 10000,
-    maxTimeout: Infinity,
-    randomize: true,
-  };
-
   static getErrorCode(response) {
     return get(response, 'error.error.code');
   }
@@ -42,6 +34,7 @@ class Facebook {
     this.feed = feed;
     this.logger = logger;
     this.storage = storage;
+    this.request = this.request.bind(this);
 
     this.media = new Media(this);
     this.subscription = new Subscription(this);
@@ -94,5 +87,13 @@ class Facebook {
       .catch(Facebook.isThrottleError, this.retry);
   }
 }
+
+Facebook.timeoutOptions = {
+  retries: Infinity,
+  factor: 2,
+  minTimeout: 10000,
+  maxTimeout: Infinity,
+  randomize: true,
+};
 
 module.exports = Facebook;

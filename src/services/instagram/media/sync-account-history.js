@@ -3,7 +3,7 @@
 const BigNumber = require('bn.js');
 const Promise = require('bluebird');
 
-function filterLessThanId(data = [], lastId) {
+function filterLessThanId(data = [], lastId = '') {
   const [lastMediaIdString] = lastId.split('_');
   const lastMediaId = new BigNumber(lastMediaIdString, 10);
 

@@ -218,7 +218,6 @@ describe('twitter', function testSuite() {
     assert.strictEqual(body.data[0].attributes.username, 'evgenypoyarkov');
   });
 
-
   after('delete tweet', (done) => {
     service
       .service('twitter')
@@ -252,7 +251,7 @@ describe('twitter', function testSuite() {
     await assert.rejects(service.amqp.publishAndWait(uri.syncOne, payload.invalidTweet), {
       name: 'HttpStatusError',
       statusCode: 400,
-      message: /validation failed: data.tweetId should match pattern/,
+      message: /tweet.sync validation failed: data\/tweetId must match pattern/,
     });
   });
 
@@ -276,7 +275,7 @@ describe('twitter', function testSuite() {
     await assert.rejects(service.amqp.publishAndWait(uri.getOne, payload.invalidTweet), {
       name: 'HttpStatusError',
       statusCode: 400,
-      message: /validation failed: data.tweetId should match pattern/,
+      message: 'tweet.get validation failed: data/tweetId must match pattern "^\\d{1,20}$"',
     });
   });
 

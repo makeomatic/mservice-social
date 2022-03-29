@@ -1,3 +1,4 @@
+const { ActionTransport } = require('@microfleet/plugin-router');
 const { collectionResponse, TYPE_FEED } = require('../utils/response');
 
 /**
@@ -16,6 +17,6 @@ function FeedListAction({ params }) {
 }
 
 FeedListAction.schema = 'feed.list';
-FeedListAction.transports = ['amqp'];
+FeedListAction.transports = [ActionTransport.amqp];
 
 module.exports = FeedListAction;

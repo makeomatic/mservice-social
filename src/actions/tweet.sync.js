@@ -1,3 +1,4 @@
+const { ActionTransport } = require('@microfleet/plugin-router');
 const { modelResponse, TYPE_TWEET } = require('../utils/response');
 
 /**
@@ -15,6 +16,6 @@ function TweetSyncAction({ params }) {
 }
 
 TweetSyncAction.schema = 'tweet.sync';
-TweetSyncAction.transports = ['amqp'];
+TweetSyncAction.transports = [ActionTransport.amqp];
 
 module.exports = TweetSyncAction;

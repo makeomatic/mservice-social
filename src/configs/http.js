@@ -1,13 +1,10 @@
 module.exports = {
-  http: {
+  hapi: {
     server: {
-      handler: 'hapi',
-      attachSocketIO: false,
       port: 3000,
     },
-    router: {
-      enabled: true,
-      prefix: 'api',
-    },
+  },
+  routerHapi: {
+    prefix: 'api',
   },
 };

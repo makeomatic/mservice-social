@@ -5,20 +5,20 @@ ENV NCONF_NAMESPACE=MS_SOCIAL \
 
 WORKDIR /src
 
-COPY package.json yarn.lock ./
+# pnpm fetch does require only lockfile
+COPY --chown=node:node package.json pnpm-lock.yaml ./
 RUN \
-  apk --update add --virtual .buildDeps \
-    build-base \
-    python \
+  apk --update upgrade \
+    && apk add git ca-certificates openssl g++ make python3 linux-headers \
+    && chown node:node /src \
+    && su -l node -c "cd /src && pnpm install --prod --frozen-lockfile" \
+    && apk del \
+    g++ \
+    make \
     git \
-    curl \
-  && apk add openssl ca-certificates \
-  && update-ca-certificates \
-  && yarn --production --frozen-lockfile \
-  && yarn cache clean \
-  && apk del \
-    .buildDeps \
     wget \
+    python3 \
+    linux-headers \
   && rm -rf \
     /tmp/* \
     /root/.node-gyp \
@@ -26,8 +26,7 @@ RUN \
     /etc/apk/cache/* \
     /var/cache/apk/*
 
-COPY . /src
-RUN  chown -R node /src
+COPY --chown=node:node . /src
 USER node
 
 EXPOSE 3000

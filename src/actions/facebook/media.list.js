@@ -1,4 +1,5 @@
 const Errors = require('common-errors');
+const { ActionTransport } = require('@microfleet/plugin-router');
 const { collectionResponse, TYPE_FACEBOOK_MEDIA } = require('../../utils/response');
 
 /**
@@ -24,6 +25,6 @@ function facebookMediaListAction({ params, method }) {
 }
 
 facebookMediaListAction.schema = 'facebook.media.list';
-facebookMediaListAction.transports = ['http', 'amqp'];
+facebookMediaListAction.transports = [ActionTransport.http, ActionTransport.amqp];
 
 module.exports = facebookMediaListAction;

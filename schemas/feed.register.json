@@ -20,54 +20,14 @@
       }
     }
   },
-  "switch": [
-    {
-      "if": {
-        "properties": {
-          "network": {
-            "const": "instagram"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "accounts": {
-            "$ref": "instagram.json#/definitions/registerFeed"
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "network": {
-            "const": "twitter"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "accounts": {
-            "$ref": "twitter.json#/definitions/registerFeed"
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "network": {
-            "const": "facebook"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "accounts": {
-            "$ref": "facebook.json#/definitions/registerFeed"
-          }
-        }
-      }
-    }
-  ]
+  "allOf": [{
+    "if": { "properties": { "network": { "const": "instagram"} } },
+    "then": { "properties": { "accounts": { "$ref": "instagram.json#/definitions/registerFeed" } } }
+  }, {
+    "if": { "properties": { "network": { "const": "twitter"} } },
+    "then": { "properties": { "accounts": { "$ref": "twitter.json#/definitions/registerFeed" } } }
+  }, {
+    "if": { "properties": { "network": { "const": "facebook"} } },
+    "then": { "properties": { "accounts": { "$ref": "facebook.json#/definitions/registerFeed" } } }
+  }]
 }
