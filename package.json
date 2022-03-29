@@ -4,7 +4,6 @@
   "main": "./src/index.js",
   "version": "7.0.0",
   "scripts": {
-    "prepublishOnly": "pnpm run lint && pnpm run compile",
     "test:e2e": "mdep test run",
     "test": "pnpm run lint && pnpm run test:e2e",
     "doc": "cd schemas && apidoc -i ../src/actions -v -o ../docs",
