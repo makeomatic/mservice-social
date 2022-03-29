@@ -3,7 +3,7 @@ const TwitterClient = require('twitter');
 const BN = require('bn.js');
 const get = require('get-value');
 const pLimit = require('p-limit');
-const uuid = require('uuid/v4');
+const { v4: uuid } = require('uuid');
 const { HttpStatusError } = require('common-errors');
 const {
   isObject, isString, conforms, merge, find, isNil,
@@ -55,19 +55,7 @@ function streamFilterOptions(config) {
  * @property {Logger} logger
  */
 class Twitter {
-  /**
-   *  static helpers
-   */
-  static one = new BN('1', 10)
-
-  // isTweet checker
-  static isTweet = conforms({
-    entities: isObject,
-    id_str: isString,
-    // TODO text or full_text: isString,
-  })
-
-  static isRetweet = (data) => {
+  static isRetweet(data) {
     const retweet = data.retweeted_status;
     if (isNil(retweet)) {
       return false;
@@ -77,7 +65,7 @@ class Twitter {
     return tweetOwnerId !== data.user.id;
   }
 
-  static isReply = (data) => {
+  static isReply(data) {
     const toUserId = data.in_reply_to_user_id;
     if (isNil(toUserId)) {
       return false;
@@ -376,6 +364,7 @@ class Twitter {
     // reconnect if we failed
     if (this.listener) {
       this.listener.removeAllListeners();
+      this.listener.on('error', () => { /* ignore */ });
       this.listener.destroy();
       this.listener = null;
     }
@@ -457,7 +446,7 @@ class Twitter {
     return false;
   }
 
-  publish = (tweet) => {
+  publish(tweet) {
     const account = get(tweet, 'meta.account', false);
     const { following } = this;
     if (account && Array.isArray(following) && following.includes(account)) {
@@ -561,5 +550,17 @@ class Twitter {
       });
   }
 }
+
+/**
+ *  static helpers
+ */
+Twitter.one = new BN('1', 10);
+
+// isTweet checker
+Twitter.isTweet = conforms({
+  entities: isObject,
+  id_str: isString,
+  // TODO text or full_text: isString,
+});
 
 module.exports = Twitter;

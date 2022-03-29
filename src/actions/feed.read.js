@@ -1,3 +1,4 @@
+const { ActionTransport } = require('@microfleet/plugin-router');
 const { collectionResponse, TYPE_TWEET } = require('../utils/response');
 
 /**
@@ -20,6 +21,6 @@ function FeedReadAction({ params }) {
 }
 
 FeedReadAction.schema = 'feed.read';
-FeedReadAction.transports = ['http', 'amqp'];
+FeedReadAction.transports = [ActionTransport.http, ActionTransport.amqp];
 
 module.exports = FeedReadAction;

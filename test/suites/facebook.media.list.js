@@ -55,9 +55,7 @@ describe('facebook.media.list', function testSuite() {
 
       return service.amqp
         .publishAndWait('social.facebook.media.list', params)
-        .reflect()
-        .then((response) => {
-          const { meta, data } = response.value();
+        .then(({ meta, data }) => {
           const { count, cursor } = meta;
           const [first, second, third] = data;
 
@@ -84,9 +82,7 @@ describe('facebook.media.list', function testSuite() {
 
       return service.amqp
         .publishAndWait('social.facebook.media.list', params)
-        .reflect()
-        .then((response) => {
-          const { meta, data } = response.value();
+        .then(({ meta, data }) => {
           const { count, cursor } = meta;
           const [first, second, third] = data;
 
@@ -112,9 +108,7 @@ describe('facebook.media.list', function testSuite() {
 
       return service.amqp
         .publishAndWait('social.facebook.media.list', params)
-        .reflect()
-        .then((response) => {
-          const { meta, data } = response.value();
+        .then(({ meta, data }) => {
           const { count, cursor, before } = meta;
           const [first] = data;
 
@@ -136,9 +130,7 @@ describe('facebook.media.list', function testSuite() {
 
       return service.amqp
         .publishAndWait('social.facebook.media.list', params)
-        .reflect()
-        .then((response) => {
-          const { meta, data } = response.value();
+        .then(({ meta, data }) => {
           const { count } = meta;
           const [first] = data;
 
@@ -162,9 +154,7 @@ describe('facebook.media.list', function testSuite() {
 
       return service.amqp
         .publishAndWait('social.facebook.media.list', params)
-        .reflect()
-        .then((response) => {
-          const { meta, data } = response.value();
+        .then(({ meta, data }) => {
           const { count, cursor } = meta;
           const [first] = data;
 

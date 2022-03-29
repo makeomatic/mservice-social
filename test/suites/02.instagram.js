@@ -85,11 +85,9 @@ describe('instagram', function testSuite() {
       .returns(createFeedFixture.response.second)
       .once();
 
-    const response = await this.service.amqp
-      .publishAndWait('social.feed.register', params)
-      .reflect();
+    const { data } = await this.service.amqp
+      .publishAndWait('social.feed.register', params);
 
-    const { data } = response.value();
     assert.equal(data.length, 1);
     mock.verify();
     mock.restore();
@@ -225,7 +223,8 @@ describe('instagram', function testSuite() {
 
     // register another feed
     await this.service.amqp
-      .publishAndWait('social.feed.register',
+      .publishAndWait(
+        'social.feed.register',
         {
           internal: 'bar@instagram.com',
           network: 'instagram',
@@ -234,7 +233,8 @@ describe('instagram', function testSuite() {
             token: '777.1',
             username: 'bar',
           }],
-        });
+        }
+      );
 
     await this.service.close();
 

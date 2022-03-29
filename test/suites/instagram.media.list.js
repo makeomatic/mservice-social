@@ -44,9 +44,7 @@ describe('instagram.media.list', function testSuite() {
 
       return service.amqp
         .publishAndWait('social.instagram.media.list', params)
-        .reflect()
-        .then((response) => {
-          const { meta, data } = response.value();
+        .then(({ meta, data }) => {
           const { count, cursor } = meta;
           const [first, second, third] = data;
 
@@ -69,9 +67,7 @@ describe('instagram.media.list', function testSuite() {
 
       return service.amqp
         .publishAndWait('social.instagram.media.list', params)
-        .reflect()
-        .then((response) => {
-          const { meta, data } = response.value();
+        .then(({ meta, data }) => {
           const { count, cursor } = meta;
           const [first, second, third] = data;
 
@@ -97,9 +93,7 @@ describe('instagram.media.list', function testSuite() {
 
       return service.amqp
         .publishAndWait('social.instagram.media.list', params)
-        .reflect()
-        .then((response) => {
-          const { meta, data } = response.value();
+        .then(({ meta, data }) => {
           const { count, cursor, before } = meta;
           const [first] = data;
 

@@ -1,4 +1,3 @@
-const assert = require('assert');
 const request = require('request-promise');
 const sinon = require('sinon');
 const Social = require('../../src');
@@ -62,11 +61,8 @@ describe('feed.register', function feedRegisterSuite() {
 
       return social.amqp
         .publishAndWait('social.feed.remove', params)
-        .reflect()
-        .then((response) => {
-          assert(response.isFulfilled());
+        .then(() => {
           mock.verify();
-
           return null;
         });
     });

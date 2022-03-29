@@ -1,5 +1,6 @@
+const { ActionTransport } = require('@microfleet/plugin-router');
 const { collectionResponse, TYPE_FEED } = require('../utils/response');
-const Social = require('../');
+const Social = require('..');
 
 /**
  * @api {http} <prefix>.feed.register Register new feed source
@@ -16,6 +17,6 @@ function feedRegisterAction({ params }) {
 }
 
 feedRegisterAction.schema = 'feed.register';
-feedRegisterAction.transports = ['amqp'];
+feedRegisterAction.transports = [ActionTransport.amqp];
 
 module.exports = feedRegisterAction;

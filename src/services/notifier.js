@@ -3,13 +3,6 @@ const AMQPTransport = require('@microfleet/transport-amqp');
 const { HttpStatusError } = require('common-errors');
 
 class Notifier {
-  /* eslint-disable lines-between-class-members */
-  static kDupInstance = new HttpStatusError(409, 'Notifier has been already initialized');
-  static kInstance = Symbol('notifier');
-  static kPublishEvent = Symbol('notifier::onpublish')
-  static microfleet = null;
-  /* eslint-enable */
-
   static getInstance(skipInitialization = false) {
     const { microfleet } = Notifier;
 
@@ -73,6 +66,7 @@ class Notifier {
 
     // use the defined microservice prefix as a namespace for publications to the exchange
     this.namespace = config.router.routes.prefix;
+    this.publish = this.publish.bind(this);
   }
 
   async connect() {
@@ -88,7 +82,7 @@ class Notifier {
     }
   }
 
-  publish = async (route, data) => {
+  async publish(route, data) {
     if (!this.amqpClient) {
       return null;
     }
@@ -106,5 +100,10 @@ class Notifier {
     }
   }
 }
+
+Notifier.kDupInstance = new HttpStatusError(409, 'Notifier has been already initialized');
+Notifier.kInstance = Symbol('notifier');
+Notifier.kPublishEvent = Symbol('notifier::onpublish');
+Notifier.microfleet = null;
 
 module.exports = Notifier;
