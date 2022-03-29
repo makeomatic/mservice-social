@@ -12,7 +12,7 @@
     "lint": "eslint . --ext .json --ext .js",
     "semantic-release": "semantic-release",
     "start": "mfleet",
-    "prepare": "mdep install"
+    "prepare": "mdep install || true"
   },
   "dependencies": {
     "@hapi/hapi": "^20.2.1",
