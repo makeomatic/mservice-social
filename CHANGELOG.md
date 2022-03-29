@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/makeomatic/mservice-social/compare/v7.0.0...v7.0.1) (2022-03-29)
+
+
+### Bug Fixes
+
+* remove prepublishOnly script ([3cb8e3c](https://github.com/makeomatic/mservice-social/commit/3cb8e3c4d4d2f3c76e49278d8324bcffb90594cc))
+
 # [7.0.0](https://github.com/makeomatic/mservice-social/compare/v6.8.3...v7.0.0) (2022-03-29)
 
 
