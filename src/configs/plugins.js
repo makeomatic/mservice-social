@@ -4,8 +4,10 @@ module.exports = {
     'logger',
     'router',
     'amqp',
-    'http',
+    'hapi',
     'knex',
     'prometheus',
+    'router-amqp',
+    'router-hapi',
   ],
 };

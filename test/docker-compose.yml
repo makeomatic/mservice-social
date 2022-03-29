@@ -5,23 +5,19 @@ services:
     depends_on:
       - redis-cluster
       - rabbitmq
-    image: makeomatic/ms-users:12.13.0-12.0.0
+    image: makeomatic/ms-users:15.1.5
     hostname: ms-users
     volumes:
       - ${PWD}/test/configs:/src/configs:ro
     environment:
-      DEBUG: 'ioredis:*'
       NODE_ENV: 'production'
       NCONF_FILE_PATH: '["/src/configs/ms-users/config.js"]'
-      MS_USERS__LOGGER: 'true'
       MS_USERS__INIT_ADMIN_ACCOUNTS_DELAY: '1'
 
   tester:
     depends_on:
       - postgres
       - rabbitmq
-    volumes:
-      - ${PWD}:/src
     env_file:
       - ${PWD}/.env
     environment:

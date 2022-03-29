@@ -1,4 +1,5 @@
 const Errors = require('common-errors');
+const { ActionTransport } = require('@microfleet/plugin-router');
 const { collectionResponse, TYPE_INSTAGRAM_MEDIA } = require('../../utils/response');
 
 /**
@@ -22,6 +23,6 @@ function instagramMediaListAction({ params, method }) {
 }
 
 instagramMediaListAction.schema = 'instagram.media.list';
-instagramMediaListAction.transports = ['http', 'amqp'];
+instagramMediaListAction.transports = [ActionTransport.http, ActionTransport.amqp];
 
 module.exports = instagramMediaListAction;

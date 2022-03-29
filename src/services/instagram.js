@@ -10,9 +10,9 @@ const media = new WeakMap();
 
 class InstagramService {
   static isInvalidTokenError(response) {
-    return (response.statusCode === 400)
-      && (get(response, 'error.meta.code') === 400)
-      && (get(response, 'error.meta.error_type') === 'OAuthAccessTokenException');
+    return response.statusCode === 400
+      && get(response, 'error.meta.code') === 400
+      && get(response, 'error.meta.error_type') === 'OAuthAccessTokenException';
   }
 
   constructor(core, config, storage, logger) {
@@ -20,6 +20,7 @@ class InstagramService {
     this.config = config;
     this.storage = storage;
     this.logger = logger;
+    this.request = this.request.bind(this);
 
     const instagramComments = new Comments(this);
     const instagramMedia = new Media(this, instagramComments);
@@ -36,17 +37,15 @@ class InstagramService {
     return media.get(this);
   }
 
-  invalidateToken() {
+  async invalidateToken() {
     const { ctx, accessToken } = this;
-
     ctx.logger.warn('Invalidate instagram token %s', mangleToken(accessToken));
-    return ctx.storage.feeds().invalidate('instagram', accessToken);
+    await ctx.storage.feeds().invalidate('instagram', accessToken);
   }
 
-  request = ({ method = 'get', ...options }, accessToken) => {
-    const handler = request[method];
-
-    return Promise.resolve(handler(options))
+  request({ method = 'get', ...options }, accessToken) {
+    return Promise
+      .resolve(request[method](options))
       .bind({ ctx: this, accessToken })
       .tapCatch(InstagramService.isInvalidTokenError, this.invalidateToken);
   }

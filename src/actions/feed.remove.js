@@ -1,3 +1,5 @@
+const { ActionTransport } = require('@microfleet/plugin-router');
+
 /**
  * @api {amqp} <prefix>.feed.remove Remove feed
  * @apiVersion 1.0.0
@@ -10,6 +12,6 @@ function feedRemoveAction({ params }) {
 }
 
 feedRemoveAction.schema = 'feed.remove';
-feedRemoveAction.transports = ['amqp'];
+feedRemoveAction.transports = [ActionTransport.amqp];
 
 module.exports = feedRemoveAction;

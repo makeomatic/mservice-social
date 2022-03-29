@@ -108,8 +108,8 @@ class Social extends Microfleet {
     const storage = this.service(Social.SERVICE_STORAGE);
     const instagram = new Instagram(this, config.instagram, storage, log);
 
-    this.addConnector(ConnectorsTypes.application, () => instagram.media().init());
-    this.addDestructor(ConnectorsTypes.migration, () => instagram.media().destroy());
+    this.addConnector(ConnectorsTypes.application, () => instagram.media().init(), 'instagram');
+    this.addDestructor(ConnectorsTypes.migration, () => instagram.media().destroy(), 'instagram');
 
     this.service(Social.SERVICE_INSTAGRAM, instagram);
     feed.service(Social.SERVICE_INSTAGRAM, instagram);
@@ -121,10 +121,10 @@ class Social extends Microfleet {
     const storage = this.service(Social.SERVICE_STORAGE);
     const twitter = new Twitter(this, config.twitter, storage, log);
 
-    this.addConnector(ConnectorsTypes.application, () => twitter.init());
+    this.addConnector(ConnectorsTypes.application, () => twitter.init(), 'twitter');
 
     /* so that it stops before database is closed, but after transport is unavailable */
-    this.addDestructor(ConnectorsTypes.migration, () => twitter.destroy(true));
+    this.addDestructor(ConnectorsTypes.migration, () => twitter.destroy(true), 'twitter');
 
     this.service(Social.SERVICE_TWITTER, twitter);
     feed.service(Social.SERVICE_TWITTER, twitter);
@@ -134,7 +134,7 @@ class Social extends Microfleet {
     const { connect, close } = Notifier.connector(this);
 
     // need to start up before any application
-    this.addConnector(ConnectorsTypes.migration, connect);
+    this.addConnector(ConnectorsTypes.migration, connect, 'notifier');
 
     // need to close right before shutdown to publish updates
     this.addDestructor(ConnectorsTypes.essential, close);
