@@ -2,7 +2,7 @@
   "name": "mservice-social",
   "description": "mservice-social",
   "main": "./src/index.js",
-  "version": "6.8.3",
+  "version": "7.0.0",
   "scripts": {
     "prepublishOnly": "pnpm run lint && pnpm run compile",
     "test:e2e": "mdep test run",

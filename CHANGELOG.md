@@ -1,3 +1,15 @@
+# [7.0.0](https://github.com/makeomatic/mservice-social/compare/v6.8.3...v7.0.0) (2022-03-29)
+
+
+### Features
+
+* use latest microfleet, enable health action, pnpm, node 16 ([#114](https://github.com/makeomatic/mservice-social/issues/114)) ([d779fce](https://github.com/makeomatic/mservice-social/commit/d779fce098dbce8a83409b1c99e6e0f89b8d0dc5))
+
+
+### BREAKING CHANGES
+
+* uses updated configuration for microfleet, underlaying modules had breaking changes, validation error formats have slightly changed (must instead of should, slashes instead of dots). generally no end changes except non-standard configuration for startup needs to be changed. API remains stable
+
 ## [6.8.3](https://github.com/makeomatic/mservice-social/compare/v6.8.2...v6.8.3) (2022-01-26)
 
 
