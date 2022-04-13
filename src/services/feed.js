@@ -58,14 +58,20 @@ class Feed {
       return;
     }
 
-    const { network, meta: { account } } = feeds[0];
+    const { network, network_id: accountId, meta: { account } } = feeds[0];
+
     await storage.feeds().remove(data);
 
-    // @TODO realize it later, need to refactor totally
-    if (!data.keep_data && network === 'twitter') {
-      await storage
-        .twitterStatuses()
-        .remove({ account });
+    if (network === 'twitter') {
+      const accountFeed = await storage
+        .feeds()
+        .getByNetworkId(network, accountId);
+
+      if (!data.keep_data && accountFeed === undefined) {
+        await storage
+          .twitterStatuses()
+          .remove({ account });
+      }
     }
 
     try {

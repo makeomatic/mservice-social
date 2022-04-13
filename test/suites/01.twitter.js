@@ -29,6 +29,13 @@ describe('twitter', function testSuite() {
         { id: '2533316504', username: 'v_aminev' },
       ],
     },
+    register2: {
+      internal: 'test2@test.ru',
+      network: 'twitter',
+      accounts: [
+        { username: 'evgenypoyarkov' },
+      ],
+    },
     list: {
       filter: {
         internal: 'test@test.ru',
@@ -46,6 +53,11 @@ describe('twitter', function testSuite() {
     },
     remove: {
       internal: 'test@test.ru',
+      network: 'twitter',
+    },
+
+    remove2: {
+      internal: 'test2@test.ru',
       network: 'twitter',
     },
 
@@ -136,6 +148,11 @@ describe('twitter', function testSuite() {
       .publishAndWait(uri.register, payload.register, { timeout: 15000 });
   });
 
+  it('should register feed with the same account', async () => {
+    await service.amqp
+      .publishAndWait(uri.register, payload.register2, { timeout: 15000 });
+  });
+
   it('should return newly registered feed', async () => {
     const body = await service.amqp
       .publishAndWait(uri.list, payload.list);
@@ -207,6 +224,24 @@ describe('twitter', function testSuite() {
 
   it('remove feed', async () => {
     await service.amqp.publishAndWait(uri.remove, payload.remove);
+
+    const data = await service
+      .knex('statuses')
+      .where({ account: payload.register2.accounts[0].username })
+      .first();
+
+    assert(data);
+  });
+
+  it('remove last feed with cleaning up of statuses', async () => {
+    await service.amqp.publishAndWait(uri.remove, payload.remove2);
+
+    const data = await service
+      .knex('statuses')
+      .where({ account: payload.register2.accounts[0].username })
+      .first();
+
+    assert(data === undefined);
   });
 
   it('should register with case insensitive', async () => {
