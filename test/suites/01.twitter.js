@@ -288,25 +288,27 @@ describe('twitter', function testSuite() {
     });
   });
 
-  it('handle delete tweet', async () => {
-    // Simulate deletion on twitter stream
-    const twitter = service.service('twitter');
-    twitter.listener.emit('delete', payload.deletionNotice);
+  it('handle deletion tweet on stream', async () => {
+    service
+      .service('twitter')
+      .listener
+      .emit('delete', payload.deletionNotice);
 
     const res = await service.amqp.publishAndWait(uri.getOne, payload.oneTweet);
     assert(res);
     assert.strictEqual(res.data, null);
 
-    const { tweetId } = payload.oneTweet;
-    const tweet = await service
+    const id = payload.oneTweet.tweetId;
+
+    const hidden = await service
       .knex('statuses')
-      .where({ id: tweetId })
+      .where({ id })
       .first();
 
-    assert(tweet);
-    assert.strictEqual(tweet.id, tweetId);
-    assert(tweet.explicit);
-    assert(tweet.deleted_at);
+    assert(hidden);
+    assert.strictEqual(hidden.id, id);
+    assert(hidden.explicit);
+    assert(hidden.deleted_at);
   });
 
   after('close consumer', () => listener.close());
