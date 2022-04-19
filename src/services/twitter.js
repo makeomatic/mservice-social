@@ -445,9 +445,6 @@ class Twitter {
   }
 
   async _onDelete(data) {
-    // NOTE: expected json
-    // {"delete":{"status":{"id":1234,"id_str":"1234","user_id":3,"user_id_str":"3"}}}
-
     this.logger.debug({ data }, 'deleting tweet');
     const { id_str: id } = data.delete.status;
 
