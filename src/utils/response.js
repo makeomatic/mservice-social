@@ -42,7 +42,7 @@ function collectionResponse(objects, type, options = {}) {
 
 function modelResponse(model, type) {
   const response = {
-    data: model !== null ? transform(model, type) : null,
+    data: model !== null && model !== undefined ? transform(model, type) : null,
   };
 
   return response;

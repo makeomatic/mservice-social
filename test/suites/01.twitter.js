@@ -85,6 +85,17 @@ describe('twitter', function testSuite() {
     invalidTweet: {
       tweetId: '123-not-number',
     },
+
+    deletionNotice: {
+      delete: {
+        status: {
+          id: 20,
+          id_str: '20',
+          user_id: 12,
+          user_id_str: '12',
+        },
+      },
+    },
   };
 
   let tweetId;
@@ -275,6 +286,27 @@ describe('twitter', function testSuite() {
       statusCode: 400,
       message: 'tweet.get validation failed: data/tweetId must match pattern "^\\d{1,20}$"',
     });
+  });
+
+  it('handle delete tweet', async () => {
+    // Simulate deletion on twitter stream
+    const twitter = service.service('twitter');
+    twitter.listener.emit('delete', payload.deletionNotice);
+
+    const res = await service.amqp.publishAndWait(uri.getOne, payload.oneTweet);
+    assert(res);
+    assert.strictEqual(res.data, null);
+
+    const { tweetId } = payload.oneTweet;
+    const tweet = await service
+      .knex('statuses')
+      .where({ id: tweetId })
+      .first();
+
+    assert(tweet);
+    assert.strictEqual(tweet.id, tweetId);
+    assert(tweet.explicit);
+    assert(tweet.deleted_at);
   });
 
   after('close consumer', () => listener.close());
