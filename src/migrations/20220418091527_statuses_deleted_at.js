@@ -11,7 +11,7 @@ exports.up = async (knex) => {
     .raw(`CREATE INDEX IF NOT EXISTS ${kIndexName} on ${kTable} using BTREE (account, deleted_at)`);
 
   await knex.schema
-  .raw(`CREATE INDEX IF NOT EXISTS ${kIndexName} on ${kTable} (id) WHERE deleted_at IS NULL`);
+  .raw(`CREATE INDEX IF NOT EXISTS ${kPartialIndexName} on ${kTable} (id) WHERE deleted_at IS NULL`);
 
 };
 
