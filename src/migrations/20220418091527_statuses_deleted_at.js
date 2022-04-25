@@ -12,7 +12,7 @@ exports.up = async (knex) => {
 
 exports.down = async (knex) => {
   return knex.schema.alterTable(kTable, (table) => {
-    table.dropColumn('deleted_at');
     table.dropIndex(null, kIndexName);
+    table.dropColumn('deleted_at');
   });
 };
