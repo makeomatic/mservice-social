@@ -38,7 +38,6 @@ class TwitterStatuses {
       .andWhereRaw(rawQuery, [account])
       .orderBy([
         { column: 'id', order },
-        { column: 'account' },
       ])
       .limit(pageSize)
       .offset(offset);

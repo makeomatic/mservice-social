@@ -1,5 +1,5 @@
-const kIndexName = 'idx_tweets_account_deleted_at';
-const kPartialIndexName = 'idx_id_partial_deleted_at';
+const kPartialIdIndexName = 'idx_id_partial_deleted_at';
+const kPartialAccountIndexName = 'idx_account_partial_deleted_at';
 const kTable = 'statuses';
 
 exports.up = async (knex) => {
@@ -8,16 +8,16 @@ exports.up = async (knex) => {
   });
 
   await knex.schema
-    .raw(`CREATE INDEX IF NOT EXISTS ${kIndexName} on ${kTable} using BTREE (account, deleted_at)`);
+    .raw(`CREATE INDEX IF NOT EXISTS ${kPartialIdIndexName} on ${kTable} (id) WHERE deleted_at IS NULL`);
 
   await knex.schema
-    .raw(`CREATE INDEX IF NOT EXISTS ${kPartialIndexName} on ${kTable} (id) WHERE deleted_at IS NULL`);
+    .raw(`CREATE INDEX IF NOT EXISTS ${kPartialAccountIndexName} on ${kTable} (account) WHERE deleted_at IS NULL`);
 };
 
 exports.down = async (knex) => {
   return knex.schema.alterTable(kTable, (table) => {
-    table.dropIndex(null, kPartialIndexName);
-    table.dropIndex(null, kIndexName);
+    table.dropIndex(null, kPartialAccountIndexName);
+    table.dropIndex(null, kPartialIdIndexName);
     table.dropColumn('deleted_at');
   });
 };
