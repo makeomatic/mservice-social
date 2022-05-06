@@ -7,7 +7,7 @@ exports.up = async (knex) => {
   });
 };
 
-exports.down = async () => {
+exports.down = async (knex) => {
   return knex.schema.alterTable(kTable, (table) => {
     table.string(kColumn, 512).alter();
   });
