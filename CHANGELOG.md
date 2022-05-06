@@ -1,3 +1,11 @@
+## [7.0.2](https://github.com/makeomatic/mservice-social/compare/v7.0.1...v7.0.2) (2022-05-06)
+
+
+### Bug Fixes
+
+* increase statuses.text column to 1024 symbols ([#119](https://github.com/makeomatic/mservice-social/issues/119)) ([f895167](https://github.com/makeomatic/mservice-social/commit/f895167a0dabe83a206191010f4b66cbaf017d7d))
+* migration compilation error ([#120](https://github.com/makeomatic/mservice-social/issues/120)) ([94d1368](https://github.com/makeomatic/mservice-social/commit/94d1368c952db64ce157caf548d7d83f9c10d9a0))
+
 ## [7.0.1](https://github.com/makeomatic/mservice-social/compare/v7.0.0...v7.0.1) (2022-03-29)
 
 
