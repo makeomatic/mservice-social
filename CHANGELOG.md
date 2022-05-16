@@ -1,3 +1,10 @@
+## [7.0.4](https://github.com/makeomatic/mservice-social/compare/v7.0.3...v7.0.4) (2022-05-16)
+
+
+### Bug Fixes
+
+* fix notifier debug ([d1e4cba](https://github.com/makeomatic/mservice-social/commit/d1e4cbad7a73fa0cb29bc091d12fe792b82c3015))
+
 ## [7.0.3](https://github.com/makeomatic/mservice-social/compare/v7.0.2...v7.0.3) (2022-05-16)
 
 
