@@ -397,9 +397,12 @@ class Twitter {
   async _onData(data) {
     if (Twitter.isTweet(data)) {
       if (this.shouldFilterTweet(data)) {
+        this.logger.debug({ user: data.user.screen_name }, 'skipping tweet');
+        this.logger.trace({ data }, 'inserting tweet data');
         return false;
       }
-      this.logger.debug({ data }, 'inserting tweet');
+      this.logger.debug({ user: data.user.screen_name }, 'inserting tweet');
+      this.logger.trace({ data }, 'inserting tweet data');
       try {
         const tweet = Twitter.serializeTweet(data);
         const saved = await this.storage
