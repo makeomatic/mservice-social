@@ -430,9 +430,12 @@ class Twitter {
   async _onData(data) {
     if (Twitter.isTweet(data)) {
       if (this.shouldFilterTweet(data)) {
+        this.logger.debug({ user: data.user.screen_name }, 'skipping tweet');
+        this.logger.trace({ data }, 'inserting tweet data');
         return false;
       }
-      this.logger.debug({ data }, 'inserting tweet');
+      this.logger.debug({ user: data.user.screen_name }, 'inserting tweet');
+      this.logger.trace({ data }, 'inserting tweet data');
       try {
         const saved = await this._saveToStatuses(data);
 
