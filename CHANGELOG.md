@@ -1,3 +1,10 @@
+## [7.0.3](https://github.com/makeomatic/mservice-social/compare/v7.0.2...v7.0.3) (2022-05-16)
+
+
+### Bug Fixes
+
+* edit debug logs for tweet sync ([62a25ba](https://github.com/makeomatic/mservice-social/commit/62a25ba266fba13237c75525b193d55445618e3d))
+
 ## [7.0.2](https://github.com/makeomatic/mservice-social/compare/v7.0.1...v7.0.2) (2022-05-06)
 
 
