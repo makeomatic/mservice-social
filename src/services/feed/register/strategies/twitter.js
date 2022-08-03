@@ -22,7 +22,7 @@ async function register(data) {
     const feedMeta = {
       account_id: feed.network_id,
       account: expandedAccounts[i].username,
-    }
+    };
 
     feed.network_id = expandedAccounts[i].id;
     feed.meta = JSON.stringify(feedMeta);

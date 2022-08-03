@@ -434,11 +434,11 @@ class Twitter {
   }
 
   async _saveCursor(data) {
-    const { id, account_id } = Twitter.serializeTweet(data, true);
+    const tweet = Twitter.serializeTweet(data, true);
 
     return this.storage
       .feeds()
-      .saveCursor(id, account_id, 'twitter');
+      .saveCursor(tweet.id, tweet.account_id, 'twitter');
   }
 
   async _getCursor(account) {

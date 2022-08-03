@@ -29,9 +29,9 @@ class Feeds {
       .where('network', network)
       .whereNotNull('cursor')
       .whereIn('network_id', accounts.map(({ id }) => id))
-      .list()
+      .list();
 
-    return Object.fromEntries(cursors.map(({ network_id, cursor }) => ([network_id, cursor])))
+    return Object.fromEntries(cursors.map((feed) => ([feed.network_id, feed.cursor])));
   }
 
   save(data) {
