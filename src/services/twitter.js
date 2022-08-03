@@ -23,6 +23,7 @@ function extractAccount(accum, value) {
   if (accountId && !find(accum, { account_id: accountId })) {
     value.meta.internal = value.internal;
     value.meta.network_id = value.network_id;
+    value.meta.cursor = value.cursor;
     accum.push(value.meta);
   }
 
@@ -244,7 +245,7 @@ class Twitter {
         .reduce(accounts, extractAccount, [])
         .filter(async (twAccount) => {
           try {
-            await this.syncAccount(twAccount.account, 'desc');
+            await this.syncAccount(twAccount, 'desc');
           } catch (exception) {
             const isAccountInaccessible = exception.statusCode === 401
               || (Array.isArray(exception) && exception.find((it) => (it.code === 34)));
@@ -401,6 +402,8 @@ class Twitter {
     this._destroyAndReconnect();
   }
 
+  // return false if we want to allow tweet,
+  // return tweet id if we want to skip tweet, and update pointer for cursor
   shouldFilterTweet(data) {
     const { replies, retweets, skipValidAccounts } = this.filterOptions;
 
@@ -408,12 +411,15 @@ class Twitter {
     if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
       return false;
     }
+
     if (replies && Twitter.isReply(data)) {
-      return true;
+      return data.id;
     }
+
     if (retweets && Twitter.isRetweet(data)) {
-      return true;
+      return data.id;
     }
+
     return false;
   }
 
@@ -427,17 +433,35 @@ class Twitter {
       .save(status);
   }
 
+  async _saveCursor(data) {
+    const { id, account_id } = Twitter.serializeTweet(data, true);
+
+    return this.storage
+      .feeds()
+      .saveCursor(id, account_id, 'twitter');
+  }
+
+  async _getCursor(account) {
+    return this.storage
+      .feeds()
+      .getCursor(account, 'twitter');
+  }
+
   async _onData(data) {
     if (Twitter.isTweet(data)) {
-      if (this.shouldFilterTweet(data)) {
+      if (this.shouldFilterTweet(data) !== false) {
         this.logger.debug({ user: data.user.screen_name }, 'skipping tweet');
-        this.logger.trace({ data }, 'inserting tweet data');
+        this.logger.trace({ data }, 'skip tweet data');
+        await this._saveCursor(data);
+
         return false;
       }
+
       this.logger.debug({ user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
       try {
         const saved = await this._saveToStatuses(data);
+        await this._saveCursor(data);
 
         this.publish(saved);
         return saved;
@@ -476,11 +500,11 @@ class Twitter {
     }
   }
 
-  async syncAccount(account, order = 'asc', maxPages = 20) {
+  async syncAccount({ cursor, account }, order = 'asc', maxPages = 20) {
     const twitterStatuses = this.storage.twitterStatuses();
     const fetchedTweets = async (tweet, page = 1) => {
       const tweets = await this.fetchTweets(
-        Twitter.cursor(tweet, order),
+        cursor || Twitter.cursor(tweet, order),
         account,
         order === 'asc' ? 'max_id' : 'since_id'
       );

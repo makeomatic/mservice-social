@@ -13,21 +13,26 @@ async function register(data) {
   * Expand and validate accounts
   */
   const expandedAccounts = await twitter.fillUserIds(accounts);
+  const accountsCursor = await storage.feeds().accountsCursor(expandedAccounts, 'twitter');
 
   const saveAccountJobs = [];
   const syncAccountJobs = [];
-  for (let i = 0; i < accounts.length; i += 1) {
+  for (let i = 0; i < expandedAccounts.length; i += 1) {
     const feed = clone(original);
-
-    feed.network_id = expandedAccounts[i].id;
-    feed.meta = JSON.stringify({
+    const feedMeta = {
       account_id: feed.network_id,
       account: expandedAccounts[i].username,
-    });
+    }
+
+    feed.network_id = expandedAccounts[i].id;
+    feed.meta = JSON.stringify(feedMeta);
 
     // wait till storage is registered then syncs tweets
     saveAccountJobs.push(storage.feeds().save(feed));
-    syncAccountJobs.push(() => twitter.syncAccount(expandedAccounts[i].username));
+    syncAccountJobs.push(() => twitter.syncAccount({
+      ...feedMeta,
+      cursor: accountsCursor[feed.network_id],
+    }));
   }
 
   await Promise.all(saveAccountJobs);
