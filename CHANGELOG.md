@@ -1,3 +1,10 @@
+# [7.1.0](https://github.com/makeomatic/mservice-social/compare/v7.0.4...v7.1.0) (2022-08-04)
+
+
+### Features
+
+* save sync cursor to feed ([#122](https://github.com/makeomatic/mservice-social/issues/122)) ([aa7cd99](https://github.com/makeomatic/mservice-social/commit/aa7cd995ddf307dc55b275fa86d707476c9d2c50))
+
 ## [7.0.4](https://github.com/makeomatic/mservice-social/compare/v7.0.3...v7.0.4) (2022-05-16)
 
 
