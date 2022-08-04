@@ -53,7 +53,7 @@ describe('twitter', function testSuite() {
       internal: 'test@test.ru',
       network: 'twitter',
       accounts: [
-        { username: 'undefined' },
+        { username: Date.now().toString() },
       ],
     },
 
@@ -61,7 +61,7 @@ describe('twitter', function testSuite() {
       internal: 'test@test.ru',
       network: 'twitter',
       accounts: [
-        { username: 'undefined' },
+        { username: Date.now().toString() },
         { username: 'test' },
       ],
     },
@@ -128,7 +128,7 @@ describe('twitter', function testSuite() {
 
   it('should register feed for only valid accounts', async () => {
     await assert.rejects(service.amqp
-      .publishAndWait(uri.register, payload.registerValidation), /Users lookup failed for 'undefined'/);
+      .publishAndWait(uri.register, payload.registerValidation), `Users lookup failed for '${payload.registerValidation.accounts[0].username}'`);
   });
 
   it('should register feed', async () => {

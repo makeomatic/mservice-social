@@ -13,6 +13,26 @@ class Feeds {
       .where(where);
   }
 
+  saveCursor(cursor, networkId, network) {
+    return this
+      .knex(this.table)
+      .where('network', network)
+      .where('network_id', networkId)
+      .whereRaw('cursor < ?', [cursor])
+      .update('cursor', cursor);
+  }
+
+  async accountsCursor(accounts, network) {
+    const cursors = await this.knex
+      .select('network_id', 'cursor')
+      .from(this.table)
+      .where('network', network)
+      .whereNotNull('cursor')
+      .whereIn('network_id', accounts.map(({ id }) => id));
+
+    return Object.fromEntries(cursors.map((feed) => ([feed.network_id, feed.cursor])));
+  }
+
   save(data) {
     return this.knex.upsertItem(this.table, 'internal, network, network_id', data);
   }
