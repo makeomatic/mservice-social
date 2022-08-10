@@ -102,6 +102,12 @@ class Feed {
       .twitterStatuses()
       .byId(data.tweetId);
   }
+
+  async countByAccounts(data) {
+    return this.service('storage')
+      .twitterStatuses()
+      .countByAccounts(data);
+  }
 }
 
 module.exports = Feed;

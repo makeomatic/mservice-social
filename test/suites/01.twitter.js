@@ -271,6 +271,11 @@ describe('twitter', function testSuite() {
     assert(meta.favorite_count);
   });
 
+  it('get count by accounts', async () => {
+    const reply = await service.amqp.publishAndWait('social.tweet.count', [{ account: 'EvgenyPoyarkov' }, { account: 'v_aminev' }]);
+    assert.notEqual(reply.data.length, 0);
+  });
+
   it('rejects with error on get tweet validation', async () => {
     await assert.rejects(service.amqp.publishAndWait(uri.getOne, payload.invalidTweet), {
       name: 'HttpStatusError',
