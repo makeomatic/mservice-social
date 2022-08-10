@@ -45,6 +45,31 @@ class TwitterStatuses {
     return query;
   }
 
+  countByAccount(data) {
+    const {
+      account,
+      cursor,
+    } = data;
+
+    const query = this.knex
+      .select('account')
+      .countDistinct('id')
+      .from(this.table)
+      .where('account', account)
+      .groupBy('account');
+
+    if (cursor) {
+      query.where('id', '>', cursor);
+    }
+
+    return query;
+  }
+
+  countByAccounts(data) {
+    const subqueries = data.map(({ account, cursor }) => this.countByAccount({ account, cursor }));
+    return this.knex.unionAll(subqueries);
+  }
+
   remove(data) {
     return this.knex(this.table).where('account', data.account).del();
   }

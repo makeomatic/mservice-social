@@ -14,6 +14,10 @@ services:
       NCONF_FILE_PATH: '["/src/configs/ms-users/config.js"]'
       MS_USERS__INIT_ADMIN_ACCOUNTS_DELAY: '1'
 
+  postgres:
+    ports:
+      - "65432:5432"
+
   tester:
     depends_on:
       - postgres

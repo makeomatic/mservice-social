@@ -35,3 +35,4 @@ lib
 docs
 .idea
 .vscode
+/v8-compile-cache-0
