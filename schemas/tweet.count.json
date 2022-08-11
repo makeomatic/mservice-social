@@ -1,17 +1,25 @@
 {
   "$id": "tweet.count",
-  "type": "array",
-  "items": {
-    "type": "object",
-    "required": [
-      "account"
-    ],
-    "properties": {
-      "account": {
-        "type": "string"
-      },
-      "cursor": {
-        "$ref": "common.json#/definitions/tweetId"
+  "type": "object",
+  "required": [
+    "data"
+  ],
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "account"
+        ],
+        "properties": {
+          "account": {
+            "type": "string"
+          },
+          "cursor": {
+            "$ref": "common.json#/definitions/tweetId"
+          }
+        }
       }
     }
   }

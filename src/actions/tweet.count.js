@@ -1,7 +1,7 @@
 const { ActionTransport } = require('@microfleet/plugin-router');
 
 /**
- * @api {http} <prefix>.tweet.count Count tweets by accounts
+ * @api {http} <prefix>.tweet.count Tweet count by accounts
  * @apiVersion 1.0.0
  * @apiName tweet.count
  * @apiGroup Feed
@@ -9,7 +9,7 @@ const { ActionTransport } = require('@microfleet/plugin-router');
  */
 async function TweetCountAction({ params }) {
   const data = await this.service('feed')
-    .countByAccounts(params);
+    .countByAccounts(params.data);
   return { data };
 }
 
