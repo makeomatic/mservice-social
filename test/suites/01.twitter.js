@@ -272,7 +272,9 @@ describe('twitter', function testSuite() {
   });
 
   it('get count by accounts', async () => {
-    const reply = await service.amqp.publishAndWait('social.tweet.count', [{ account: 'EvgenyPoyarkov' }, { account: 'v_aminev' }]);
+    const reply = await service.amqp.publishAndWait('social.tweet.count', {
+      data: [{ account: 'EvgenyPoyarkov' }, { account: 'v_aminev' }],
+    });
     assert.notEqual(reply.data.length, 0);
   });
 
