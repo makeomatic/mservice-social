@@ -1,3 +1,10 @@
+# [7.2.0](https://github.com/makeomatic/mservice-social/compare/v7.1.0...v7.2.0) (2022-08-23)
+
+
+### Features
+
+* get tweet count by accounts ([7e99a4f](https://github.com/makeomatic/mservice-social/commit/7e99a4fb01b8d8392b5c0ce578e619685f086fba))
+
 # [7.1.0](https://github.com/makeomatic/mservice-social/compare/v7.0.4...v7.1.0) (2022-08-04)
 
 
