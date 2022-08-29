@@ -1,3 +1,10 @@
+## [7.2.1](https://github.com/makeomatic/mservice-social/compare/v7.2.0...v7.2.1) (2022-08-29)
+
+
+### Bug Fixes
+
+* added debug to save cursor ([0539cbe](https://github.com/makeomatic/mservice-social/commit/0539cbeada960118bea409d3bfe1cd480b459d39))
+
 # [7.2.0](https://github.com/makeomatic/mservice-social/compare/v7.1.0...v7.2.0) (2022-08-23)
 
 
