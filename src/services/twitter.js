@@ -435,6 +435,7 @@ class Twitter {
 
   async _saveCursor(data) {
     const tweet = Twitter.serializeTweet(data, true);
+    this.logger.debug({ data, tweet }, 'save cursor');
 
     return this.storage
       .feeds()
