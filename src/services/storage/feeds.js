@@ -18,7 +18,7 @@ class Feeds {
       .knex(this.table)
       .where('network', network)
       .where('network_id', networkId)
-      .whereRaw('cursor < ?', [cursor])
+      .whereRaw('(cursor is null or cursor < ?)', [cursor])
       .update('cursor', cursor);
   }
 
