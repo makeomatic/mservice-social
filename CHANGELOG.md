@@ -1,3 +1,10 @@
+## [7.2.2](https://github.com/makeomatic/mservice-social/compare/v7.2.1...v7.2.2) (2022-08-29)
+
+
+### Bug Fixes
+
+* fix update tweet cursor ([fb50707](https://github.com/makeomatic/mservice-social/commit/fb507079e1d0e3654e3100092b6c9dfd3dfd44b4))
+
 ## [7.2.1](https://github.com/makeomatic/mservice-social/compare/v7.2.0...v7.2.1) (2022-08-29)
 
 
