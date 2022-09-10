@@ -206,7 +206,7 @@ describe('twitter', function testSuite() {
     await assert.rejects(service.amqp.publishAndWait(uri.readAMQP, { filter: { account: [] } }), {
       name: 'HttpStatusError',
       statusCode: 400,
-      message: /the "account" parameter must be string or array/,
+      message: /the "account" parameter must be a string or an array/,
     });
   });
 
@@ -216,7 +216,7 @@ describe('twitter', function testSuite() {
     await assert.rejects(service.amqp.publishAndWait(uri.readAMQP, { filter: {} }), {
       name: 'HttpStatusError',
       statusCode: 400,
-      message: /the "account" parameter must be string or array/,
+      message: /the "account" parameter must be a string or an array/,
     });
   });
 
