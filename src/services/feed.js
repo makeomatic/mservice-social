@@ -5,7 +5,7 @@ const register = require('./feed/register');
 const services = new WeakMap();
 
 const isValidAccount = (account) => {
-  return typeof account === 'string' || (Array.isArray(account) && account.length > 0);
+  return typeof account === 'string' || (Array.isArray(account) && account.length);
 };
 
 class Feed {
@@ -51,7 +51,7 @@ class Feed {
     const { filter: { account } = {} } = data;
 
     if (!isValidAccount(account)) {
-      throw new HttpStatusError(400, 'the "account" parameter must be string or array');
+      throw new HttpStatusError(400, 'the "account" parameter must be a string or an array');
     }
 
     return this

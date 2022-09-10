@@ -44,7 +44,6 @@ describe('twitter', function testSuite() {
         account: ['EvgenyPoyarkov', 'v_aminev'],
       },
     },
-
     remove: {
       internal: 'test@test.ru',
       network: 'twitter',
