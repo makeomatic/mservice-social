@@ -1,3 +1,12 @@
+## [7.2.3](https://github.com/makeomatic/mservice-social/compare/v7.2.2...v7.2.3) (2022-09-10)
+
+
+### Bug Fixes
+
+* feed read error on incorrect account param ([02b5893](https://github.com/makeomatic/mservice-social/commit/02b5893af2924ed6fc5b7d3189cf1dc9dfb24b6c))
+* test assertion ([9407a01](https://github.com/makeomatic/mservice-social/commit/9407a01bb9350290d6abc5a77e1197415c119074))
+* update error message ([6f0a46c](https://github.com/makeomatic/mservice-social/commit/6f0a46c912982b5435ffa07059bfbdb2c3f63514))
+
 ## [7.2.2](https://github.com/makeomatic/mservice-social/compare/v7.2.1...v7.2.2) (2022-08-29)
 
 
