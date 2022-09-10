@@ -1,8 +1,12 @@
-const { NotFoundError } = require('common-errors');
+const { NotFoundError, HttpStatusError } = require('common-errors');
 const Promise = require('bluebird');
 const register = require('./feed/register');
 
 const services = new WeakMap();
+
+const isValidAccount = (account) => {
+  return typeof account === 'string' || (Array.isArray(account) && account.length > 0);
+};
 
 class Feed {
   constructor(logger) {
@@ -44,6 +48,12 @@ class Feed {
   }
 
   read(data) {
+    const { filter: { account } = {} } = data;
+
+    if (!isValidAccount(account)) {
+      throw new HttpStatusError(400, 'the "account" parameter must be string or array');
+    }
+
     return this
       .service('storage')
       .twitterStatuses()
