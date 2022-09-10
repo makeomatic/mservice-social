@@ -44,6 +44,7 @@ describe('twitter', function testSuite() {
         account: ['EvgenyPoyarkov', 'v_aminev'],
       },
     },
+
     remove: {
       internal: 'test@test.ru',
       network: 'twitter',
@@ -198,6 +199,26 @@ describe('twitter', function testSuite() {
 
   it('verify that spy has been called', () => {
     assert(broadcastSpy.called);
+  });
+
+  it('rejects with error if account is empty array', async () => {
+    await Promise.delay(1500);
+
+    await assert.rejects(service.amqp.publishAndWait(uri.readAMQP, { filter: { account: [] } }), {
+      name: 'HttpStatusError',
+      statusCode: 400,
+      message: /the "account" parameter must be string or array/,
+    });
+  });
+
+  it('rejects with error if account is not specified', async () => {
+    await Promise.delay(1500);
+
+    await assert.rejects(service.amqp.publishAndWait(uri.readAMQP, { filter: {} }), {
+      name: 'HttpStatusError',
+      statusCode: 400,
+      message: /the "account" parameter must be string or array/,
+    });
   });
 
   it('confirm amqp request to read works', async () => {
