@@ -45,6 +45,7 @@ function streamFilterOptions(config) {
   const STREAM_FILTERS_DEFAULTS = {
     replies: false,
     retweets: false,
+    userMentions: false,
   };
   return merge({}, STREAM_FILTERS_DEFAULTS, config.stream_filters);
 }
@@ -76,6 +77,11 @@ class Twitter {
       return false;
     }
     return !isNil(data.in_reply_to_status_id);
+  }
+
+  static hasUserMentions(data) {
+    const list = get(data, 'entities.user_mentions');
+    return list && list.length;
   }
 
   /**
@@ -405,7 +411,12 @@ class Twitter {
   // return false if we want to allow tweet,
   // return tweet id if we want to skip tweet, and update pointer for cursor
   shouldFilterTweet(data) {
-    const { replies, retweets, skipValidAccounts } = this.filterOptions;
+    const {
+      replies,
+      retweets,
+      userMentions,
+      skipValidAccounts,
+    } = this.filterOptions;
 
     // Don't filter retweets posted by the valid users
     if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
@@ -417,6 +428,10 @@ class Twitter {
     }
 
     if (retweets && Twitter.isRetweet(data)) {
+      return data.id;
+    }
+
+    if (userMentions && Twitter.hasUserMentions(data)) {
       return data.id;
     }
 
