@@ -1,3 +1,10 @@
+# [7.3.0](https://github.com/makeomatic/mservice-social/compare/v7.2.3...v7.3.0) (2022-10-03)
+
+
+### Features
+
+* **twitter:** status filtering by user mentions ([8f84001](https://github.com/makeomatic/mservice-social/commit/8f8400137dc450a17ed1a4a45d0a71869ba3937d))
+
 ## [7.2.3](https://github.com/makeomatic/mservice-social/compare/v7.2.2...v7.2.3) (2022-09-10)
 
 
