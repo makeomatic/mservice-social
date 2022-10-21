@@ -46,6 +46,7 @@ function streamFilterOptions(config) {
     replies: false,
     retweets: false,
     userMentions: false,
+    skipValidAccounts: false,
   };
   return merge({}, STREAM_FILTERS_DEFAULTS, config.stream_filters);
 }
@@ -163,6 +164,7 @@ class Twitter {
   }
 
   static tweetFetcherFactory(twitter, logger, apiConfig) {
+    logger.debug('timeline config: %j', apiConfig.user_timeline);
     const limit = pLimit(1);
     const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
       twitter.get('statuses/user_timeline', {
@@ -229,6 +231,7 @@ class Twitter {
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
     this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
+    logger.debug('filters config: %j', this.filterOptions);
 
     // cheaper than bind
     this.onData = (json) => this._onData(json);
@@ -420,18 +423,22 @@ class Twitter {
 
     // Don't filter retweets posted by the valid users
     if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'filter skipped by valid acc');
       return false;
     }
 
     if (replies && Twitter.isReply(data)) {
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'reply filtered');
       return data.id;
     }
 
     if (retweets && Twitter.isRetweet(data)) {
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'retweet filtered');
       return data.id;
     }
 
     if (userMentions && Twitter.hasUserMentions(data)) {
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'mention filtered');
       return data.id;
     }
 
@@ -450,7 +457,7 @@ class Twitter {
 
   async _saveCursor(data) {
     const tweet = Twitter.serializeTweet(data, true);
-    this.logger.debug({ data, tweet }, 'save cursor');
+    this.logger.debug({ id: data.id }, 'save cursor');
 
     return this.storage
       .feeds()
@@ -466,14 +473,13 @@ class Twitter {
   async _onData(data) {
     if (Twitter.isTweet(data)) {
       if (this.shouldFilterTweet(data) !== false) {
-        this.logger.debug({ user: data.user.screen_name }, 'skipping tweet');
         this.logger.trace({ data }, 'skip tweet data');
         await this._saveCursor(data);
 
         return false;
       }
 
-      this.logger.debug({ user: data.user.screen_name }, 'inserting tweet');
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
       try {
         const saved = await this._saveToStatuses(data);
