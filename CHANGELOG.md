@@ -1,3 +1,10 @@
+## [7.3.1](https://github.com/makeomatic/mservice-social/compare/v7.3.0...v7.3.1) (2022-10-21)
+
+
+### Bug Fixes
+
+* **tweet-filter:** improve logging for filtering ([6c47daa](https://github.com/makeomatic/mservice-social/commit/6c47daadb4b7f763d53a4d7b52e76f53741d1044))
+
 # [7.3.0](https://github.com/makeomatic/mservice-social/compare/v7.2.3...v7.3.0) (2022-10-03)
 
 
