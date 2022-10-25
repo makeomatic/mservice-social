@@ -85,6 +85,17 @@ describe('twitter', function testSuite() {
     invalidTweet: {
       tweetId: '123-not-number',
     },
+
+    deletionNotice: {
+      delete: {
+        status: {
+          id: 20,
+          id_str: '20',
+          user_id: 12,
+          user_id_str: '12',
+        },
+      },
+    },
   };
 
   let tweetId;
@@ -256,7 +267,6 @@ describe('twitter', function testSuite() {
     assert.strictEqual(text, 'just setting up my twttr');
     assert(meta);
     assert.strictEqual(meta.id_str, payload.oneTweet.tweetId);
-    assert(data.attributes.explicit);
   });
 
   it('rejects with error on sync non-existing tweet', async () => {
@@ -280,9 +290,8 @@ describe('twitter', function testSuite() {
     assert(data);
     assert.strictEqual(data.id, payload.oneTweet.tweetId);
     assert.strictEqual(data.type, 'tweet');
-    const { text, meta, explicit } = data.attributes;
+    const { text, meta } = data.attributes;
     assert.strictEqual(text, 'just setting up my twttr');
-    assert(explicit);
     assert(meta.account_id, '12');
     assert(meta.account);
     assert(meta.account_name);
@@ -304,6 +313,29 @@ describe('twitter', function testSuite() {
       statusCode: 400,
       message: 'tweet.get validation failed: data/tweetId must match pattern "^\\d{1,20}$"',
     });
+  });
+
+  it('handle deletion tweet on stream', async () => {
+    service
+      .service('twitter')
+      .listener
+      .emit('delete', payload.deletionNotice);
+
+    const res = await service.amqp.publishAndWait(uri.getOne, payload.oneTweet);
+    assert(res);
+    assert.strictEqual(res.data, null);
+
+    const id = payload.oneTweet.tweetId;
+
+    const hidden = await service
+      .knex('statuses')
+      .where({ id })
+      .first();
+
+    assert(hidden);
+    assert.strictEqual(hidden.id, id);
+    assert(hidden.explicit);
+    assert(hidden.deleted_at);
   });
 
   after('close consumer', () => listener.close());

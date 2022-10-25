@@ -8,6 +8,12 @@ class TwitterStatuses {
     return this.knex.upsertItem(this.table, 'id', data);
   }
 
+  softDelete(criteria) {
+    return this.knex.table(this.table)
+      .update('deleted_at', this.knex.fn.now())
+      .where(criteria);
+  }
+
   list(data) {
     const {
       page,
@@ -27,11 +33,11 @@ class TwitterStatuses {
       : data.filter.account.toLowerCase();
 
     const query = this.knex(this.table)
-      .select()
-      .whereRaw(rawQuery, [account])
+      .select('id', 'date', 'text', 'account', 'meta')
+      .whereNull('deleted_at')
+      .andWhereRaw(rawQuery, [account])
       .orderBy([
         { column: 'id', order },
-        { column: 'account' },
       ])
       .limit(pageSize)
       .offset(offset);
@@ -76,7 +82,9 @@ class TwitterStatuses {
 
   byId(tweetId) {
     return this.knex(this.table)
-      .where('id', tweetId)
+      .select('id', 'date', 'text', 'account', 'meta')
+      .whereNull('deleted_at')
+      .andWhere('id', tweetId)
       .first();
   }
 }

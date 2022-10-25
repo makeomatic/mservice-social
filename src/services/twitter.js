@@ -237,6 +237,7 @@ class Twitter {
     this.onData = (json) => this._onData(json);
     this.onError = (err) => this._onError(err);
     this.onEnd = () => this._onEnd();
+    this.onDelete = (json) => this._onDelete(json);
   }
 
   async init() {
@@ -325,13 +326,10 @@ class Twitter {
     listener.on('data', this.onData);
     listener.on('error', this.onError);
     listener.on('end', this.onEnd);
+    listener.on('delete', this.onDelete);
 
     // attach params
     listener.params = params;
-
-    // TODO: do this!
-    // add 'delete' handler
-    // listener.on('delete', this.onDelete);
 
     // remap stream receiver to add 90 sec timeout
     const { receive } = listener;
@@ -493,6 +491,19 @@ class Twitter {
     }
 
     return false;
+  }
+
+  async _onDelete(data) {
+    this.logger.debug({ data }, 'deleting tweet');
+    const { id_str: id } = data.delete.status;
+
+    if (!id) {
+      return false;
+    }
+
+    return this.storage
+      .twitterStatuses()
+      .softDelete({ id });
   }
 
   publish(tweet) {
