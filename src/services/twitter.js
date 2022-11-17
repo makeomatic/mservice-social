@@ -223,6 +223,7 @@ class Twitter {
     this.client = new TwitterClient(config);
     this.listener = null;
     this.filterOptions = streamFilterOptions(config);
+    this.notifyConfig = config.notifications;
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
@@ -234,7 +235,7 @@ class Twitter {
     logger.debug('filters config: %j', this.filterOptions);
 
     // cheaper than bind
-    this.onData = (json) => this._onData(json);
+    this.onData = (notify) => (json) => this._onData(json, notify);
     this.onError = (err) => this._onError(err);
     this.onEnd = () => this._onEnd();
   }
@@ -322,7 +323,10 @@ class Twitter {
     // setup new listener while old is still active
     const listener = this.listener = this.client.stream('statuses/filter', params);
 
-    listener.on('data', this.onData);
+    // calculate notification on init
+    const notify = this.shouldNotifyFor('data', 'init');
+
+    listener.on('data', this.onData(notify));
     listener.on('error', this.onError);
     listener.on('end', this.onEnd);
 
@@ -411,6 +415,12 @@ class Twitter {
     this._destroyAndReconnect();
   }
 
+  shouldNotifyFor(event, from) {
+    const allow = this.notifyConfig[event];
+
+    return Array.isArray(allow) && allow.includes(from);
+  }
+
   // return false if we want to allow tweet,
   // return tweet id if we want to skip tweet, and update pointer for cursor
   shouldFilterTweet(data) {
@@ -470,7 +480,7 @@ class Twitter {
       .getCursor(account, 'twitter');
   }
 
-  async _onData(data) {
+  async _onData(data, notify = true) {
     if (Twitter.isTweet(data)) {
       if (this.shouldFilterTweet(data) !== false) {
         this.logger.trace({ data }, 'skip tweet data');
@@ -485,7 +495,9 @@ class Twitter {
         const saved = await this._saveToStatuses(data);
         await this._saveCursor(data);
 
-        this.publish(saved);
+        if (notify) {
+          this.publish(saved);
+        }
         return saved;
       } catch (err) {
         this.logger.warn({ err }, 'failed to save tweet');
@@ -524,6 +536,9 @@ class Twitter {
 
   async syncAccount({ cursor, account }, order = 'asc', maxPages = 20) {
     const twitterStatuses = this.storage.twitterStatuses();
+    // calculate notification on sync
+    const notify = this.shouldNotifyFor('data', 'sync');
+
     const fetchedTweets = async (tweet, page = 1) => {
       const tweets = await this.fetchTweets(
         cursor || Twitter.cursor(tweet, order),
@@ -540,7 +555,7 @@ class Twitter {
 
       const index = order === 'asc' ? length - 1 : 0;
       const oldestTweet = await Promise
-        .map(tweets, this.onData)
+        .map(tweets, this.onData(notify))
         .get(index); // TODO: ensure that we are picking a tweet
 
       await fetchedTweets(oldestTweet, page + 1);
