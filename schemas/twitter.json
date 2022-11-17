@@ -35,6 +35,9 @@
         "stream_filters": {
           "$ref":"common.json#/definitions/twitter_stream_filters"
         },
+        "notifications": {
+          "$ref": "common.json#/definitions/twitter_notifications"
+        },
         "consumer_key": {
           "type": "string"
         },

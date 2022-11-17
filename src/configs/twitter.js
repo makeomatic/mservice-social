@@ -13,5 +13,8 @@ module.exports = {
       userMentions: false,
       skipValidAccounts: false,
     },
+    notifications: {
+      data: ['init', 'sync']
+    }
   },
 };

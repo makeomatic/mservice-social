@@ -195,6 +195,24 @@
           }
         }
       }
+    },
+    "twitter_notifications": {
+      "additionalProperties": false,
+      "description": "notifcation options",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "init",
+              "sync"
+            ]
+          },
+          "description": "for tweet statuses"
+        }
+      }
     }
   }
 }
