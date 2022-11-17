@@ -14,7 +14,7 @@ module.exports = {
       skipValidAccounts: false,
     },
     notifications: {
-      data: ['init', 'sync']
-    }
+      data: ['init', 'sync'],
+    },
   },
 };
