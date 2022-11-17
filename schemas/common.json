@@ -198,19 +198,16 @@
     },
     "twitter_notifications": {
       "additionalProperties": false,
-      "description": "notifcation options",
+      "description": "notification config",
       "type": "object",
       "properties": {
         "data": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [
-              "init",
-              "sync"
-            ]
+            "enum": ["init", "sync"]
           },
-          "description": "for tweet statuses"
+          "description": "for twitter statuses"
         }
       }
     }
