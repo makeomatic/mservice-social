@@ -1,3 +1,11 @@
+## [7.3.2](https://github.com/makeomatic/mservice-social/compare/v7.3.1...v7.3.2) (2022-11-17)
+
+
+### Bug Fixes
+
+* add twitter notification config ([d0ed13f](https://github.com/makeomatic/mservice-social/commit/d0ed13f4f0f54ae5d22292931eb42847edb61677))
+* linter error ([c7211ae](https://github.com/makeomatic/mservice-social/commit/c7211ae6a4b6497f4e2ed30d1bdd0e4f3eec6370))
+
 ## [7.3.1](https://github.com/makeomatic/mservice-social/compare/v7.3.0...v7.3.1) (2022-10-21)
 
 
