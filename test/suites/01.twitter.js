@@ -85,6 +85,10 @@ describe('twitter', function testSuite() {
     invalidTweet: {
       tweetId: '123-not-number',
     },
+
+    replyWithMentions: {
+      tweetId: '788099220381335552',
+    },
   };
 
   let tweetId;
@@ -304,6 +308,19 @@ describe('twitter', function testSuite() {
       statusCode: 400,
       message: 'tweet.get validation failed: data/tweetId must match pattern "^\\d{1,20}$"',
     });
+  });
+
+  it('compute and save tweet types', async () => {
+    const { data } = await service.amqp.publishAndWait(uri.syncOne, payload.replyWithMentions);
+    assert(data);
+    assert.strictEqual(data.id, payload.replyWithMentions.tweetId);
+    assert.strictEqual(data.type, 'tweet');
+
+    const { types } = data.attributes;
+    assert(types.reply);
+    assert(types.userMentions);
+    assert.strictEqual(types.retweet, undefined);
+    assert.strictEqual(types.hashTags, undefined);
   });
 
   after('close consumer', () => listener.close());

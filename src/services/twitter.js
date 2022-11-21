@@ -11,7 +11,7 @@ const {
 
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
-const { collectTweetMeta } = require('../utils/twitter');
+const { collectTweetTypes } = require('../utils/twitter');
 
 const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
@@ -442,10 +442,10 @@ class Twitter {
     return false;
   }
 
-  async _saveToStatuses(data, metadata, directlyInserted = false) {
+  async _saveToStatuses(data, types, directlyInserted = false) {
     const tweet = Twitter.serializeTweet(data);
-    // TODO keep meta with tweet types
-    const status = directlyInserted ? { ...tweet, explicit: true } : tweet;
+
+    const status = directlyInserted ? { ...tweet, types, explicit: true } : tweet;
 
     return this.storage
       .twitterStatuses()
@@ -469,7 +469,7 @@ class Twitter {
 
   async _onData(data, notify = true) {
     if (Twitter.isTweet(data)) {
-      const meta = collectTweetMeta(data);
+      const meta = collectTweetTypes(data);
 
       if (this.shouldFilterTweet(data, meta) !== false) {
         this.logger.trace({ data }, 'skip tweet data');
@@ -511,8 +511,8 @@ class Twitter {
       const data = await this.fetchById(tweetId);
       if (Twitter.isTweet(data)) {
         // inserted directly using api/sync
-        const meta = collectTweetMeta(data);
-        const saved = await this._saveToStatuses(data, meta, true);
+        const types = collectTweetTypes(data);
+        const saved = await this._saveToStatuses(data, types, true);
         this.logger.debug({ tweetId }, 'tweet synced');
         return saved;
       }
