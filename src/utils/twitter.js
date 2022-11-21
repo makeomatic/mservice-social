@@ -22,23 +22,23 @@ function hasHashTags(data) {
   return list && list.length;
 }
 
-function collectTweetMeta(data) {
-  const meta = {};
+function collectTweetTypes(data) {
+  const types = {};
   if (isReply(data)) {
-    meta.reply = 1;
+    types.reply = 1;
   }
   if (isRetweet(data)) {
-    meta.retweet = 1;
+    types.retweet = 1;
   }
   if (hasUserMentions(data)) {
-    meta.userMentions = 1;
+    types.userMentions = 1;
   }
   if (hasHashTags(data)) {
-    meta.hashTags = 1;
+    types.hashTags = 1;
   }
-  return meta;
+  return types;
 }
 
 module.exports = {
-  collectTweetMeta,
+  collectTweetTypes,
 };
