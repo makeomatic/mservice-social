@@ -39,4 +39,6 @@ function collectTweetMeta(data) {
   return meta;
 }
 
-module.exports = collectTweetMeta;
+module.exports = {
+  collectTweetMeta,
+};
