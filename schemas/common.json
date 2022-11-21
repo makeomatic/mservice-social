@@ -169,6 +169,10 @@
           "type": "boolean",
           "default": false
         },
+        "hashTags": {
+          "type": "boolean",
+          "default": false
+        },
         "skipValidAccounts": {
           "description": "skip filtering for valid accounts",
           "type": "boolean",

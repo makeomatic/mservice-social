@@ -11,6 +11,7 @@ module.exports = {
       replies: false,
       retweets: false,
       userMentions: false,
+      hashTags: false,
       skipValidAccounts: false,
     },
     notifications: {

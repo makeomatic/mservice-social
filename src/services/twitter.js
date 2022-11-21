@@ -6,11 +6,12 @@ const pLimit = require('p-limit');
 const { v4: uuid } = require('uuid');
 const { HttpStatusError } = require('common-errors');
 const {
-  isObject, isString, conforms, merge, find, isNil,
+  isObject, isString, conforms, merge, find,
 } = require('lodash');
 
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
+const { collectTweetMeta } = require('../utils/twitter');
 
 const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
@@ -46,6 +47,7 @@ function streamFilterOptions(config) {
     replies: false,
     retweets: false,
     userMentions: false,
+    hashTags: false,
     skipValidAccounts: false,
   };
   return merge({}, STREAM_FILTERS_DEFAULTS, config.stream_filters);
@@ -58,33 +60,6 @@ function streamFilterOptions(config) {
  * @property {Logger} logger
  */
 class Twitter {
-  static isRetweet(data) {
-    const retweet = data.retweeted_status;
-    if (isNil(retweet)) {
-      return false;
-    }
-    const tweetOwnerId = get(retweet, 'user.id');
-    // Keep the tweets which are retweeted by the user
-    return tweetOwnerId !== data.user.id;
-  }
-
-  static isReply(data) {
-    const toUserId = data.in_reply_to_user_id;
-    if (isNil(toUserId)) {
-      return false;
-    }
-    // Keep the tweets which are replied by the user
-    if (toUserId === data.user.id) {
-      return false;
-    }
-    return !isNil(data.in_reply_to_status_id);
-  }
-
-  static hasUserMentions(data) {
-    const list = get(data, 'entities.user_mentions');
-    return list && list.length;
-  }
-
   /**
    * cursor extractor
    * @param {object} tweet
@@ -423,11 +398,12 @@ class Twitter {
 
   // return false if we want to allow tweet,
   // return tweet id if we want to skip tweet, and update pointer for cursor
-  shouldFilterTweet(data) {
+  shouldFilterTweet(data, meta) {
     const {
       replies,
       retweets,
       userMentions,
+      hashTags,
       skipValidAccounts,
     } = this.filterOptions;
 
@@ -437,27 +413,38 @@ class Twitter {
       return false;
     }
 
-    if (replies && Twitter.isReply(data)) {
+    if (replies && meta.reply) {
+      // Keep the tweets which are replied by the user
+      const toUserId = data.in_reply_to_user_id;
+      if (toUserId === data.user.id) {
+        return false;
+      }
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'reply filtered');
       return data.id;
     }
 
-    if (retweets && Twitter.isRetweet(data)) {
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'retweet filtered');
+    if (retweets && meta.retweet) {
+      const tweetOwnerId = get(data.retweet, 'user.id');
+      // Keep the tweets which are retweeted by the user
+      return tweetOwnerId !== data.user.id;
+    }
+
+    if (userMentions && meta.userMentions) {
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'mentions filtered');
       return data.id;
     }
 
-    if (userMentions && Twitter.hasUserMentions(data)) {
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'mention filtered');
+    if (hashTags && meta.hashTags) {
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'hashtag filtered');
       return data.id;
     }
 
     return false;
   }
 
-  async _saveToStatuses(data, directlyInserted = false) {
+  async _saveToStatuses(data, metadata, directlyInserted = false) {
     const tweet = Twitter.serializeTweet(data);
-
+    // TODO keep meta with tweet types
     const status = directlyInserted ? { ...tweet, explicit: true } : tweet;
 
     return this.storage
@@ -482,7 +469,9 @@ class Twitter {
 
   async _onData(data, notify = true) {
     if (Twitter.isTweet(data)) {
-      if (this.shouldFilterTweet(data) !== false) {
+      const meta = collectTweetMeta(data);
+
+      if (this.shouldFilterTweet(data, meta) !== false) {
         this.logger.trace({ data }, 'skip tweet data');
         await this._saveCursor(data);
 
@@ -492,7 +481,7 @@ class Twitter {
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
       try {
-        const saved = await this._saveToStatuses(data);
+        const saved = await this._saveToStatuses(data, meta);
         await this._saveCursor(data);
 
         if (notify) {
@@ -522,7 +511,8 @@ class Twitter {
       const data = await this.fetchById(tweetId);
       if (Twitter.isTweet(data)) {
         // inserted directly using api/sync
-        const saved = await this._saveToStatuses(data, true);
+        const meta = collectTweetMeta(data);
+        const saved = await this._saveToStatuses(data, meta, true);
         this.logger.debug({ tweetId }, 'tweet synced');
         return saved;
       }
