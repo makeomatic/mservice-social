@@ -1,4 +1,4 @@
-const { isNil } = require('lodash/isNil');
+const isNil = require('lodash/isNil');
 const get = require('get-value');
 
 function isRetweet(data) {
