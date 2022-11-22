@@ -48,7 +48,7 @@
               "minItems": 0,
               "items": {
                 "type": "string",
-                "enum": ["retweet", "reply", "userMentions", "hashTags"]
+                "enum": ["retweet", "reply", "mention", "hashtag"]
               }
             }
           }

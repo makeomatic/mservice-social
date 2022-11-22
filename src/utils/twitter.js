@@ -4,8 +4,8 @@ const get = require('get-value');
 const TweetTypes = {
   REPLY: 'reply',
   RETWEET: 'retweet',
-  USER_MENTIONS: 'userMentions',
-  HASHTAGS: 'hashTags',
+  MENTION: 'mention',
+  HASHTAG: 'hashtag',
 };
 
 function isRetweet(data) {
@@ -38,10 +38,10 @@ function collectTweetTypes(data) {
     types[TweetTypes.RETWEET] = 1;
   }
   if (hasUserMentions(data)) {
-    types[TweetTypes.USER_MENTIONS] = 1;
+    types[TweetTypes.MENTION] = 1;
   }
   if (hasHashTags(data)) {
-    types[TweetTypes.HASHTAGS] = 1;
+    types[TweetTypes.HASHTAG] = 1;
   }
   return types;
 }
