@@ -38,6 +38,21 @@
         "notifications": {
           "$ref": "common.json#/definitions/twitter_notifications"
         },
+        "requests": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["allow_types"],
+          "properties": {
+            "allow_types": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": ["retweet", "reply", "userMentions", "hashTags"]
+              }
+            }
+          }
+        },
         "consumer_key": {
           "type": "string"
         },
