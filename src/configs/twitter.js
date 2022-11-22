@@ -1,5 +1,3 @@
-const { TweetTypes } = require('../utils/twitter');
-
 module.exports = {
   twitter: {
     enabled: false,
@@ -20,12 +18,7 @@ module.exports = {
       data: ['init', 'sync'],
     },
     requests: {
-      allow_types: [ // all types by default
-        TweetTypes.REPLY,
-        TweetTypes.RETWEET,
-        TweetTypes.USER_MENTIONS,
-        TweetTypes.HASHTAGS,
-      ],
+      restricted_types: [],
     },
   },
 };
