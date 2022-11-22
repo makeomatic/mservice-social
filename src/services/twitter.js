@@ -11,7 +11,7 @@ const {
 
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
-const { collectTweetTypes } = require('../utils/twitter');
+const { collectTweetTypes, TweetTypes } = require('../utils/twitter');
 
 const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
@@ -398,7 +398,7 @@ class Twitter {
 
   // return false if we want to allow tweet,
   // return tweet id if we want to skip tweet, and update pointer for cursor
-  shouldFilterTweet(data, meta) {
+  shouldFilterTweet(data, tweetTypes) {
     const {
       replies,
       retweets,
@@ -413,7 +413,7 @@ class Twitter {
       return false;
     }
 
-    if (replies && meta.reply) {
+    if (replies && tweetTypes[TweetTypes.REPLY]) {
       // Keep the tweets which are replied by the user
       const toUserId = data.in_reply_to_user_id;
       if (toUserId === data.user.id) {
@@ -423,18 +423,18 @@ class Twitter {
       return data.id;
     }
 
-    if (retweets && meta.retweet) {
+    if (retweets && tweetTypes[TweetTypes.RETWEET]) {
       const tweetOwnerId = get(data.retweet, 'user.id');
       // Keep the tweets which are retweeted by the user
       return tweetOwnerId !== data.user.id;
     }
 
-    if (userMentions && meta.userMentions) {
+    if (userMentions && tweetTypes[TweetTypes.USER_MENTIONS]) {
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'mentions filtered');
       return data.id;
     }
 
-    if (hashTags && meta.hashTags) {
+    if (hashTags && tweetTypes[TweetTypes.HASHTAGS]) {
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'hashtag filtered');
       return data.id;
     }
