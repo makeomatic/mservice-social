@@ -429,12 +429,12 @@ class Twitter {
       return tweetOwnerId !== data.user.id;
     }
 
-    if (userMentions && tweetTypes[TweetTypes.USER_MENTIONS]) {
+    if (userMentions && tweetTypes[TweetTypes.MENTION]) {
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'mentions filtered');
       return data.id;
     }
 
-    if (hashTags && tweetTypes[TweetTypes.HASHTAGS]) {
+    if (hashTags && tweetTypes[TweetTypes.HASHTAG]) {
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'hashtag filtered');
       return data.id;
     }
