@@ -1,23 +1,32 @@
 const isNil = require('lodash/isNil');
 const get = require('get-value');
 
-const TweetTypes = {
-  REPLY: 'reply',
-  RETWEET: 'retweet',
-  MENTION: 'mention',
-  HASHTAG: 'hashtag',
+const TweetType = {
+  ORIGINAL: 0,
+  REPLY: 1,
+  RETWEET: 2,
+  QUOTE: 3,
 };
 
-function isRetweet(data) {
-  return !isNil(data.retweeted_status);
-}
+// https://developer.twitter.com/en/docs/tutorials/determining-tweet-types
+const isReply = (data) => !isNil(data.in_reply_to_status_id);
+const isRetweet = (data) => !isNil(data.retweeted_status);
+const isQuote = (data) => data.is_quote_status === true;
 
-function isReply(data) {
-  const toUserId = data.in_reply_to_user_id;
-  if (isNil(toUserId)) {
-    return false;
+function getTweetType(data) {
+  if (isReply(data)) {
+    return TweetType.REPLY;
   }
-  return !isNil(data.in_reply_to_status_id);
+
+  if (isRetweet(data)) {
+    return TweetType.RETWEET;
+  }
+
+  if (isQuote(data)) {
+    return TweetType.QUOTE;
+  }
+
+  return TweetType.ORIGINAL;
 }
 
 function hasUserMentions(data) {
@@ -29,24 +38,9 @@ function hasHashTags(data) {
   return list && list.length;
 }
 
-function collectTweetTypes(data) {
-  const types = {};
-  if (isReply(data)) {
-    types[TweetTypes.REPLY] = 1;
-  }
-  if (isRetweet(data)) {
-    types[TweetTypes.RETWEET] = 1;
-  }
-  if (hasUserMentions(data)) {
-    types[TweetTypes.MENTION] = 1;
-  }
-  if (hasHashTags(data)) {
-    types[TweetTypes.HASHTAG] = 1;
-  }
-  return types;
-}
-
 module.exports = {
-  TweetTypes,
-  collectTweetTypes,
+  TweetType,
+  getTweetType,
+  hasHashTags,
+  hasUserMentions,
 };
