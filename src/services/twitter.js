@@ -11,7 +11,12 @@ const {
 
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
-const { collectTweetTypes, TweetTypes } = require('../utils/twitter');
+const {
+  TweetType,
+  getTweetType,
+  hasUserMentions,
+  hasHashTags,
+} = require('../utils/twitter');
 
 const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
@@ -199,6 +204,7 @@ class Twitter {
     this.listener = null;
     this.filterOptions = streamFilterOptions(config);
     this.notifyConfig = config.notifications;
+    this.requestsConfig = config.requests;
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
     this._destroyed = false;
@@ -398,7 +404,7 @@ class Twitter {
 
   // return false if we want to allow tweet,
   // return tweet id if we want to skip tweet, and update pointer for cursor
-  shouldFilterTweet(data, tweetTypes) {
+  shouldFilterTweet(data, tweetType) {
     const {
       replies,
       retweets,
@@ -413,28 +419,33 @@ class Twitter {
       return false;
     }
 
-    if (replies && tweetTypes[TweetTypes.REPLY]) {
+    if (replies && tweetType === TweetType.REPLY) {
       // Keep the tweets which are replied by the user
-      const toUserId = data.in_reply_to_user_id;
-      if (toUserId === data.user.id) {
+      if (data.in_reply_to_user_id === data.user.id) {
+        this.logger.debug({ id: data.id, user: data.user.screen_name }, 'keep own reply');
         return false;
       }
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'reply filtered');
       return data.id;
     }
 
-    if (retweets && tweetTypes[TweetTypes.RETWEET]) {
-      const tweetOwnerId = get(data.retweet, 'user.id');
+    if (retweets && tweetType === TweetType.RETWEET) {
       // Keep the tweets which are retweeted by the user
-      return tweetOwnerId !== data.user.id;
+      if (get(data.retweet, 'user.id') === data.user.id) {
+        this.logger.debug({ id: data.id, user: data.user.screen_name }, 'keep own retweet');
+        return false;
+      }
+
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'retweet filtered');
+      return data.id;
     }
 
-    if (userMentions && tweetTypes[TweetTypes.MENTION]) {
+    if (userMentions && hasUserMentions(data)) {
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'mentions filtered');
       return data.id;
     }
 
-    if (hashTags && tweetTypes[TweetTypes.HASHTAG]) {
+    if (hashTags && hasHashTags(data)) {
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'hashtag filtered');
       return data.id;
     }
@@ -442,10 +453,14 @@ class Twitter {
     return false;
   }
 
-  async _saveToStatuses(data, types, directlyInserted = false) {
+  async _saveToStatuses(data, tweetType, directlyInserted = false) {
     const tweet = Twitter.serializeTweet(data);
 
-    const status = directlyInserted ? { ...tweet, types, explicit: true } : tweet;
+    const status = { ...tweet, type: tweetType };
+
+    if (directlyInserted) {
+      status.explicit = true;
+    }
 
     return this.storage
       .twitterStatuses()
@@ -469,9 +484,9 @@ class Twitter {
 
   async _onData(data, notify = true) {
     if (Twitter.isTweet(data)) {
-      const meta = collectTweetTypes(data);
+      const tweetType = getTweetType(data);
 
-      if (this.shouldFilterTweet(data, meta) !== false) {
+      if (this.shouldFilterTweet(data, tweetType) !== false) {
         this.logger.trace({ data }, 'skip tweet data');
         await this._saveCursor(data);
 
@@ -481,7 +496,7 @@ class Twitter {
       this.logger.debug({ id: data.id, user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
       try {
-        const saved = await this._saveToStatuses(data, meta);
+        const saved = await this._saveToStatuses(data, tweetType);
         await this._saveCursor(data);
 
         if (notify) {
@@ -511,8 +526,8 @@ class Twitter {
       const data = await this.fetchById(tweetId);
       if (Twitter.isTweet(data)) {
         // inserted directly using api/sync
-        const types = collectTweetTypes(data);
-        const saved = await this._saveToStatuses(data, types, true);
+        const tweetType = getTweetType(data);
+        const saved = await this._saveToStatuses(data, tweetType, true);
         this.logger.debug({ tweetId }, 'tweet synced');
         return saved;
       }
