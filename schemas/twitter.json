@@ -39,19 +39,7 @@
           "$ref": "common.json#/definitions/twitter_notifications"
         },
         "requests": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["restricted_types"],
-          "properties": {
-            "restricted_types": {
-              "type": "array",
-              "minItems": 0,
-              "items": {
-                "type": "string",
-                "enum": ["tweet", "reply", "retweet", "quote"]
-              }
-            }
-          }
+          "$ref": "common.json#/definitions/twitter_requests"
         },
         "consumer_key": {
           "type": "string"

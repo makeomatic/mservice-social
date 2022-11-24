@@ -165,6 +165,10 @@
           "type": "boolean",
           "default": false
         },
+        "quotes": {
+          "type": "boolean",
+          "default": false
+        },
         "userMentions": {
           "type": "boolean",
           "default": false
@@ -212,6 +216,21 @@
             "enum": ["init", "sync"]
           },
           "description": "for twitter statuses"
+        }
+      }
+    },
+    "twitter_requests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["restricted_types"],
+      "properties": {
+        "restricted_types": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "string",
+            "enum": ["tweet", "reply", "retweet", "quote"]
+          }
         }
       }
     }
