@@ -96,6 +96,7 @@ class Twitter {
       entities: data.entities,
       extended_entities: data.extended_entities,
       retweeted_status: data.retweeted_status && Twitter.serializeTweet(data.retweeted_status, true),
+      quoted_status: data.quoted_status && Twitter.serializeTweet(data.quoted_status, true),
       retweet_count: data.retweet_count,
       favorite_count: data.favorite_count,
     };
