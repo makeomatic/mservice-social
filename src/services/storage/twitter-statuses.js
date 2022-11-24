@@ -8,7 +8,7 @@ class TwitterStatuses {
     return this.knex.upsertItem(this.table, 'id', data);
   }
 
-  list(data) {
+  list(data, restrictedTypes = []) {
     const {
       page,
       pageSize,
@@ -28,7 +28,13 @@ class TwitterStatuses {
 
     const query = this.knex(this.table)
       .select()
-      .whereRaw(rawQuery, [account])
+      .whereRaw(rawQuery, [account]);
+
+    if (restrictedTypes.length) {
+      query.whereNotIn('type', restrictedTypes);
+    }
+
+    query
       .orderBy([
         { column: 'id', order },
         { column: 'account' },
