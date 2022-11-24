@@ -12,7 +12,6 @@ exports.up = async (knex) => {
 };
 
 exports.down = async (knex) => {
-
   return knex.schema.alterTable(kTable, (table) => {
     table.dropIndex(null, 'idx_tweets_id_desc_account_type');
     table.dropIndex(null, 'idx_tweets_id_asc_account_type');
