@@ -11,12 +11,8 @@ const {
 
 const Notifier = require('./notifier');
 const { transform, TYPE_TWEET } = require('../utils/response');
-const {
-  TweetType,
-  getTweetType,
-  hasUserMentions,
-  hasHashTags,
-} = require('../utils/twitter');
+const StatusFilter = require('../utils/twitter/filter');
+const { getTweetType } = require('../utils/twitter/twitter');
 
 const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
@@ -45,17 +41,6 @@ function twitterApiConfig(config) {
     },
   };
   return merge(TWITTER_API_DEFAULTS, config.api);
-}
-
-function streamFilterOptions(config) {
-  const STREAM_FILTERS_DEFAULTS = {
-    replies: false,
-    retweets: false,
-    userMentions: false,
-    hashTags: false,
-    skipValidAccounts: false,
-  };
-  return merge({}, STREAM_FILTERS_DEFAULTS, config.stream_filters);
 }
 
 /**
@@ -202,11 +187,13 @@ class Twitter {
     this.core = core;
     this.client = new TwitterClient(config);
     this.listener = null;
-    this.filterOptions = streamFilterOptions(config);
+
     this.notifyConfig = config.notifications;
     this.requestsConfig = config.requests;
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
+    this.statusFilter = new StatusFilter(config.stream_filters, this.logger);
+
     this._destroyed = false;
     this.following = [];
     this.accountIds = {};
@@ -402,55 +389,8 @@ class Twitter {
     return Array.isArray(allow) && allow.includes(from);
   }
 
-  // return false if we want to allow tweet,
-  // return tweet id if we want to skip tweet, and update pointer for cursor
   shouldFilterTweet(data, tweetType) {
-    const {
-      replies,
-      retweets,
-      userMentions,
-      hashTags,
-      skipValidAccounts,
-    } = this.filterOptions;
-
-    // Don't filter retweets posted by the valid users
-    if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'filter skipped by valid acc');
-      return false;
-    }
-
-    if (replies && tweetType === TweetType.REPLY) {
-      // Keep the tweets which are replied by the user
-      if (data.in_reply_to_user_id === data.user.id) {
-        this.logger.debug({ id: data.id, user: data.user.screen_name }, 'keep own reply');
-        return false;
-      }
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'reply filtered');
-      return data.id;
-    }
-
-    if (retweets && tweetType === TweetType.RETWEET) {
-      // Keep the tweets which are retweeted by the user
-      if (get(data.retweet, 'user.id') === data.user.id) {
-        this.logger.debug({ id: data.id, user: data.user.screen_name }, 'keep own retweet');
-        return false;
-      }
-
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'retweet filtered');
-      return data.id;
-    }
-
-    if (userMentions && hasUserMentions(data)) {
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'mentions filtered');
-      return data.id;
-    }
-
-    if (hashTags && hasHashTags(data)) {
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'hashtag filtered');
-      return data.id;
-    }
-
-    return false;
+    return this.statusFilter.apply(data, tweetType);
   }
 
   async _saveToStatuses(data, tweetType, directlyInserted = false) {
