@@ -9,10 +9,10 @@ const {
   isObject, isString, conforms, merge, find,
 } = require('lodash');
 
-const Notifier = require('./notifier');
-const { transform, TYPE_TWEET } = require('../utils/response');
-const StatusFilter = require('../utils/twitter/filter');
-const { getTweetType } = require('../utils/twitter/twitter');
+const Notifier = require('../notifier');
+const { transform, TYPE_TWEET } = require('../../utils/response');
+const StatusFilter = require('./status-filter');
+const { getTweetType } = require('./tweet-types');
 
 const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',

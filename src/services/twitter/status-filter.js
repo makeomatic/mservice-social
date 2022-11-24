@@ -1,6 +1,6 @@
 const merge = require('lodash/merge');
 const get = require('get-value');
-const { TweetType, hasHashTags, hasUserMentions } = require('./twitter');
+const { TweetType, hasHashTags, hasUserMentions } = require('./tweet-types');
 
 const STREAM_FILTERS_DEFAULTS = {
   replies: false,
