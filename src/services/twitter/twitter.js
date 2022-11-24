@@ -12,7 +12,7 @@ const {
 const Notifier = require('../notifier');
 const { transform, TYPE_TWEET } = require('../../utils/response');
 const StatusFilter = require('./status-filter');
-const { getTweetType } = require('./tweet-types');
+const { getTweetType, TweetTypeByName } = require('./tweet-types');
 
 const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
@@ -382,6 +382,11 @@ class Twitter {
   _onEnd() {
     this.logger.warn('stream connection closed', this.listener && this.listener.params);
     this._destroyAndReconnect();
+  }
+
+  requestRestrictedTweetTypes() {
+    const typeNames = this.requestsConfig.restricted_types;
+    return typeNames.map((name) => TweetTypeByName[name]);
   }
 
   shouldNotifyFor(event, from) {

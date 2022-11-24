@@ -8,6 +8,13 @@ const TweetType = {
   QUOTE: 3,
 };
 
+const TweetTypeByName = {
+  tweet: TweetType.ORIGINAL,
+  reply: TweetType.REPLY,
+  retweet: TweetType.RETWEET,
+  quote: TweetType.QUOTE,
+};
+
 // https://developer.twitter.com/en/docs/tutorials/determining-tweet-types
 const isReply = (data) => !isNil(data.in_reply_to_status_id);
 const isRetweet = (data) => !isNil(data.retweeted_status);
@@ -40,6 +47,7 @@ function hasHashTags(data) {
 
 module.exports = {
   TweetType,
+  TweetTypeByName,
   getTweetType,
   hasHashTags,
   hasUserMentions,

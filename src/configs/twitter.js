@@ -19,7 +19,7 @@ module.exports = {
       data: ['init', 'sync'],
     },
     requests: {
-      restricted_types: [],
+      restricted_types: [], // tweet | reply | retweet | quote
     },
   },
 };
