@@ -201,7 +201,6 @@ class Twitter {
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
     this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
-    logger.debug('filters config: %j', this.filterOptions);
 
     // cheaper than bind
     this.onData = (notify) => (json) => this._onData(json, notify);
