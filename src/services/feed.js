@@ -54,17 +54,18 @@ class Feed {
       throw new HttpStatusError(400, 'the "account" parameter must be a string or an array');
     }
 
-    let restrictedTweetTypes = [];
+    let restrictedTypes;
     try {
-      restrictedTweetTypes = this.service('twitter').requestRestrictedTweetTypes();
+      restrictedTypes = this.service('twitter').statusesRestrictedTypes();
     } catch (e) {
       this.logger.info(e);
+      restrictedTypes = [];
     }
 
     return this
       .service('storage')
       .twitterStatuses()
-      .list(data, restrictedTweetTypes);
+      .list(data, restrictedTypes);
   }
 
   async remove(data) {

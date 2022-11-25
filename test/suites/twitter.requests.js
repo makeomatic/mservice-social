@@ -21,7 +21,7 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
         twitter: {
           ...global.SERVICES.twitter,
           requests: {
-            restricted_types: [...restrictedTypeNames],
+            restrictedTypes: [...restrictedTypeNames],
           },
         },
       });

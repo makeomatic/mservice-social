@@ -383,9 +383,9 @@ class Twitter {
     this._destroyAndReconnect();
   }
 
-  requestRestrictedTweetTypes() {
-    const typeNames = this.requestsConfig.restricted_types;
-    return typeNames.map((name) => TweetTypeByName[name]);
+  statusesRestrictedTypes() {
+    const { restrictedTypes = [] } = this.requestsConfig;
+    return restrictedTypes.map((name) => TweetTypeByName[name]);
   }
 
   shouldNotifyFor(event, from) {
