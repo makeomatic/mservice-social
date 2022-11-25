@@ -20,6 +20,8 @@ class StatusFilter {
   constructor(filterConfig, logger) {
     this.filterOptions = merge({}, STREAM_FILTERS_DEFAULTS, filterConfig);
     this.logger = logger;
+
+    logger.debug('filters config: %j', this.filterOptions);
   }
 
   debug(message, data) {
