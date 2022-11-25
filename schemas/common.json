@@ -222,9 +222,9 @@
     "twitter_requests": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["restricted_types"],
+      "required": ["restrictedTypes"],
       "properties": {
-        "restricted_types": {
+        "restrictedTypes": {
           "type": "array",
           "minItems": 0,
           "items": {
