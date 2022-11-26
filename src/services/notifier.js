@@ -1,30 +1,31 @@
 const assert = require('assert');
 const AMQPTransport = require('@microfleet/transport-amqp');
-const { HttpStatusError } = require('common-errors');
 
 class Notifier {
-  static getInstance(skipInitialization = false) {
-    const { microfleet } = Notifier;
+  // static getInstance(skipInitialization = false) {
+  //   const { microfleet } = Notifier;
 
-    if (!microfleet) {
-      return null;
-    }
+  //   if (!microfleet) {
+  //     return null;
+  //   }
 
-    try {
-      return microfleet.service(Notifier.kInstance);
-    } catch (e) {
-      if (skipInitialization) {
-        return null;
-      }
-      return microfleet.service(Notifier.kInstance, new Notifier(microfleet));
-    }
-  }
+  //   try {
+  //     return microfleet.service(Notifier.kInstance);
+  //   } catch (e) {
+  //     if (skipInitialization) {
+  //       return null;
+  //     }
+  //     return microfleet.service(Notifier.kInstance, new Notifier(microfleet));
+  //   }
+  // }
 
   static connector(core) {
-    assert(Notifier.microfleet === null, Notifier.kDupInstance);
+    assert(core.config.notifier.enabled, 'connect disabled notifier');
+
+    core.service(Notifier.SERVICE_NOTIFIER, new Notifier(core));
 
     function connect() {
-      const instance = Notifier.getInstance();
+      const instance = core.service(Notifier.SERVICE_NOTIFIER);
 
       if (instance) {
         return instance.connect();
@@ -34,7 +35,7 @@ class Notifier {
     }
 
     function close() {
-      const instance = Notifier.getInstance(true);
+      const instance = core.service(Notifier.SERVICE_NOTIFIER);
 
       if (instance) {
         return instance.close();
@@ -42,9 +43,6 @@ class Notifier {
 
       return false;
     }
-
-    // store the link to the parent service
-    Notifier.microfleet = core;
 
     return {
       connect,
@@ -58,6 +56,7 @@ class Notifier {
     this.log = log.child({ namespace: '@social/notifier' });
     this.core = core;
     this.config = config.notifier;
+    this.enabled = config.notifier.enabled;
     this.amqpConfig = {
       ...config.amqp.transport,
       ...config.notifier.transport,
@@ -101,9 +100,7 @@ class Notifier {
   }
 }
 
-Notifier.kDupInstance = new HttpStatusError(409, 'Notifier has been already initialized');
-Notifier.kInstance = Symbol('notifier');
 Notifier.kPublishEvent = Symbol('notifier::onpublish');
-Notifier.microfleet = null;
+Notifier.SERVICE_NOTIFIER = 'notifier';
 
 module.exports = Notifier;

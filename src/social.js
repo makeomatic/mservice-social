@@ -134,7 +134,7 @@ class Social extends Microfleet {
     const { connect, close } = Notifier.connector(this);
 
     // need to start up before any application
-    this.addConnector(ConnectorsTypes.migration, connect, 'notifier');
+    this.addConnector(ConnectorsTypes.migration, connect, Notifier.SERVICE_NOTIFIER);
 
     // need to close right before shutdown to publish updates
     this.addDestructor(ConnectorsTypes.essential, close);
