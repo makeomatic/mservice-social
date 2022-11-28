@@ -2,23 +2,6 @@ const assert = require('assert');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
 class Notifier {
-  // static getInstance(skipInitialization = false) {
-  //   const { microfleet } = Notifier;
-
-  //   if (!microfleet) {
-  //     return null;
-  //   }
-
-  //   try {
-  //     return microfleet.service(Notifier.kInstance);
-  //   } catch (e) {
-  //     if (skipInitialization) {
-  //       return null;
-  //     }
-  //     return microfleet.service(Notifier.kInstance, new Notifier(microfleet));
-  //   }
-  // }
-
   static connector(core) {
     assert(core.config.notifier.enabled, 'connect disabled notifier');
 
