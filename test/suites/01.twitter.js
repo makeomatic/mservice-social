@@ -102,8 +102,10 @@ describe('twitter', function testSuite() {
   });
 
   before('init spy for amqp.publish', async () => {
+    // Notifier.getInstance() replaced
+    const { amqpConfig } = service.service(Notifier.SERVICE_NOTIFIER);
     const listenerConfig = {
-      ...Notifier.getInstance().amqpConfig,
+      ...amqpConfig,
       listen: '*',
       queue: 'test',
       exchangeArgs: {
