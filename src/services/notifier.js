@@ -39,7 +39,6 @@ class Notifier {
     this.log = log.child({ namespace: '@social/notifier' });
     this.core = core;
     this.config = config.notifier;
-    this.enabled = config.notifier.enabled;
     this.amqpConfig = {
       ...config.amqp.transport,
       ...config.notifier.transport,
