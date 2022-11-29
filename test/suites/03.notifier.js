@@ -1,12 +1,12 @@
 const Promise = require('bluebird');
 const sinon = require('sinon');
+const is = require('is');
 const assert = require('assert');
+const Social = require('../../src');
+const Notifier = require('../../src/services/notifier');
 
 describe('notifier', function testSuite() {
   this.retries(20);
-
-  const Social = require('../../src');
-  const Notifier = require('../../src/services/notifier');
 
   before('start service', () => {
     const config = {
@@ -60,6 +60,62 @@ describe('notifier', function testSuite() {
     // await this.connector.close();
     await this.service.close();
     assert(this.service.listenerCount(Notifier.kPublishEvent) === 0);
+  });
+
+  after('close', async () => {
+    try {
+      if (this.service !== null) {
+        await this.service.close();
+      }
+    } catch (e) {
+      // nothing
+    }
+  });
+});
+
+describe('disabled notifier ', function testSuite() {
+  before('start service', () => {
+    const config = {
+      ...global.SERVICES,
+      notifier: {
+        enabled: false,
+      },
+    };
+    const service = this.service = new Social(config);
+    return service.connect();
+  });
+
+  it('throws an error when trying to initialize disabled connector', () => {
+    assert.throws(() => Notifier.connector(), 'connect disabled notifier');
+  });
+
+  after('close', async () => {
+    try {
+      if (this.service !== null) {
+        await this.service.close();
+      }
+    } catch (e) {
+      // nothing
+    }
+  });
+});
+
+describe('notifier connector ', function testSuite() {
+  before('start service', () => {
+    const config = {
+      ...global.SERVICES,
+      notifier: {
+        enabled: true,
+      },
+    };
+    const service = this.service = new Social(config);
+    return service;
+  });
+
+  it('returns plugin connector', () => {
+    const { connect, close } = this.connector = Notifier.connector(this.service);
+    assert(is.fn(connect));
+    assert(is.fn(close));
   });
 
   after('close', async () => {
