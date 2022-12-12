@@ -1,3 +1,24 @@
+## [7.3.3](https://github.com/makeomatic/mservice-social/compare/v7.3.2...v7.3.3) (2022-12-12)
+
+
+### Bug Fixes
+
+* add indexes for statuses: id, account and type ([324ce39](https://github.com/makeomatic/mservice-social/commit/324ce39e698f69e6e0873b6b941d514089ef8550))
+* add query condition on restricted tweet types ([d967a7d](https://github.com/makeomatic/mservice-social/commit/d967a7dd619bde1a810b71252d6a3b08aac08408))
+* add quote tweet checking ([0e19347](https://github.com/makeomatic/mservice-social/commit/0e193479d3e46de603fe0593eb777e6a4247f7da))
+* add quote type to filter options, serialize ([79ae8ab](https://github.com/makeomatic/mservice-social/commit/79ae8abc5de77b620dea3e1a0f46f559c98ff809))
+* add schema for requests config ([ced516d](https://github.com/makeomatic/mservice-social/commit/ced516d33e618a2cfc884e80ee702c99fff2c68a))
+* add twitter requests config, types enum ([6b656ca](https://github.com/makeomatic/mservice-social/commit/6b656ca6bb73a50f0e33099bcbfb0c9ff4c519a6))
+* linter error in migration ([a74a956](https://github.com/makeomatic/mservice-social/commit/a74a956dc1813cdecd78fd30159530381066361b))
+* move log to filter ([cb06698](https://github.com/makeomatic/mservice-social/commit/cb06698448a22c9c5f0b68d702e5154935c333c0))
+* **notifier:** replace singleton with instance on service ([4b2e33f](https://github.com/makeomatic/mservice-social/commit/4b2e33f3d453d44eac24063c6e359f63d1db2c33))
+* switch config to restricted tweet types ([54eedac](https://github.com/makeomatic/mservice-social/commit/54eedacdfdf0728668e1baceb510acbfffbdc22a))
+* **twitter:** add hashTags filter, tweet meta data ([9c77ea6](https://github.com/makeomatic/mservice-social/commit/9c77ea6acba1ee8627d1054b1215044cd3239f4b))
+* **twitter:** export in twitter utils ([9cc0ee8](https://github.com/makeomatic/mservice-social/commit/9cc0ee802da1192734257fd6477b5df61113a8ee))
+* **twitter:** export in twitter utils ([4dfe270](https://github.com/makeomatic/mservice-social/commit/4dfe270180c61a3ae4fc06f995c2bbe11386d4d3))
+* **twitter:** types column migration, add test ([d59f56b](https://github.com/makeomatic/mservice-social/commit/d59f56b4e92aa7795e80e1301dc9ab7f4b7bedc7))
+* use lowercase for tweet types ([fd37f08](https://github.com/makeomatic/mservice-social/commit/fd37f08b7dfa6d1813f85a71dc509ac6458c5443))
+
 ## [7.3.2](https://github.com/makeomatic/mservice-social/compare/v7.3.1...v7.3.2) (2022-11-17)
 
 
