@@ -70,7 +70,7 @@ class Social extends Microfleet {
   }
 
   initStorage() {
-    this.service(Social.SERVICE_STORAGE, new Storage(this.knex));
+    this.service(Social.SERVICE_STORAGE, new Storage(this.knex, this.config));
   }
 
   initFeed() {
