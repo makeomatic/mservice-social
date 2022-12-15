@@ -46,7 +46,6 @@ class StatusFilter {
 
     // Don't filter retweets posted by the valid users
     if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
-      this.debug('filter skipped by valid acc', data);
       return false;
     }
 
