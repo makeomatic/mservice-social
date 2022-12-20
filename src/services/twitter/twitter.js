@@ -408,7 +408,6 @@ class Twitter {
 
   async _saveCursor(data) {
     const tweet = Twitter.serializeTweet(data, true);
-    this.logger.debug({ id: data.id }, 'save cursor');
 
     return this.storage
       .feeds()
@@ -426,7 +425,7 @@ class Twitter {
       const tweetType = getTweetType(data);
 
       if (this.shouldFilterTweet(data, tweetType) !== false) {
-        this.logger.trace({ data }, 'skip tweet data');
+        this.logger.debug({ id: data.id, type: tweetType, user: data.user.screen_name }, 'filtered: save cursor');
         await this._saveCursor(data);
 
         return false;
@@ -443,7 +442,7 @@ class Twitter {
         }
         return saved;
       } catch (err) {
-        this.logger.warn({ err }, 'failed to save tweet');
+        this.logger.warn({ id: data.id, err }, 'failed to save tweet');
       }
     }
 
