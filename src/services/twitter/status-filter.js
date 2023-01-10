@@ -21,7 +21,7 @@ class StatusFilter {
     this.filterOptions = merge({}, STREAM_FILTERS_DEFAULTS, filterConfig);
     this.logger = logger.child({ namespace: '@social/status-filter' });
 
-    logger.debug('filters config: %j', this.filterOptions);
+    this.logger.debug({ ...this.filterOptions }, 'filters config');
   }
 
   /**
@@ -51,7 +51,7 @@ class StatusFilter {
         this.logger.debug({ id: data.id, user: data.user.screen_name }, 'keep own reply');
         return false;
       }
-      this.debugLog('reply', data);
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'reply');
       return data.id;
     }
 
@@ -72,7 +72,7 @@ class StatusFilter {
     }
 
     if (userMentions && hasUserMentions(data)) {
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'filter quomentions');
+      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'filter mentions');
       return data.id;
     }
 
