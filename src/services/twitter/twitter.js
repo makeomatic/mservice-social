@@ -436,18 +436,18 @@ class Twitter {
       this.logger.trace({ data }, 'inserting tweet data');
       try {
         const saved = await this._saveToStatuses(data, tweetType, false, this.logger);
-        this.logger.trace({ id: data.id }, 'tweet status inserted');
+        this.logger.trace({ idStr: data.id_str }, 'tweet status inserted');
 
         await this._saveCursor(data);
-        this.logger.trace({ id: data.id }, 'tweet cursor saved');
+        this.logger.trace({ idStr: data.id_str }, 'tweet cursor saved');
 
         if (notify) {
           this.publish(saved);
-          this.logger.trace({ id: data.id }, 'notified');
+          this.logger.trace({ idStr: data.id_str }, 'notification published');
         }
         return saved;
       } catch (err) {
-        this.logger.warn({ id: data.id, err }, 'failed to save tweet');
+        this.logger.warn({ data, err }, 'failed to save tweet');
       }
     }
 
