@@ -392,7 +392,7 @@ class Twitter {
     return this.statusFilter.apply(data, tweetType);
   }
 
-  async _saveToStatuses(data, tweetType, directlyInserted = false) {
+  async _saveToStatuses(data, tweetType, directlyInserted, logger) {
     const tweet = Twitter.serializeTweet(data);
 
     const status = { ...tweet, type: tweetType };
@@ -400,10 +400,12 @@ class Twitter {
     if (directlyInserted) {
       status.explicit = true;
     }
+    logger.debug({ status }, 'saving serialized status...');
 
-    return this.storage
-      .twitterStatuses()
-      .save(status);
+    const db = this.storage
+      .twitterStatuses();
+
+    return db.save(status);
   }
 
   async _saveCursor(data) {
@@ -432,17 +434,21 @@ class Twitter {
       }
 
       this.logger.debug({ id: data.id, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
-      this.logger.trace({ data }, 'inserting tweet data');
+      this.logger.debug({ data }, 'inserting tweet data');
       try {
-        const saved = await this._saveToStatuses(data, tweetType);
+        const saved = await this._saveToStatuses(data, tweetType, false, this.logger);
+        this.logger.debug('tweet status inserted');
+
         await this._saveCursor(data);
+        this.logger.debug('tweet cursor saved');
 
         if (notify) {
           this.publish(saved);
+          this.logger.debug('nitification published');
         }
         return saved;
       } catch (err) {
-        this.logger.warn({ id: data.id, err }, 'failed to save tweet');
+        this.logger.warn({ id: data.id, data, err }, 'failed to save tweet');
       }
     }
 
@@ -465,7 +471,7 @@ class Twitter {
       if (Twitter.isTweet(data)) {
         // inserted directly using api/sync
         const tweetType = getTweetType(data);
-        const saved = await this._saveToStatuses(data, tweetType, true);
+        const saved = await this._saveToStatuses(data, tweetType, true, this.logger);
         this.logger.debug({ tweetId }, 'tweet synced');
         return saved;
       }
