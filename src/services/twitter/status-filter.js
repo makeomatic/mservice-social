@@ -48,37 +48,37 @@ class StatusFilter {
     if (replies && tweetType === TweetType.REPLY) {
       // Keep the tweets which are replied by the user
       if (data.in_reply_to_user_id === data.user.id) {
-        this.logger.debug({ id: data.id, user: data.user.screen_name }, 'keep own reply');
+        this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own reply');
         return false;
       }
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'reply');
-      return data.id;
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'reply');
+      return data.id_str;
     }
 
     if (retweets && tweetType === TweetType.RETWEET) {
       // Keep the tweets which are retweeted by the user
       if (get(data.retweet, 'user.id') === data.user.id) {
-        this.logger.debug({ id: data.id, user: data.user.screen_name }, 'keep own retweet');
+        this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own retweet');
         return false;
       }
 
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'filter retweet');
-      return data.id;
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter retweet');
+      return data.id_str;
     }
 
     if (quotes && tweetType === TweetType.QUOTE) {
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'filter quote');
-      return data.id;
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter quote');
+      return data.id_str;
     }
 
     if (userMentions && hasUserMentions(data)) {
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'filter mentions');
-      return data.id;
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter mentions');
+      return data.id_str;
     }
 
     if (hashTags && hasHashTags(data)) {
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'filter hashtag');
-      return data.id;
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter hashtag');
+      return data.id_str;
     }
 
     return false;

@@ -426,24 +426,24 @@ class Twitter {
       const tweetType = getTweetType(data);
 
       if (this.shouldFilterTweet(data, tweetType) !== false) {
-        this.logger.debug({ id: data.id, type: tweetType, user: data.user.screen_name }, 'filtered: save cursor');
+        this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'filtered: save cursor');
         await this._saveCursor(data);
 
         return false;
       }
 
-      this.logger.debug({ id: data.id, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
+      this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
       try {
         const saved = await this._saveToStatuses(data, tweetType, false, this.logger);
-        this.logger.trace({ idStr: data.id_str }, 'tweet status inserted');
+        this.logger.trace({ id: data.id_str }, 'tweet status inserted');
 
         await this._saveCursor(data);
-        this.logger.trace({ idStr: data.id_str }, 'tweet cursor saved');
+        this.logger.trace({ id: data.id_str }, 'tweet cursor saved');
 
         if (notify) {
           this.publish(saved);
-          this.logger.trace({ idStr: data.id_str }, 'notification published');
+          this.logger.trace({ id: data.id_str }, 'notification published');
         }
         return saved;
       } catch (err) {
