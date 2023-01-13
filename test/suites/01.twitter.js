@@ -78,6 +78,14 @@ describe('twitter', function testSuite() {
       tweetId: '20',
     },
 
+    /*
+    * MAX_SAFE_INTEGER      9_007_199_254_740_992
+    * TWEET_ID          1_612_985_005_122_424_833
+    * */
+    intOverflow: {
+      tweetId: '1612985005122424833', // converted to 1612985005122424800
+    },
+
     nonExistentTweet: {
       tweetId: '10',
     },
@@ -190,7 +198,7 @@ describe('twitter', function testSuite() {
     }));
   });
 
-  it('should have collected some tweets', async () => {
+  it('should have collected some tweets from multi accounts', async () => {
     await Promise.delay(1500);
     const response = await request(uri.read, payload.readMultiple);
 
@@ -325,6 +333,18 @@ describe('twitter', function testSuite() {
     assert.strictEqual(data.type, 'tweet');
 
     assert.notStrictEqual(data.attributes.type, 1); // reply
+  });
+
+  it('sync/get tweet wuth int-overflow id', async () => {
+    const { data } = await service.amqp.publishAndWait(uri.syncOne, payload.intOverflow);
+    assert(data);
+    assert.strictEqual(data.id, payload.intOverflow.tweetId);
+    assert.strictEqual(data.attributes.meta.id_str, payload.intOverflow.tweetId);
+
+    const { data: res } = await service.amqp.publishAndWait(uri.getOne, payload.intOverflow);
+    assert(res);
+    assert.strictEqual(res.id, payload.intOverflow.tweetId);
+    assert.strictEqual(data.attributes.meta.id_str, payload.intOverflow.tweetId);
   });
 
   after('close consumer', () => listener.close());
