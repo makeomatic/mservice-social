@@ -335,7 +335,7 @@ describe('twitter', function testSuite() {
     assert.notStrictEqual(data.attributes.type, 1); // reply
   });
 
-  it('sync/get tweet wuth int-overflow id', async () => {
+  it('sync/get tweet with js-number overflow id', async () => {
     const { data } = await service.amqp.publishAndWait(uri.syncOne, payload.intOverflow);
     assert(data);
     assert.strictEqual(data.id, payload.intOverflow.tweetId);
