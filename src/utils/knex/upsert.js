@@ -3,7 +3,7 @@
  * @link http://www.postgresql.org/docs/9.5/static/sql-insert.html
  * @author https://github.com/plurch
  */
-const addUpsert = (knex) => {
+const addUpsert = (knex, log) => {
   /**
    * @param {string} tableName - The name of the database table
    * @param {string} conflictTarget - The column in the table which has a unique index constraint
@@ -23,7 +23,18 @@ const addUpsert = (knex) => {
       .toString();
     const query = (insertString + conflictString).replace(/\?/g, '\\?');
 
-    return knex.raw(query).then((result) => result.rows[0]);
+    log.debug({ table: tableName, id: conflictTarget, data: itemData }, `UPSERT: ${query}`);
+    const res = knex.raw(query)
+      .then((result) => {
+        log.debug({ result }, 'UPSERT_RES');
+        return result.rows[0];
+      })
+      .catch((error) => {
+        log.error({ error }, 'UPSERT_ERROR');
+        throw error;
+      });
+
+    return res;
   };
 
   return knex;

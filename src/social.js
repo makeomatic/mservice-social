@@ -66,7 +66,7 @@ class Social extends Microfleet {
   }
 
   initKnex() {
-    addUpsert(this.knex);
+    addUpsert(this.knex, this.log);
   }
 
   initStorage() {
