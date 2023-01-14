@@ -19,13 +19,9 @@ const STREAM_FILTERS_DEFAULTS = {
 class StatusFilter {
   constructor(filterConfig, logger) {
     this.filterOptions = merge({}, STREAM_FILTERS_DEFAULTS, filterConfig);
-    this.logger = logger;
+    this.logger = logger.child({ namespace: '@social/status-filter' });
 
-    logger.debug('filters config: %j', this.filterOptions);
-  }
-
-  debug(message, data) {
-    this.logger.debug({ id: data.id, user: data.user.screen_name }, message);
+    this.logger.debug({ ...this.filterOptions }, 'filters config');
   }
 
   /**
@@ -46,44 +42,43 @@ class StatusFilter {
 
     // Don't filter retweets posted by the valid users
     if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
-      this.debug('filter skipped by valid acc', data);
       return false;
     }
 
     if (replies && tweetType === TweetType.REPLY) {
       // Keep the tweets which are replied by the user
       if (data.in_reply_to_user_id === data.user.id) {
-        this.debug('keep own reply', data);
+        this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own reply');
         return false;
       }
       this.debug('reply filtered', data);
-      return data.id;
+      return data.id_str;
     }
 
     if (retweets && tweetType === TweetType.RETWEET) {
       // Keep the tweets which are retweeted by the user
       if (get(data.retweet, 'user.id') === data.user.id) {
-        this.debug('keep own retweet', data);
+        this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own retweet');
         return false;
       }
 
       this.debug('retweet filtered', data);
-      return data.id;
+      return data.id_str;
     }
 
     if (quotes && tweetType === TweetType.QUOTE) {
-      this.debug('quote filtered', data);
-      return data.id;
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter quote');
+      return data.id_str;
     }
 
     if (userMentions && hasUserMentions(data)) {
-      this.debug('mentions filtered', data);
-      return data.id;
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter mentions');
+      return data.id_str;
     }
 
     if (hashTags && hasHashTags(data)) {
-      this.debug('hashtag filtered', data);
-      return data.id;
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter hashtag');
+      return data.id_str;
     }
 
     return false;
