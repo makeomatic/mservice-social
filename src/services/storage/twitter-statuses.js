@@ -1,19 +1,14 @@
-const { TweetTypeByName } = require('../twitter/tweet-types');
-
 class TwitterStatuses {
-  constructor(knex, table, twitterConfig) {
+  constructor(knex, table) {
     this.knex = knex;
     this.table = table;
-
-    const { restrictedTypes = [] } = twitterConfig.requests;
-    this.restrictedTypes = restrictedTypes.map((name) => TweetTypeByName[name]);
   }
 
   save(data) {
     return this.knex.upsertItem(this.table, 'id', data);
   }
 
-  list(data) {
+  list(data, restrictedTypes) {
     const {
       page,
       pageSize,
@@ -35,8 +30,8 @@ class TwitterStatuses {
       .select()
       .whereRaw(rawQuery, [account]);
 
-    if (this.restrictedTypes.length) {
-      query.whereNotIn('type', this.restrictedTypes);
+    if (restrictedTypes.length) {
+      query.whereNotIn('type', restrictedTypes);
     }
 
     query

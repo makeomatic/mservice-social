@@ -9,13 +9,13 @@ const instagramMedia = new WeakMap();
 const twitterStatuses = new WeakMap();
 
 class Storage {
-  constructor(knex, config) {
+  constructor(knex) {
     this.client = knex;
 
     facebookMedia.set(this, new FacebookMedia(knex, 'facebook_media'));
     feeds.set(this, new Feeds(knex, 'feeds'));
     instagramMedia.set(this, new InstagramMedia(knex, 'instagram_media'));
-    twitterStatuses.set(this, new TwitterStatuses(knex, 'statuses', config.twitter));
+    twitterStatuses.set(this, new TwitterStatuses(knex, 'statuses'));
   }
 
   facebookMedia() {
