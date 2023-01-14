@@ -12,7 +12,7 @@ const {
 const Notifier = require('../notifier');
 const { transform, TYPE_TWEET } = require('../../utils/response');
 const StatusFilter = require('./status-filter');
-const { getTweetType } = require('./tweet-types');
+const { getTweetType, TweetTypeByName } = require('./tweet-types');
 
 const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
@@ -192,6 +192,10 @@ class Twitter {
     this.notifyConfig = config.notifications;
     this.storage = storage;
     this.logger = logger.child({ namespace: '@social/twitter' });
+
+    const { restrictedTypes = [] } = config.requests || {};
+    this.restrictedStatusTypes = restrictedTypes.map((name) => TweetTypeByName[name]);
+
     this.statusFilter = new StatusFilter(config.stream_filters, this.logger);
 
     this._destroyed = false;
@@ -205,6 +209,10 @@ class Twitter {
     this.onData = (notify) => (json) => this._onData(json, notify);
     this.onError = (err) => this._onError(err);
     this.onEnd = () => this._onEnd();
+  }
+
+  requestRestrictedTypes() {
+    return this.restrictedStatusTypes;
   }
 
   async init() {
