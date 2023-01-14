@@ -8,7 +8,7 @@ class TwitterStatuses {
     return this.knex.upsertItem(this.table, 'id', data);
   }
 
-  list(data, restrictedTypes) {
+  list(data, restrictedTypes = []) {
     const {
       page,
       pageSize,

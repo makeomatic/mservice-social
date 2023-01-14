@@ -46,7 +46,7 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
 
     it('wait for stream to startup', () => Promise.delay(5000));
 
-    it('should have collected some tweets', async () => {
+    it('read tweets with restricted types', async () => {
       const response = await service.amqp
         .publishAndWait('social.feed.read', { filter: { account: 'v_aminev' } });
 

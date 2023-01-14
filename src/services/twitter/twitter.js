@@ -195,6 +195,7 @@ class Twitter {
 
     const { restrictedTypes = [] } = config.requests || {};
     this.restrictedStatusTypes = restrictedTypes.map((name) => TweetTypeByName[name]);
+    this.logger.info({ types: this.restrictedStatusTypes }, 'request tweet restrictions');
 
     this.statusFilter = new StatusFilter(config.stream_filters, this.logger);
 
