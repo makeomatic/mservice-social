@@ -192,7 +192,12 @@ class Twitter {
     this.notifyConfig = config.notifications;
     this.requestsConfig = config.requests;
     this.storage = storage;
+
     this.logger = logger.child({ namespace: '@social/twitter' });
+
+    const { restrictedTypes = [] } = config.requests || {};
+    this.restrictedStatusTypes = restrictedTypes.map((name) => TweetTypeByName[name]);
+
     this.statusFilter = new StatusFilter(config.stream_filters, this.logger);
 
     this._destroyed = false;
@@ -206,6 +211,10 @@ class Twitter {
     this.onData = (notify) => (json) => this._onData(json, notify);
     this.onError = (err) => this._onError(err);
     this.onEnd = () => this._onEnd();
+  }
+
+  requestRestrictedTypes() {
+    return this.restrictedStatusTypes;
   }
 
   async init() {
@@ -381,11 +390,6 @@ class Twitter {
   _onEnd() {
     this.logger.warn('stream connection closed', this.listener && this.listener.params);
     this._destroyAndReconnect();
-  }
-
-  statusesRestrictedTypes() {
-    const { restrictedTypes = [] } = this.requestsConfig;
-    return restrictedTypes.map((name) => TweetTypeByName[name]);
   }
 
   shouldNotifyFor(event, from) {
