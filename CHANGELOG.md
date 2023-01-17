@@ -1,3 +1,13 @@
+## [7.3.4](https://github.com/makeomatic/mservice-social/compare/v7.3.3...v7.3.4) (2023-01-17)
+
+
+### Bug Fixes
+
+* compute restricted types in statuses ([7380931](https://github.com/makeomatic/mservice-social/commit/73809314f1059d26f51646d6dad17f4077f8ae41))
+* migrate status text column to unlimited size ([f25601d](https://github.com/makeomatic/mservice-social/commit/f25601d8315151426d5121ac143ea17818f548b3))
+* revert to restricted types calc ([518f173](https://github.com/makeomatic/mservice-social/commit/518f173aca7771852085353f028965255591a8f6))
+* use id_str instead of id in filter logs ([097afeb](https://github.com/makeomatic/mservice-social/commit/097afeb11d6eee1746d373423100ba2356eb4cd6))
+
 ## [7.3.3](https://github.com/makeomatic/mservice-social/compare/v7.3.2...v7.3.3) (2022-12-12)
 
 
