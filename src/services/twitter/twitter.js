@@ -443,7 +443,7 @@ class Twitter {
         return false;
       }
 
-      this.logger.debug({ id: data.id, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
+      this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
       try {
         const saved = await this._saveToStatuses(data, tweetType, false, this.logger);

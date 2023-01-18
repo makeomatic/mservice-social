@@ -52,7 +52,7 @@ class StatusFilter {
         this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own reply');
         return false;
       }
-      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'reply');
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter reply');
       return data.id_str;
     }
 
