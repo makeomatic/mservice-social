@@ -1,3 +1,12 @@
+## [7.3.5](https://github.com/makeomatic/mservice-social/compare/v7.3.4...v7.3.5) (2023-01-18)
+
+
+### Bug Fixes
+
+* extend logic for reply, add filtering tests ([82c382f](https://github.com/makeomatic/mservice-social/commit/82c382fe63d066cd3a9ad7ab91c37d9a7d57a6e3))
+* misc changes ([bfcd770](https://github.com/makeomatic/mservice-social/commit/bfcd770e7adb79c582b947777e336a2fe499ae75))
+* **social:** filter accounts param, improve logging ([45c53c8](https://github.com/makeomatic/mservice-social/commit/45c53c8fa2600b2a3138306ddcb1bf8e96833bc9))
+
 ## [7.3.4](https://github.com/makeomatic/mservice-social/compare/v7.3.3...v7.3.4) (2023-01-17)
 
 
