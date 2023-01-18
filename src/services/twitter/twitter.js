@@ -197,6 +197,7 @@ class Twitter {
 
     const { restrictedTypes = [] } = config.requests || {};
     this.restrictedStatusTypes = restrictedTypes.map((name) => TweetTypeByName[name]);
+    this.logger.info({ types: this.restrictedStatusTypes }, 'request tweet restrictions');
 
     this.statusFilter = new StatusFilter(config.stream_filters, this.logger);
 
@@ -399,10 +400,10 @@ class Twitter {
   }
 
   shouldFilterTweet(data, tweetType) {
-    return this.statusFilter.apply(data, tweetType);
+    return this.statusFilter.apply(data, tweetType, this.accountIds);
   }
 
-  async _saveToStatuses(data, tweetType, directlyInserted = false) {
+  async _saveToStatuses(data, tweetType, directlyInserted, logger) {
     const tweet = Twitter.serializeTweet(data);
 
     const status = { ...tweet, type: tweetType };
@@ -410,6 +411,7 @@ class Twitter {
     if (directlyInserted) {
       status.explicit = true;
     }
+    logger.trace({ status }, 'saving serialized status');
 
     return this.storage
       .twitterStatuses()
@@ -418,7 +420,6 @@ class Twitter {
 
   async _saveCursor(data) {
     const tweet = Twitter.serializeTweet(data, true);
-    this.logger.debug({ id: data.id }, 'save cursor');
 
     return this.storage
       .feeds()
@@ -436,24 +437,25 @@ class Twitter {
       const tweetType = getTweetType(data);
 
       if (this.shouldFilterTweet(data, tweetType) !== false) {
-        this.logger.trace({ data }, 'skip tweet data');
+        this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'skip tweet');
         await this._saveCursor(data);
 
         return false;
       }
 
-      this.logger.debug({ id: data.id, user: data.user.screen_name }, 'inserting tweet');
+      this.logger.debug({ id: data.id, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
       try {
-        const saved = await this._saveToStatuses(data, tweetType);
+        const saved = await this._saveToStatuses(data, tweetType, false, this.logger);
         await this._saveCursor(data);
 
         if (notify) {
           this.publish(saved);
         }
+
         return saved;
       } catch (err) {
-        this.logger.warn({ err }, 'failed to save tweet');
+        this.logger.warn({ data, err }, 'failed to save tweet');
       }
     }
 
@@ -476,7 +478,7 @@ class Twitter {
       if (Twitter.isTweet(data)) {
         // inserted directly using api/sync
         const tweetType = getTweetType(data);
-        const saved = await this._saveToStatuses(data, tweetType, true);
+        const saved = await this._saveToStatuses(data, tweetType, true, this.logger);
         this.logger.debug({ tweetId }, 'tweet synced');
         return saved;
       }

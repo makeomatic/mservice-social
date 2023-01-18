@@ -28,9 +28,10 @@ class StatusFilter {
    * Apply filter before saving statuses to database
    * @param {object} data - fetched tweet
    * @param {number} tweetType - computed tweet type
+   * @param {Object} accountIds - valid accounts map
    * @returns {bool|number}  - False if we want to allow tweet, tweet id if we want to skip tweet, and update pointer for cursor
    */
-  apply(data, tweetType) {
+  apply(data, tweetType, accountIds) {
     const {
       replies,
       retweets,
@@ -40,8 +41,8 @@ class StatusFilter {
       skipValidAccounts,
     } = this.filterOptions;
 
-    // Don't filter retweets posted by the valid users
-    if (skipValidAccounts && this.accountIds[data.user.id] !== undefined) {
+    // Don't filter any type of tweets posted by the valid users
+    if (skipValidAccounts && accountIds[data.user.id] !== undefined) {
       return false;
     }
 
@@ -51,7 +52,7 @@ class StatusFilter {
         this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own reply');
         return false;
       }
-      this.debug('reply filtered', data);
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'reply');
       return data.id_str;
     }
 
@@ -62,7 +63,7 @@ class StatusFilter {
         return false;
       }
 
-      this.debug('retweet filtered', data);
+      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter retweet');
       return data.id_str;
     }
 
