@@ -5,7 +5,7 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
 
 [
   [true, [true, true], [0, 1, 2], []],
-  // [false, [true, true], [0], [1, 2]],
+  [false, [true, true], [0], [1, 2]],
 ].forEach(([ignoreFilters, filters, expectedTypes, filteredTypes]) => {
   describe('twitter filter statuses', function testSuite() {
     const Social = require('../../src');
@@ -51,12 +51,11 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
 
     it('wait for stream to startup', () => Promise.delay(5000));
 
-    it('skip filters for valid account', async () => {
+    it(`tweet filtering [skip_valid_acc=${ignoreFilters}]`, async () => {
       const response = await service.amqp
         .publishAndWait('social.feed.read', { filter: { account: 'v_aminev' } });
 
       assert(response.data.length);
-      // console.log(response.data);
 
       expectedTypes.forEach((type) => {
         const tweets = filterByType(response.data, type);
