@@ -6,6 +6,7 @@ const STREAM_FILTERS_DEFAULTS = {
   replies: false,
   retweets: false,
   quotes: false,
+  threads: false,
   userMentions: false,
   hashTags: false,
   skipValidAccounts: false,
@@ -36,6 +37,7 @@ class StatusFilter {
       replies,
       retweets,
       quotes,
+      threads,
       userMentions,
       hashTags,
       skipValidAccounts,
@@ -48,7 +50,7 @@ class StatusFilter {
 
     if (replies && tweetType === TweetType.REPLY) {
       // Keep the tweets which are replied by the user
-      if (data.in_reply_to_user_id === data.user.id) {
+      if (threads === false && data.in_reply_to_user_id === data.user.id) {
         this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own reply');
         return false;
       }
@@ -58,7 +60,7 @@ class StatusFilter {
 
     if (retweets && tweetType === TweetType.RETWEET) {
       // Keep the tweets which are retweeted by the user
-      if (get(data.retweet, 'user.id') === data.user.id) {
+      if (threads === false && get(data.retweet, 'user.id') === data.user.id) {
         this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own retweet');
         return false;
       }

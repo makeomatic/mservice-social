@@ -169,6 +169,11 @@
           "type": "boolean",
           "default": false
         },
+        "threads": {
+          "type": "boolean",
+          "default": false,
+          "description":  "series of connected tweets"
+        },
         "userMentions": {
           "type": "boolean",
           "default": false
