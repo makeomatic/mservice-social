@@ -1,3 +1,10 @@
+## [7.3.6](https://github.com/makeomatic/mservice-social/compare/v7.3.5...v7.3.6) (2023-01-27)
+
+
+### Bug Fixes
+
+* add special filter for threads of tweets ([2f006aa](https://github.com/makeomatic/mservice-social/commit/2f006aa35248a488cb006db288a83f37330b6ea5))
+
 ## [7.3.5](https://github.com/makeomatic/mservice-social/compare/v7.3.4...v7.3.5) (2023-01-18)
 
 
