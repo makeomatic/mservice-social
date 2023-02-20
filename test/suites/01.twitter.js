@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
 describe('twitter', function testSuite() {
-  // this.retries(20);
+  this.retries(20);
 
   const Social = require('../../src');
   const Notifier = require('../../src/services/notifier');
