@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
 describe('twitter', function testSuite() {
-  this.retries(20);
+  // this.retries(20);
 
   const Social = require('../../src');
   const Notifier = require('../../src/services/notifier');
@@ -88,6 +88,17 @@ describe('twitter', function testSuite() {
 
     replyWithMentions: {
       tweetId: '788099220381335552',
+    },
+
+    delNotice: {
+      delete: {
+        status: {
+          id: 20,
+          id_str: '20',
+          user_id: 12,
+          user_id_str: '12',
+        },
+      },
     },
   };
 
@@ -321,6 +332,26 @@ describe('twitter', function testSuite() {
     assert.strictEqual(data.type, 'tweet');
 
     assert.notStrictEqual(data.attributes.type, 1); // reply
+  });
+
+  it('handle deletion tweet on stream', async () => {
+    const twitterService = service.service('twitter');
+
+    twitterService.listener.emit('delete', payload.delNotice);
+
+    const id = payload.delNotice.delete.status.id_str;
+    const res = await service.amqp.publishAndWait(uri.getOne, { tweetId: id });
+    assert(res);
+    assert.strictEqual(res.data, null);
+
+    const deleted = await service
+      .knex('statuses')
+      .where({ id })
+      .first();
+
+    assert(deleted);
+    assert(deleted.deleted_at);
+    assert.strictEqual(String(deleted.id), id);
   });
 
   after('close consumer', () => listener.close());

@@ -212,6 +212,7 @@ class Twitter {
     this.onData = (notify) => (json) => this._onData(json, notify);
     this.onError = (err) => this._onError(err);
     this.onEnd = () => this._onEnd();
+    this.onDelete = (json) => this._onDelete(json);
   }
 
   requestRestrictedTypes() {
@@ -307,13 +308,10 @@ class Twitter {
     listener.on('data', this.onData(notify));
     listener.on('error', this.onError);
     listener.on('end', this.onEnd);
+    listener.on('delete', this.onDelete);
 
     // attach params
     listener.params = params;
-
-    // TODO: do this!
-    // add 'delete' handler
-    // listener.on('delete', this.onDelete);
 
     // remap stream receiver to add 90 sec timeout
     const { receive } = listener;
@@ -460,6 +458,20 @@ class Twitter {
     }
 
     return false;
+  }
+
+  // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/filter-realtime/overview
+  async _onDelete(data) {
+    this.logger.debug({ data }, 'on tweet deleted');
+    const { id_str: id } = data.delete.status || {};
+
+    if (!id) {
+      return false;
+    }
+
+    return this.storage
+      .twitterStatuses()
+      .softDelete({ id });
   }
 
   publish(tweet) {
