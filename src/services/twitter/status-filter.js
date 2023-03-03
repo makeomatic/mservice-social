@@ -44,13 +44,13 @@ class StatusFilter {
     } = this.filterOptions;
 
     // Don't filter any type of tweets posted by the valid users
-    if (skipValidAccounts && accountIds[data.user.id] !== undefined) {
+    if (skipValidAccounts && accountIds[data.user.id_str] !== undefined) {
       return false;
     }
 
     if (replies && tweetType === TweetType.REPLY) {
       // Keep the tweets which are replied by the user
-      if (threads === false && data.in_reply_to_user_id === data.user.id) {
+      if (threads === false && data.in_reply_to_user_id_str === data.user.id_str) {
         this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own reply');
         return false;
       }
@@ -60,7 +60,7 @@ class StatusFilter {
 
     if (retweets && tweetType === TweetType.RETWEET) {
       // Keep the tweets which are retweeted by the user
-      if (threads === false && get(data.retweet, 'user.id') === data.user.id) {
+      if (threads === false && get(data.retweeted_status, 'user.id_str') === data.user.id_str) {
         this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own retweet');
         return false;
       }
