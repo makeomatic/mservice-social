@@ -1,3 +1,10 @@
+## [7.3.7](https://github.com/makeomatic/mservice-social/compare/v7.3.6...v7.3.7) (2023-03-03)
+
+
+### Bug Fixes
+
+* **twitter:** filtering with user.id_str instead of user.id ([b8a31d4](https://github.com/makeomatic/mservice-social/commit/b8a31d48830c41ef495c6b391b68da42151f6b90))
+
 ## [7.3.6](https://github.com/makeomatic/mservice-social/compare/v7.3.5...v7.3.6) (2023-01-27)
 
 
