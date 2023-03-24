@@ -1,3 +1,10 @@
+## [7.3.8](https://github.com/makeomatic/mservice-social/compare/v7.3.7...v7.3.8) (2023-03-24)
+
+
+### Bug Fixes
+
+* handle undefined model in response ([9d3fbdd](https://github.com/makeomatic/mservice-social/commit/9d3fbdd78c2c553985d754d93462eae1577905bc))
+
 ## [7.3.7](https://github.com/makeomatic/mservice-social/compare/v7.3.6...v7.3.7) (2023-03-03)
 
 
