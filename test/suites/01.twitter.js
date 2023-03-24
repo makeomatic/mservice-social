@@ -283,6 +283,11 @@ describe('twitter', function testSuite() {
     });
   });
 
+  it('responds with null if tweet model not found', async () => {
+    const { data } = await service.amqp.publishAndWait(uri.getOne, payload.nonExistentTweet);
+    assert.strictEqual(data, null);
+  });
+
   it('get one tweet by id', async () => {
     const { data } = await service.amqp.publishAndWait(uri.getOne, payload.oneTweet);
     assert(data);
