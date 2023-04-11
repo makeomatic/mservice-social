@@ -45,6 +45,7 @@ class StatusFilter {
 
     // Don't filter any type of tweets posted by the valid users
     if (skipValidAccounts && accountIds[data.user.id_str] !== undefined) {
+      this.logger.trace({ id: data.user.id_str, tweetType, accountIds }, 'keep valid account tweet');
       return false;
     }
 
@@ -84,6 +85,7 @@ class StatusFilter {
       return data.id_str;
     }
 
+    this.logger.trace({ id: data.user.id_str }, 'no filter conditions');
     return false;
   }
 }
