@@ -260,6 +260,7 @@ class Twitter {
 
       this.listen(validAccounts);
     } catch (e) {
+      this.logger.error({ error: e }, 'error on twitter.init');
       this.onError(e);
     }
   }
@@ -275,6 +276,7 @@ class Twitter {
       (map, it) => ({ ...map, [it.account_id]: true }),
       {}
     );
+
     Object.setPrototypeOf(this.accountIds, null);
   }
 
@@ -289,6 +291,8 @@ class Twitter {
 
       this.setFollowing(accounts);
       this.fillAccountIds(accounts);
+
+      this.logger.trace({ accounts, accountIds: this.accountIds }, 'refill listening accounts...');
     }
 
     if (!params.follow) {
