@@ -9,9 +9,6 @@ const { modelResponse, TYPE_TWEET } = require('../utils/response');
  * @apiSchema {jsonschema=../../schemas/tweet.sync.json} apiParam
  */
 function TweetGetAction({ params }) {
-  if ( process.env.TEST_MODE ) {
-    return { data: null }
-  }
   return this
     .service('feed')
     .getOne(params)

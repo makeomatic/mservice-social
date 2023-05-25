@@ -11,8 +11,13 @@ const Facebook = require('./services/facebook');
 const Notifier = require('./services/notifier');
 const Instagram = require('./services/instagram');
 const addUpsert = require('./utils/knex/upsert');
+const { interceptTwitterApi } = require('./services/twitter/intercepts');
 
 const services = new WeakMap();
+
+if (process.env.TEST_MODE) {
+  interceptTwitterApi();
+}
 
 class Social extends Microfleet {
   static defaultConfig = conf.get('/', {

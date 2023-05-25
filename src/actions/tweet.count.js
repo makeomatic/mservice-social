@@ -8,9 +8,6 @@ const { ActionTransport } = require('@microfleet/plugin-router');
  * @apiSchema {jsonschema=../../schemas/tweet.count.json} apiParam
  */
 async function TweetCountAction({ params }) {
-  if ( process.env.TEST_MODE ) {
-    return { data: 0 }
-  }
   const data = await this.service('feed')
     .countByAccounts(params.data);
   return { data };

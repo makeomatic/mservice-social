@@ -4,7 +4,11 @@ const assert = require('assert');
 const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.attributes.type, 10) === type);
 
 [
-  [true, [true, true], [0, 1, 2], []],
+  [true,
+    /* filters */ [true, true],
+    /* expectedTypes */ [0, 1, 2],
+    /* filteredTypes */ [],
+  ],
   [false, [true, true], [0], []], // check filteredTypes more correctly with own later
 ].forEach(([ignoreFilters, filters, expectedTypes, filteredTypes]) => {
   describe('twitter filter statuses', function testSuite() {

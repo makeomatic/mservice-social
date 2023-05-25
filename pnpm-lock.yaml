@@ -48,6 +48,7 @@ specifiers:
   mocha: ^9.2.2
   moment: ^2.29.4
   ms-conf: ^7.0.2
+  nock: ^13.3.1
   p-limit: '3'
   pg: ^8.8.0
   pino: ^7.11.0
@@ -91,6 +92,7 @@ dependencies:
   lodash: 4.17.21
   moment: 2.29.4
   ms-conf: 7.0.2
+  nock: 13.3.1
   p-limit: 3.1.0
   pg: 8.8.0
   pino: 7.11.0
@@ -5399,7 +5401,7 @@ packages:
     dev: true
 
   /json-stringify-safe/5.0.1:
-    resolution: {integrity: sha1-Epai1Y/UXxmg9s4B1lcB4sc1tus=}
+    resolution: {integrity: sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==}
 
   /json/11.0.0:
     resolution: {integrity: sha512-N/ITv3Yw9Za8cGxuQqSqrq6RHnlaHWZkAFavcfpH/R52522c26EbihMxnY7A1chxfXJ4d+cEFIsyTgfi9GihrA==}
@@ -6011,6 +6013,18 @@ packages:
       just-extend: 4.2.1
       path-to-regexp: 1.8.0
     dev: true
+
+  /nock/13.3.1:
+    resolution: {integrity: sha512-vHnopocZuI93p2ccivFyGuUfzjq2fxNyNurp7816mlT5V5HF4SzXu8lvLrVzBbNqzs+ODooZ6OksuSUNM7Njkw==}
+    engines: {node: '>= 10.13'}
+    dependencies:
+      debug: 4.3.4
+      json-stringify-safe: 5.0.1
+      lodash: 4.17.21
+      propagate: 2.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /node-addon-api/1.7.2:
     resolution: {integrity: sha512-ibPK3iA+vaY1eEjESkQkM0BbCqFOaZMiXRTtdB0u7b4djtY6JnsjvPdUHVMg6xQt3B8fpTTWHI9A+ADjM9frzg==}
@@ -6737,6 +6751,11 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       tdigest: 0.1.1
+    dev: false
+
+  /propagate/2.0.1:
+    resolution: {integrity: sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==}
+    engines: {node: '>= 8'}
     dev: false
 
   /proxy-addr/2.0.7:
