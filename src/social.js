@@ -15,7 +15,7 @@ const { interceptTwitterApi } = require('./services/twitter/intercepts');
 
 const services = new WeakMap();
 
-if (process.env.TEST_MODE) {
+if (process.env.INTERCEPT_TWITTER_API) {
   interceptTwitterApi();
 }
 
