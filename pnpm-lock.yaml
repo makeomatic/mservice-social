@@ -54,7 +54,6 @@ specifiers:
   pg: ^8.8.0
   pino: ^7.11.0
   prom-client: ^14.1.0
-  randomstring: ^1.2.3
   request: ^2.88.2
   request-promise: ^4.2.6
   retry: ^0.13.1
@@ -100,7 +99,6 @@ dependencies:
   pg: 8.8.0
   pino: 7.11.0
   prom-client: 14.1.0
-  randomstring: 1.2.3
   request: 2.88.2
   request-promise: 4.2.6_request@2.88.2
   retry: 0.13.1
@@ -2371,11 +2369,6 @@ packages:
     resolution: {integrity: sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw==}
     engines: {node: '>=8'}
     dev: true
-
-  /array-uniq/1.0.2:
-    resolution: {integrity: sha512-GVYjmpL05al4dNlKJm53mKE4w9OOLiuVHWorsIA3YVz+Hu0hcn6PtE3Ydl0EqU7v+7ABC4mjjWsnLUxbpno+CA==}
-    engines: {node: '>=0.10.0'}
-    dev: false
 
   /array.prototype.flat/1.2.5:
     resolution: {integrity: sha512-KaYU+S+ndVqyUnignHftkwc58o3uVU1jzczILJ1tN2YaIZpFIKBiP/x/j97E5MVPsaCloPbqWLB/8qCTVvT2qg==}
@@ -6854,23 +6847,11 @@ packages:
     resolution: {integrity: sha512-Wswj8ZvzdI3VhaGPkZAxaCTwuMmGtgWt7Zxsgyo4P+iTmVnkojvyWaOep5q3ZjMIecW0wtQa66GWxaKkZ24RAA==}
     dev: true
 
-  /randombytes/2.0.3:
-    resolution: {integrity: sha512-lDVjxQQFoCG1jcrP06LNo2lbWp4QTShEXnhActFBwYuHprllQV6VUpwreApsYqCgD+N1mHoqJ/BI/4eV4R2GYg==}
-    dev: false
-
   /randombytes/2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
     dependencies:
       safe-buffer: 5.2.1
     dev: true
-
-  /randomstring/1.2.3:
-    resolution: {integrity: sha512-3dEFySepTzp2CvH6W/ASYGguPPveBuz5MpZ7MuoUkoVehmyNl9+F9c9GFVrz2QPbM9NXTIHGcmJDY/3j4677kQ==}
-    hasBin: true
-    dependencies:
-      array-uniq: 1.0.2
-      randombytes: 2.0.3
-    dev: false
 
   /rc/1.2.8:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
