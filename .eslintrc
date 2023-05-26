@@ -1,7 +1,7 @@
 {
   "extends": "makeomatic",
   "parserOptions": {
-    "ecmaVersion": 2022
+    "ecmaVersion": "latest"
   },
   "plugins": [
     "json"

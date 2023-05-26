@@ -3,7 +3,8 @@ const Promise = require('bluebird');
 const request = require('request-promise');
 const { StatusCodeError } = require('request-promise/errors');
 const sinon = require('sinon');
-const Social = require('../../src');
+const prepareSocial = require('../../src');
+const { SERVICE_STORAGE } = require('../../src/constants');
 
 const createFeedFixture = require('../fixtures/instagram/create-feed');
 const syncOnReconnectFixture = require('../fixtures/instagram/sync-on-reconnect');
@@ -22,13 +23,16 @@ const config = {
 };
 
 describe('instagram', function testSuite() {
-  after('clean instagram_media', () => this.service.knex('instagram_media').delete());
-  after('clean feeds', () => this.service.knex('feeds').delete());
-  after('shutdown service', () => this.service.close());
-  before('launch service', () => {
-    this.service = new Social(config);
-    return this.service.connect();
+  let service;
+
+  before('launch service', async () => {
+    service = await prepareSocial(config);
+    await service.connect();
   });
+
+  after('clean instagram_media', () => service?.knex('instagram_media').delete());
+  after('clean feeds', () => service?.knex('feeds').delete());
+  after('shutdown service', () => service?.close());
 
   it('should be able to register feed', async () => {
     const params = {
@@ -85,7 +89,7 @@ describe('instagram', function testSuite() {
       .returns(createFeedFixture.response.second)
       .once();
 
-    const { data } = await this.service.amqp
+    const { data } = await service.amqp
       .publishAndWait('social.feed.register', params);
 
     assert.equal(data.length, 1);
@@ -122,11 +126,10 @@ describe('instagram', function testSuite() {
       })
       .once();
 
-    return this.service
+    return service
       .close()
-      .then(() => {
-        const service = this.service = new Social(config);
-
+      .then(async () => {
+        service = await prepareSocial(config);
         return service.connect();
       })
       .then(() => {
@@ -174,9 +177,9 @@ describe('instagram', function testSuite() {
       return response;
     });
 
-    await this.service.close();
+    await service.close();
 
-    this.service = new Social({
+    service = await prepareSocial({
       ...config,
       instagram: {
         ...config.instagram,
@@ -185,7 +188,7 @@ describe('instagram', function testSuite() {
       },
     });
 
-    await this.service.connect();
+    await service.connect();
 
     /** let the service to sync several times */
     await Promise.delay(config.instagram.syncInterval * (media.length + 1));
@@ -222,7 +225,7 @@ describe('instagram', function testSuite() {
       .usingPromise(Promise);
 
     // register another feed
-    await this.service.amqp
+    await service.amqp
       .publishAndWait(
         'social.feed.register',
         {
@@ -236,9 +239,9 @@ describe('instagram', function testSuite() {
         }
       );
 
-    await this.service.close();
+    await service.close();
 
-    this.service = new Social({
+    service = await prepareSocial({
       ...config,
       instagram: {
         ...config.instagram,
@@ -246,10 +249,10 @@ describe('instagram', function testSuite() {
       },
     });
 
-    await this.service.connect();
+    await service.connect();
 
-    const { invalid } = await this.service
-      .service(Social.SERVICE_STORAGE)
+    const { invalid } = await service
+      .service(SERVICE_STORAGE)
       .feeds()
       .getByNetworkId('instagram', '555');
 
@@ -274,9 +277,9 @@ describe('instagram', function testSuite() {
       })
       .usingPromise(Promise);
 
-    await this.service.close();
+    await service.close();
 
-    this.service = new Social({
+    service = await prepareSocial({
       ...config,
       instagram: {
         ...config.instagram,
@@ -284,7 +287,7 @@ describe('instagram', function testSuite() {
       },
     });
 
-    await this.service.connect();
+    await service.connect();
 
     assert(stub.calledOnce);
 

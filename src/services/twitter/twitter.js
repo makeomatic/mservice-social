@@ -6,17 +6,19 @@ const pLimit = require('p-limit');
 const { v4: uuid } = require('uuid');
 const { HttpStatusError } = require('common-errors');
 const {
-  isObject, isString, conforms, merge, find,
+  isObject, isString, conforms, merge, find, isNil,
 } = require('lodash');
 
-const Notifier = require('../notifier');
-const { transform, TYPE_TWEET } = require('../../utils/response');
 const StatusFilter = require('./status-filter');
+const { transform, TYPE_TWEET } = require('../../utils/response');
 const { getTweetType, TweetTypeByName } = require('./tweet-types');
 
 const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
 };
+const { kPublishEvent } = require('../notifier');
+
+const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
@@ -51,12 +53,46 @@ function twitterApiConfig(config) {
  */
 class Twitter {
   /**
+   *  static helpers
+   */
+  static one = new BN('1', 10);
+
+  // isTweet checker
+  static isTweet = conforms({
+    entities: isObject,
+    id_str: isString,
+    text: isString,
+  });
+
+  static isRetweet = (data) => {
+    const retweet = data.retweeted_status;
+    if (isNil(retweet)) {
+      return false;
+    }
+    const tweetOwnerId = get(retweet, 'user.id');
+    // Keep the tweets which are retweeted by the user
+    return tweetOwnerId !== data.user.id;
+  };
+
+  static isReply = (data) => {
+    const toUserId = data.in_reply_to_user_id;
+    if (isNil(toUserId)) {
+      return false;
+    }
+    // Keep the tweets which are replied by the user
+    if (toUserId === data.user.id) {
+      return false;
+    }
+    return !isNil(data.in_reply_to_status_id);
+  };
+
+  /**
    * cursor extractor
    * @param {object} tweet
    * @param {string} order
    */
   static cursor(tweet, order = 'asc') {
-    const cursor = tweet && (tweet.id || tweet.id_str);
+    const cursor = tweet?.id_str || tweet?.id;
 
     // no tweet / cursor
     if (!cursor) {
@@ -187,7 +223,6 @@ class Twitter {
   constructor(core, config, storage, logger) {
     this.core = core;
     this.client = new TwitterClient(config);
-    this.listener = null;
 
     this.notifyConfig = config.notifications;
     this.requestsConfig = config.requests;
@@ -201,17 +236,17 @@ class Twitter {
 
     this.statusFilter = new StatusFilter(config.stream_filters, this.logger);
 
-    this._destroyed = false;
     this.following = [];
     this.accountIds = {};
+    this.syncPromise = null;
+    this.resyncTimer = null;
 
     this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
     this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
 
     // cheaper than bind
     this.onData = (notify) => (json) => this._onData(json, notify);
-    this.onError = (err) => this._onError(err);
-    this.onEnd = () => this._onEnd();
+    this.init = this.init.bind(this);
   }
 
   requestRestrictedTypes() {
@@ -219,48 +254,67 @@ class Twitter {
   }
 
   async init() {
-    /* draining */
-    if (this._destroyed) return;
-
-    this.reconnect = null;
+    if (this.resyncTimer) {
+      clearTimeout(this.resyncTimer);
+      this.resyncTimer = null;
+    }
 
     try {
-      const accounts = await this.storage
-        .feeds()
-        .fetch({ network: 'twitter' });
+      this.syncPromise = Promise
+        .resolve()
+        .then(async () => {
+          const accounts = await this.storage
+            .feeds()
+            .fetch({ network: 'twitter' });
 
-      const validAccounts = await Promise
-        .reduce(accounts, extractAccount, [])
-        .filter(async (twAccount) => {
-          try {
-            await this.syncAccount(twAccount, 'desc');
-          } catch (exception) {
-            const isAccountInaccessible = exception.statusCode === 401
-              || (Array.isArray(exception) && exception.find((it) => (it.code === 34)));
+          return Promise
+            .reduce(accounts, extractAccount, [])
+            .filter(async (twAccount) => {
+              try {
+                await this.syncAccount(twAccount, 'desc');
+              } catch (exception) {
+                const isAccountInaccessible = exception.statusCode === 401
+                  || (Array.isArray(exception) && exception.find((it) => (it.code === 34)));
 
-            // removed twitter account
-            if (isAccountInaccessible) {
-              this.logger.warn('removing tw %j from database', twAccount);
-              await this.storage.feeds().remove({
-                internal: twAccount.internal,
-                network: 'twitter',
-                network_id: twAccount.network_id,
-              });
-              return false;
-            }
+                // removed twitter account
+                if (isAccountInaccessible) {
+                  this.logger.warn({ twAccount }, 'removing tw from database');
+                  await this.storage.feeds().remove({
+                    internal: twAccount.internal,
+                    network: 'twitter',
+                    network_id: twAccount.network_id,
+                  });
+                  return false;
+                }
 
-            // augment with the account data
-            exception.account = twAccount;
-            this.logger.fatal({ err: exception }, 'unknown error from twitter');
-            throw exception;
-          }
+                // augment with the account data
+                exception.account = twAccount;
+                this.logger.fatal({ err: exception }, 'unknown error from twitter');
+                throw exception;
+              }
 
-          return true;
-        }, { concurrency: 2 }); /* to avoid rate limits */
+              return true;
+              /* to avoid rate limits */
+            }, { concurrency: 50 });
+        });
 
-      this.listen(validAccounts);
-    } catch (e) {
-      this.onError(e);
+      const validAccounts = await this.syncPromise;
+
+      this.logger.info({ validAccounts }, 'resolved accounts');
+
+      // TODO: no need to re-do this every sync cycle
+      this.setFollowing(validAccounts);
+      this.fillAccountIds(validAccounts);
+
+      this.resyncTimer = setTimeout(this.init, SYNC_INTERVAL);
+    } catch (err) {
+      if (this.syncPromise && !this.syncPromise.isCancelled) {
+        this.logger.warn({ err }, 'error syncing accounts');
+        this.resyncTimer = setTimeout(this.init, SYNC_INTERVAL);
+        this.syncPromise = null;
+      } else {
+        this.logger.warn({ err }, 'sync promise cancelled');
+      }
     }
   }
 
@@ -278,119 +332,27 @@ class Twitter {
     Object.setPrototypeOf(this.accountIds, null);
   }
 
-  listen(accounts) {
-    const params = {
-      ...EXTENDED_TWEET_MODE,
-    };
-    if (accounts.length > 0) {
-      params.follow = accounts
-        .map((twAccount) => twAccount.account_id)
-        .join(',');
-
-      this.setFollowing(accounts);
-      this.fillAccountIds(accounts);
-    }
-
-    if (!params.follow) {
-      return false;
-    }
-
-    // destroy old listener if we had it
-    this.destroy();
-
-    // setup new listener while old is still active
-    const listener = this.listener = this.client.stream('statuses/filter', params);
-
-    // calculate notification on init
-    const notify = this.shouldNotifyFor('data', 'init');
-
-    listener.on('data', this.onData(notify));
-    listener.on('error', this.onError);
-    listener.on('end', this.onEnd);
-
-    // attach params
-    listener.params = params;
-
-    // TODO: do this!
-    // add 'delete' handler
-    // listener.on('delete', this.onDelete);
-
-    // remap stream receiver to add 90 sec timeout
-    const { receive } = listener;
-    listener.receive = (chunk) => {
-      this.resetTimeout();
-      receive.call(listener, chunk);
-    };
-
-    // init new reset timer
-    this.resetTimeout();
-
-    this.logger.info('Listening for %d accounts. Account list: %s', accounts.length, params.follow);
-    return true;
-  }
-
-  resetTimeout() {
-    if (this.timeout) {
-      // reset old timeout
-      this.timeout.refresh();
-    } else {
-      // set new timeout
-      this.timeout = setTimeout(() => {
-        this.listener.emit('error', new Error('timed out, no data in 90 seconds'));
-      }, 90000);
-    }
-  }
-
-  connect() {
+  async connect() {
     // schedule reconnect
-    if (this.reconnect) {
+    if (this.resyncTimer) {
       this.logger.warn('reconnect was scheduled, skipping...');
       return;
     }
 
-    this.logger.warn('scheduled reconnect in 1000ms');
-    this.reconnect = Promise.bind(this).delay(1000).then(this.init);
-  }
-
-  destroy(final = false) {
-    // reconnect if we failed
-    if (this.listener) {
-      this.listener.removeAllListeners();
-      this.listener.on('error', () => { /* ignore */ });
-      this.listener.destroy();
-      this.listener = null;
-    }
-
-    if (this.timeout) clearTimeout(this.timeout);
-    if (this.reconnect) {
-      this.reconnect.cancel();
-      this.reconnect = null;
-    }
-    if (final) this._destroyed = true;
-  }
-
-  _destroyAndReconnect() {
-    this.destroy();
-    this.connect();
-  }
-
-  _onError(exception) {
-    if (Array.isArray(exception) && exception.find((it) => (it.code === 34))) {
-      // do not reconnect, but try to identify account that has been deleted
-      this.logger.warn('account erased from', exception);
-    } else if (exception.message === 'Status Code: 420') {
-      this.destroy();
-      this.logger.warn('stream connection rate limit, reconnect in 10s', exception.message);
-      this.reconnect = Promise.bind(this).delay(10000).then(this.init);
-    } else {
-      this.logger.error({ err: exception }, 'stream connection failed');
-      this._destroyAndReconnect();
+    if (!this.syncPromise) {
+      await this.init();
     }
   }
 
-  _onEnd() {
-    this.logger.warn('stream connection closed', this.listener && this.listener.params);
-    this._destroyAndReconnect();
+  destroy() {
+    if (this.syncPromise) {
+      this.syncPromise.cancel();
+    }
+
+    if (this.resyncTimer) {
+      clearTimeout(this.resyncTimer);
+      this.resyncTimer = null;
+    }
   }
 
   shouldNotifyFor(event, from) {
@@ -468,7 +430,9 @@ class Twitter {
     if (account && Array.isArray(following) && following.includes(account)) {
       const route = `twitter/subscription/${account}`;
       const payload = transform(tweet, TYPE_TWEET);
-      this.core.emit(Notifier.kPublishEvent, route, payload);
+      this.core.emit(kPublishEvent, route, payload);
+    } else {
+      this.logger.warn({ tweet, account, following }, 'skipped broadcast');
     }
   }
 
@@ -527,6 +491,7 @@ class Twitter {
       },
     });
 
+    this.logger.info({ initialTweet: { id_str: initialTweet?.id_str, id: initialTweet?.id }, account }, 'selected last tweet from account');
     await fetchedTweets(initialTweet);
   }
 

@@ -2,16 +2,12 @@
 
 // accepts conf through .env file
 // suitable for configuring this in the docker env
-const conf = require('ms-conf').get('/');
-const { connect } = require('@microfleet/transport-amqp');
+const AMQPTransport = require('@microfleet/transport-amqp');
 const yargs = require('yargs');
 const debug = require('debug')('mservice:social:register');
 
-const Social = require('../src');
+const prepareSocial = require('../src');
 
-// merged configuration
-const service = new Social(conf);
-const { config } = service;
 const { argv } = yargs
   .coerce({
     account: JSON.parse,
@@ -22,19 +18,24 @@ const { argv } = yargs
 
 if (!argv.account) throw new Error('must supply twitter account');
 
-const route = `${config.router.routes.prefix}.feed.register`;
-const message = {
-  internal: argv.internal,
-  network: argv.network,
-  accounts: [argv.account],
-};
-
-debug('sending to %s, message %j', route, message);
-debug('amqp configuration: %j', config.amqp.transport);
-
+// merged configuration
 (async () => {
-  const amqp = await connect(Object.assign(config.amqp.transport, { debug: true }));
+  const service = await prepareSocial();
+  const { config } = service;
+
+  const route = `${config.router.routes.prefix}.feed.register`;
+  const message = {
+    internal: argv.internal,
+    network: argv.network,
+    accounts: [argv.account],
+  };
+
+  debug('sending to %s, message %j', route, message);
+  debug('amqp configuration: %j', config.amqp.transport);
+
+  let amqp;
   try {
+    amqp = await AMQPTransport.connect(Object.assign(config.amqp.transport, { debug: true }));
     await amqp.publish(route, message);
   } finally {
     await amqp?.close();

@@ -3,7 +3,7 @@ const request = require('request-promise');
 const sinon = require('sinon');
 const { mockPageFeeds } = require('../mocks/facebook/page-feeds');
 const mockSubscribedApps = require('../mocks/facebook/subscribed-apps');
-const Social = require('../../src');
+const prepareSocial = require('../../src');
 
 const config = {
   instagram: {
@@ -20,53 +20,61 @@ const config = {
     },
   },
 };
-const service = new Social(config);
 
 describe('feed.register', function feedRegisterSuite() {
-  before('start up service', () => service.connect());
+  let service;
+
+  before('start up service', async () => {
+    service = await prepareSocial(config);
+    await service.connect();
+  });
+
   after('cleanup feeds', () => service.knex('feeds').delete());
   after('shutdown service', () => service.close());
 
-  it('must be able to return error if invalid network', () => {
+  it('must be able to return error if invalid network', async () => {
     const params = {
       internal: 'foo@instagram.com',
       network: 'odnokassniki',
       accounts: [],
     };
 
-    return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-      message: 'feed.register validation failed: data/network'
-        + ' must be equal to one of the allowed values',
-    });
+    await assert.rejects(
+      service.amqp.publishAndWait('social.feed.register', params),
+      'feed.register validation failed: data.network'
+      + ' should be equal to one of the allowed values'
+    );
   });
 
   describe('instagram', function instagramSuite() {
-    it('must be able to return error if no accounts', () => {
+    it('should be able to return error if no accounts', async () => {
       const params = {
         internal: 'foo@instagram.com',
         network: 'instagram',
       };
 
-      return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-        message: 'feed.register validation failed:'
-            + ' data must have required property \'accounts\'',
-      });
+      await assert.rejects(
+        service.amqp.publishAndWait('social.feed.register', params),
+        'feed.register validation failed:'
+        + ' data should have required property \'accounts\''
+      );
     });
 
-    it('must be able to return error if invalid accounts', () => {
+    it('should be able to return error if invalid accounts', async () => {
       const params = {
         internal: 'foo@instagram.com',
         network: 'instagram',
         accounts: {},
       };
 
-      return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-        message: 'feed.register validation failed:'
-          + ' data/accounts must be array, data must match "then" schema, data/accounts must be array',
-      });
+      await assert.rejects(
+        service.amqp.publishAndWait('social.feed.register', params),
+        'feed.register validation failed:'
+            + ' data.accounts should be array, data.accounts should be array'
+      );
     });
 
-    it('must be able to return error if invalid account', () => {
+    it('should be able to return error if invalid account', async () => {
       const params = {
         internal: 'foo@instagram.com',
         network: 'instagram',
@@ -76,40 +84,43 @@ describe('feed.register', function feedRegisterSuite() {
         }],
       };
 
-      return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-        message: 'feed.register validation failed: data/accounts/0'
-          + ' must have required property \'token\', data must match "then" schema',
-      });
+      await assert.rejects(
+        service.amqp.publishAndWait('social.feed.register', params),
+        'feed.register validation failed: data.accounts[0]'
+            + ' should have required property \'token\''
+      );
     });
   });
 
   describe('twitter', function instagramSuite() {
-    it('must be able to return error if no accounts', () => {
+    it('should be able to return error if no accounts', async () => {
       const params = {
         internal: 'foo@instagram.com',
         network: 'twitter',
       };
 
-      return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-        message: 'feed.register validation failed:'
-            + ' data must have required property \'accounts\'',
-      });
+      await assert.rejects(
+        service.amqp.publishAndWait('social.feed.register', params),
+        'feed.register validation failed:'
+            + ' data should have required property \'accounts\''
+      );
     });
 
-    it('must be able to return error if invalid accounts', () => {
+    it('should be able to return error if invalid accounts', async () => {
       const params = {
         internal: 'foo@instagram.com',
         network: 'twitter',
         accounts: {},
       };
 
-      return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-        message: 'feed.register validation failed:'
-          + ' data/accounts must be array, data must match "then" schema, data/accounts must be array',
-      });
+      await assert.rejects(
+        service.amqp.publishAndWait('social.feed.register', params),
+        'feed.register validation failed:'
+            + ' data.accounts should be array, data.accounts should be array'
+      );
     });
 
-    it('must be able to return error if invalid account', () => {
+    it('should be able to return error if invalid account', async () => {
       const params = {
         internal: 'foo@instagram.com',
         network: 'twitter',
@@ -118,40 +129,43 @@ describe('feed.register', function feedRegisterSuite() {
         }],
       };
 
-      return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-        message: 'feed.register validation failed: data/accounts/0'
-          + ' must have required property \'username\', data must match "then" schema',
-      });
+      await assert.rejects(
+        service.amqp.publishAndWait('social.feed.register', params),
+        'feed.register validation failed: data.accounts[0]'
+            + ' should have required property \'username\''
+      );
     });
   });
 
   describe('facebook', function facebookSuite() {
-    it('must be able to return error if no accounts', () => {
+    it('should be able to return error if no accounts', async () => {
       const params = {
         internal: 'foo@facebook.com',
         network: 'facebook',
       };
 
-      return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-        message: 'feed.register validation failed:'
-            + ' data must have required property \'accounts\'',
-      });
+      await assert.rejects(
+        service.amqp.publishAndWait('social.feed.register', params),
+        'feed.register validation failed:'
+            + ' data should have required property \'accounts\''
+      );
     });
 
-    it('must be able to return error if invalid accounts', () => {
+    it('should be able to return error if invalid accounts', async () => {
       const params = {
         internal: 'foo@facebook.com',
         network: 'facebook',
         accounts: {},
       };
 
-      return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-        message: 'feed.register validation failed:'
-          + ' data/accounts must be array, data must match "then" schema, data/accounts must be array',
-      });
+      await assert.rejects(
+        service.amqp.publishAndWait('social.feed.register', params),
+        'feed.register validation failed:'
+            + ' data.accounts should be array, data.accounts should be array'
+      );
     });
 
-    it('must be able to return error if invalid account', () => {
+    it('should be able to return error if invalid account', async () => {
       const params = {
         internal: 'foo@facebook.com',
         network: 'facebook',
@@ -163,10 +177,11 @@ describe('feed.register', function feedRegisterSuite() {
         }],
       };
 
-      return assert.rejects(service.amqp.publishAndWait('social.feed.register', params), {
-        message: 'feed.register validation failed: data/accounts/0'
-          + ' must have required property \'token\', data must match "then" schema',
-      });
+      await assert.rejects(
+        service.amqp.publishAndWait('social.feed.register', params),
+        'feed.register validation failed: data.accounts[0]'
+            + ' should have required property \'token\''
+      );
     });
 
     it('must be able to register new feed', () => {

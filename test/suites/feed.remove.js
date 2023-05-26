@@ -1,24 +1,28 @@
 const request = require('request-promise');
 const sinon = require('sinon');
-const Social = require('../../src');
-
-const social = new Social({
-  facebook: {
-    enabled: true,
-    syncMediaOnStart: false,
-    subscribeOnStart: false,
-    app: {
-      id: 'appId1',
-      secret: 'appSecret1',
-    },
-  },
-  twitter: {
-    enabled: true,
-  },
-});
+const prepareSocial = require('../../src');
 
 describe('feed.register', function feedRegisterSuite() {
-  before('start up service', () => social.connect());
+  let social;
+
+  before('start up service', async () => {
+    social = await prepareSocial({
+      facebook: {
+        enabled: true,
+        syncMediaOnStart: false,
+        subscribeOnStart: false,
+        app: {
+          id: 'appId1',
+          secret: 'appSecret1',
+        },
+      },
+      twitter: {
+        enabled: true,
+      },
+    });
+
+    await social.connect();
+  });
   after('clean up feeds', () => social.knex('feeds').delete());
   after('stop service', () => social.close());
 

@@ -1,30 +1,23 @@
-const assert = require('assert');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
+const kInstance = Symbol('notifier');
+const kPublishEvent = Symbol('notifier::onpublish');
 class Notifier {
+  static getInstance(core) {
+    return core[kInstance];
+  }
+
   static connector(core) {
-    assert(core.config.notifier.enabled, 'connect disabled notifier');
-
-    core.service(Notifier.SERVICE_NOTIFIER, new Notifier(core));
-
-    function connect() {
-      const instance = core.service(Notifier.SERVICE_NOTIFIER);
-
-      if (instance) {
-        return instance.connect();
-      }
-
-      return false;
+    if (!core[kInstance]) {
+      core[kInstance] = new Notifier(core);
     }
 
-    function close() {
-      const instance = core.service(Notifier.SERVICE_NOTIFIER);
+    async function connect() {
+      await this[kInstance].connect();
+    }
 
-      if (instance) {
-        return instance.close();
-      }
-
-      return false;
+    async function close() {
+      await this[kInstance].close();
     }
 
     return {
@@ -52,11 +45,11 @@ class Notifier {
 
   async connect() {
     this.amqpClient = await AMQPTransport.connect(this.amqpConfig);
-    this.core.on(Notifier.kPublishEvent, this.publish);
+    this.core.on(kPublishEvent, this.publish);
   }
 
   async close() {
-    this.core.off(Notifier.kPublishEvent, this.publish);
+    this.core.off(kPublishEvent, this.publish);
 
     if (this.amqpClient) {
       await this.amqpClient.close();
@@ -82,7 +75,5 @@ class Notifier {
   }
 }
 
-Notifier.kPublishEvent = Symbol('notifier::onpublish');
-Notifier.SERVICE_NOTIFIER = 'notifier';
-
 module.exports = Notifier;
+module.exports.kPublishEvent = kPublishEvent;

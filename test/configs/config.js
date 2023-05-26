@@ -1,6 +1,4 @@
-require('dotenv').config();
-
-global.SERVICES = {
+module.exports = {
   amqp: {
     transport: {
       connection: {
