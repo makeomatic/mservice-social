@@ -5,23 +5,14 @@ ENV NCONF_NAMESPACE=MS_SOCIAL \
 
 WORKDIR /src
 
+COPY --chown=node:node package.json pnpm-lock.yaml ./
 RUN \
   apk --update upgrade \
-    && apk add git ca-certificates openssl g++ make python3 linux-headers \
-    && chown node:node /src \
-    && su -l node -c "cd /src && pnpm install --prod --frozen-lockfile" \
-    && apk del \
-    g++ \
-    make \
-    git \
-    curl \
-  && apk add openssl ca-certificates \
+  && apk add ca-certificates openssl --virtual .buildDeps wget git g++ make python3 linux-headers \
   && update-ca-certificates \
-  && apk del \
-    .buildDeps \
-    wget \
-    python3 \
-    linux-headers \
+  && chown node:node /src \
+  && su -l node -c "cd /src && pnpm install --prod --frozen-lockfile" \
+  && apk del .buildDeps \
   && rm -rf \
     /tmp/* \
     /root/.node-gyp \
@@ -29,9 +20,7 @@ RUN \
     /etc/apk/cache/* \
     /var/cache/apk/*
 
-COPY --chown=node:node package.json pnpm-lock.yaml ./
 USER node
-RUN pnpm i --production --frozen-lockfile
-COPY --chown=node:node . /src
+COPY --chown=node:node ./bin ./src ./schemas /src/
 
 EXPOSE 3000

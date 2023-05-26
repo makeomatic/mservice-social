@@ -44,6 +44,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "ms-conf": "^8.1.2",
+    "p-limit": "^3.1.0",
     "pg": "^8.11.0",
     "pino": "^8.14.1",
     "prom-client": "^14.2.0",
@@ -51,6 +52,7 @@
     "request-promise": "^4.2.6",
     "retry": "^0.13.1",
     "twitter": "^1.7.1",
+    "uuid": "^9.0.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
