@@ -21,9 +21,9 @@ function replyFactory(user) {
   return createReply(user, mentions, tweet)
 }
 
-function originalFactory(user) {
+function originalFactory(user, options) {
   const mentions = createMentions()
-  return createOriginal(user, mentions)
+  return createOriginal(user, mentions, options)
 }
 
 function statusFactory(user) {

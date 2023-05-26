@@ -2,8 +2,8 @@
 const { getRandomInt, getDateString } = require("../util");
 const { faker } = require("@faker-js/faker");
 
-module.exports = function(user, mentions) {
-  const id = getRandomInt()
+module.exports = function(user, mentions, options = {}) {
+  const id = options.id ?? getRandomInt()
   return {
     created_at: getDateString(),
     // eslint-disable-next-line no-loss-of-precision

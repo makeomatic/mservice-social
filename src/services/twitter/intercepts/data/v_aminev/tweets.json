@@ -1,5 +1,5 @@
 {
-  "904549.json": "original.json",
-  "772961.json": "retweet.json",
-  "991460.json": "reply.json"
+  "904549": "original.json",
+  "772961": "retweet.json",
+  "991460": "reply.json"
 }

@@ -1,16 +1,16 @@
 const fs = require("fs");
 const { userFactory, originalFactory, replyFactory, retweetFactory } = require("./factories");
 
-const screenName = "evgenypoyarkov"
+const screenName = "v_aminev"
 const user = userFactory(screenName)
 const retweet = retweetFactory(user)
 const original = originalFactory(user)
 const reply = replyFactory(user)
 
 const tweets = {}
-tweets[`${original.id}.json`] = "original.json"
-tweets[`${retweet.id}.json`] = "retweet.json"
-tweets[`${reply.id}.json`] = "reply.json"
+tweets[`${original.id}`] = "original.json"
+tweets[`${retweet.id}`] = "retweet.json"
+tweets[`${reply.id}`] = "reply.json"
 
 console.log(user)
 console.log(original)
