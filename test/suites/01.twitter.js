@@ -180,7 +180,7 @@ describe('twitter', function testSuite() {
     );
   });
 
-  it('should have collected some tweets', async () => {
+  it('should have collected some tweets (one account)', async () => {
     await Promise.delay(1500);
     const response = await request(uri.read, payload.read);
 
@@ -197,7 +197,7 @@ describe('twitter', function testSuite() {
     }));
   });
 
-  it('should have collected some tweets', async () => {
+  it('should have collected some tweets (multiple accounts)', async () => {
     await Promise.delay(1500);
     const response = await request(uri.read, payload.readMultiple);
 

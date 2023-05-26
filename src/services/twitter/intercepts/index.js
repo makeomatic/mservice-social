@@ -14,14 +14,14 @@ function hasUser(name) {
 function interceptTwitterApi() {
   log('using twitter api interceptor');
 
-  const scope = nock('https://api.twitter.com', { allowUnmocked: false })
+  nock('https://api.twitter.com', { allowUnmocked: false })
     .persist()
     // lookup correct user
     .get((uri) => {
       const q = url.parse(uri, true)
       const { screen_name } = q.query
       const matched = uri.includes('users/lookup') && hasUser(screen_name)
-      if ( matched ) {
+      if (matched) {
         log(`getting request for existing users, for uri=${uri}, screen_name=${screen_name}`)
       }
       return matched
@@ -31,19 +31,19 @@ function interceptTwitterApi() {
       const { screen_name } = q.query
       const user = require(`./data/${screen_name}/user.json`)
       log(`sending response for uri=${uri}, screen_name=${screen_name}`, JSON.stringify(user))
-      return [ user ]
+      return [user]
     })
     // lookup incorrect user
     .get((uri) => {
       const q = url.parse(uri, true)
       const { screen_name } = q.query
       const matched = uri.includes('users/lookup') && !hasUser(screen_name)
-      if ( matched ) {
+      if (matched) {
         log(`getting request non-existing users, for uri=${uri}, screen_name=${screen_name}`)
       }
       return matched
     })
-    .reply(404, function(uri) {
+    .reply(404, function (uri) {
       const q = url.parse(uri, true)
       const { screen_name } = q.query
       log(`sending response for non-existing user, screen_name=${screen_name}`)
@@ -54,7 +54,7 @@ function interceptTwitterApi() {
       const q = url.parse(uri, true)
       const { screen_name } = q.query
       const matched = uri.includes('statuses/user_timeline') && hasUser(screen_name)
-      if ( matched ) {
+      if (matched) {
         log(`getting request for uri=${uri}, screen_name=${screen_name}`)
       }
       return matched
@@ -89,7 +89,7 @@ function interceptTwitterApi() {
     // statuses show
     .get((uri) => {
       const matched = uri.includes('statuses/show') && uri.includes("id=")
-      if ( matched ) {
+      if (matched) {
         log(`getting request for uri=${uri}`);
       }
       return matched
@@ -101,15 +101,13 @@ function interceptTwitterApi() {
 
       let user, file
 
-      if ( id === "20" ) {
+      if (id === "20") {
         user = "jack"
         file = "status.json"
-      }
-      else if ( id === "788099220381335552" ) {
+      } else if (id === "788099220381335552") {
         user = "reid"
         file = "status.json"
-      }
-      else {
+      } else {
         user = 'v_aminev'
         const tweets = require(`./data/${user}/tweets.json`)
         file = tweets[id]
@@ -128,34 +126,58 @@ function interceptTwitterApi() {
     // update statuses
     .post((uri) => {
       const matched = uri.includes('statuses/update')
-      if ( matched ) {
+      if (matched) {
         log(`getting request for uri=${uri}`)
       }
       return matched
     })
     .reply(200, function (uri, body) {
       const response = require(`./data/v_aminev/reply.json`)
-      log(`sending response for statuses/update, uri=${uri}, body=${body}, response=${response.id}`)
+      log(`sending response for statuses/update, uri=${uri}, body=${body}, `
+          + `response=${response.id}, headers=${JSON.stringify(this.req.headers)}`)
       return response;
     })
-    // stream statuses/filter
-    .post((uri) => {
+
+  nock('https://stream.twitter.com', { allowUnmocked: false })
+    .persist()
+    .get((uri) => {
       const matched = uri.includes('statuses/filter')
-      if ( matched ) {
-        const q = url.parse(uri, true);
-        log(`getting request for POST uri=${uri}, ${JSON.stringify(q.query)}`);
+      if (matched) {
+        log(`getting request for GET uri=${uri}`);
       }
       return matched
     })
-    .reply(200, function (uri, body) {
-      log(`sending response for statuses/filter, uri=${uri}, body=${body}`)
-      const stream = new Stream.Duplex()
-      stream.on("close", () => {
-        log(`should interception be over?`)
-        // nock.restore()
-      })
-      return stream;
+    .reply(200, function (uri) {
+      const response = require(`./data/v_aminev/reply.json`)
+      return [ response ];
     })
+
+  nock('https://userstream.twitter.com', { allowUnmocked: false })
+    .persist()
+    .get((uri) => {
+      log(`getting request for uri=${uri}`);
+      return true
+    })
+    .reply(200, 'OK')
+    .post((uri) => {
+      log(`getting request for uri=${uri}`);
+      return true
+    })
+    .reply(200, 'OK')
+
+  nock('https://sitestream.twitter.com', { allowUnmocked: false })
+    .persist()
+    .get((uri) => {
+      log(`getting request for uri=${uri}`);
+      return true
+    })
+    .reply(200, 'OK')
+    .post((uri) => {
+      log(`getting request for uri=${uri}`);
+      return true
+    })
+    .reply(200, 'OK')
+
 }
 
 module.exports = {
