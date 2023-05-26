@@ -8,19 +8,17 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
   [false, [true, true], [0], []], // check filteredTypes more correctly with own later
 ].forEach(([ignoreFilters, filters, expectedTypes, filteredTypes]) => {
   describe('twitter filter statuses', function testSuite() {
-    const Social = require('../../src');
+    const prepareService = require('../../src');
     let service;
 
     before('start service', async () => {
       const [filterReplies, filterRetweets] = filters;
 
-      service = new Social({
-        ...global.SERVICES,
+      service = await prepareService({
         notifier: {
           enabled: false,
         },
         twitter: {
-          ...global.SERVICES.twitter,
           stream_filters: {
             replies: filterReplies,
             retweets: filterRetweets,

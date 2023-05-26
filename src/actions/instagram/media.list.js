@@ -1,5 +1,5 @@
-const Errors = require('common-errors');
 const { ActionTransport } = require('@microfleet/plugin-router');
+const Errors = require('common-errors');
 const { collectionResponse, TYPE_INSTAGRAM_MEDIA } = require('../../utils/response');
 
 /**

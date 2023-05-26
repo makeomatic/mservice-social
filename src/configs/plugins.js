@@ -3,11 +3,11 @@ module.exports = {
     'validator',
     'logger',
     'router',
+    'router-hapi',
+    'router-amqp',
     'amqp',
     'hapi',
     'knex',
     'prometheus',
-    'router-amqp',
-    'router-hapi',
   ],
 };

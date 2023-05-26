@@ -3,7 +3,7 @@ const Chance = require('chance');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const sinon = require('sinon');
-const Social = require('../../src');
+const prepareSocial = require('../../src');
 
 const chance = new Chance();
 const http = request.defaults({
@@ -12,7 +12,7 @@ const http = request.defaults({
   resolveWithFullResponse: true,
   json: true,
 });
-const social = new Social({
+const config = {
   facebook: {
     enabled: true,
     syncMediaOnStart: false,
@@ -30,10 +30,16 @@ const social = new Social({
       },
     ],
   },
-});
+};
 
 describe('facebook.webhook', function testSuite() {
-  before('start up service', () => social.connect());
+  let social;
+
+  before('start up service', async () => {
+    social = await prepareSocial(config);
+    await social.connect();
+  });
+
   before('create feed', () => {
     const pageId = Date.now().toString();
     const params = {

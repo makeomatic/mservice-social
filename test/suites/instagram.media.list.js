@@ -2,7 +2,7 @@ const assert = require('assert');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const istagramMediaFactory = require('../fixtures/instagram/instagram-media');
-const Social = require('../../src');
+const prepareSocial = require('../../src');
 
 const accountId = Date.now().toString();
 const config = {
@@ -18,10 +18,14 @@ const http = request.defaults({
   json: true,
   method: 'post',
 });
-const service = new Social(config);
 
 describe('instagram.media.list', function testSuite() {
-  before('start up service', () => service.connect());
+  let service;
+
+  before('start up service', async () => {
+    service = await prepareSocial(config);
+    await service.connect();
+  });
 
   before('create instagram media', () => {
     const instagram = service.service('instagram');

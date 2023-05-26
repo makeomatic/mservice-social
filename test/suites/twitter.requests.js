@@ -8,18 +8,15 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
   [['retweet', 'reply', 'quote'], [TweetType.ORIGINAL]],
 ].forEach(([restrictedTypeNames, allowedTypes]) => {
   describe(`tweet requests: ${restrictedTypeNames.join(',')} `, function testSuite() {
-    const Social = require('../../src');
+    const prepareSocial = require('../../src');
     let service;
 
     before('start service', async () => {
-      service = new Social({
-        ...global.SERVICES,
+      service = await prepareSocial({
         notifier: {
           enabled: false,
-
         },
         twitter: {
-          ...global.SERVICES.twitter,
           requests: {
             restrictedTypes: [...restrictedTypeNames],
           },

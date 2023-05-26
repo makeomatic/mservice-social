@@ -1,9 +1,9 @@
-const merge = require('lodash/merge');
 const { Microfleet, ConnectorsTypes } = require('@microfleet/core');
 const Promise = require('bluebird');
 const { NotFoundError } = require('common-errors');
+const Deepmerge = require('@fastify/deepmerge');
 
-const conf = require('./config');
+const prepareStore = require('./config');
 const Feed = require('./services/feed');
 const Storage = require('./services/storage');
 const Twitter = require('./services/twitter/twitter');
@@ -11,16 +11,13 @@ const Facebook = require('./services/facebook');
 const Notifier = require('./services/notifier');
 const Instagram = require('./services/instagram');
 const addUpsert = require('./utils/knex/upsert');
+const k = require('./constants');
 
 const services = new WeakMap();
 
 class Social extends Microfleet {
-  static defaultConfig = conf.get('/', {
-    env: process.env.NODE_ENV,
-  });
-
-  constructor(config = {}) {
-    super(merge({}, Social.defaultConfig, config));
+  constructor(config) {
+    super(config);
 
     this.initServices();
     this.initKnex();
@@ -70,22 +67,22 @@ class Social extends Microfleet {
   }
 
   initStorage() {
-    this.service(Social.SERVICE_STORAGE, new Storage(this.knex));
+    this.service(k.SERVICE_STORAGE, new Storage(this.knex));
   }
 
   initFeed() {
     const { log } = this;
-    const storage = this.service(Social.SERVICE_STORAGE);
+    const storage = this.service(k.SERVICE_STORAGE);
     const feed = new Feed(log);
 
-    feed.service(Social.SERVICE_STORAGE, storage);
-    this.service(Social.SERVICE_FEED, feed);
+    feed.service(k.SERVICE_STORAGE, storage);
+    this.service(k.SERVICE_FEED, feed);
   }
 
   initFacebook() {
     const { config, log } = this;
-    const feed = this.service(Social.SERVICE_FEED);
-    const storage = this.service(Social.SERVICE_STORAGE);
+    const feed = this.service(k.SERVICE_FEED);
+    const storage = this.service(k.SERVICE_STORAGE);
     const facebook = new Facebook(this, config.facebook, storage, feed, log);
 
     if (config.facebook.subscribeOnStart) {
@@ -98,27 +95,27 @@ class Social extends Microfleet {
       this.addConnector(ConnectorsTypes.application, () => facebook.media.syncPagesHistory());
     }
 
-    this.service(Social.SERVICE_FACEBOOK, facebook);
-    feed.service(Social.SERVICE_FACEBOOK, facebook);
+    this.service(k.SERVICE_FACEBOOK, facebook);
+    feed.service(k.SERVICE_FACEBOOK, facebook);
   }
 
   initInstagram() {
     const { config, log } = this;
-    const feed = this.service(Social.SERVICE_FEED);
-    const storage = this.service(Social.SERVICE_STORAGE);
+    const feed = this.service(k.SERVICE_FEED);
+    const storage = this.service(k.SERVICE_STORAGE);
     const instagram = new Instagram(this, config.instagram, storage, log);
 
     this.addConnector(ConnectorsTypes.application, () => instagram.media().init(), 'instagram');
     this.addDestructor(ConnectorsTypes.migration, () => instagram.media().destroy(), 'instagram');
 
-    this.service(Social.SERVICE_INSTAGRAM, instagram);
-    feed.service(Social.SERVICE_INSTAGRAM, instagram);
+    this.service(k.SERVICE_INSTAGRAM, instagram);
+    feed.service(k.SERVICE_INSTAGRAM, instagram);
   }
 
   initTwitter() {
     const { config, log } = this;
-    const feed = this.service(Social.SERVICE_FEED);
-    const storage = this.service(Social.SERVICE_STORAGE);
+    const feed = this.service(k.SERVICE_FEED);
+    const storage = this.service(k.SERVICE_STORAGE);
     const twitter = new Twitter(this, config.twitter, storage, log);
 
     this.addConnector(ConnectorsTypes.application, () => twitter.init(), 'twitter');
@@ -126,25 +123,35 @@ class Social extends Microfleet {
     /* so that it stops before database is closed, but after transport is unavailable */
     this.addDestructor(ConnectorsTypes.migration, () => twitter.destroy(true), 'twitter');
 
-    this.service(Social.SERVICE_TWITTER, twitter);
-    feed.service(Social.SERVICE_TWITTER, twitter);
+    this.service(k.SERVICE_TWITTER, twitter);
+    feed.service(k.SERVICE_TWITTER, twitter);
   }
 
   initNotifier() {
     const { connect, close } = Notifier.connector(this);
 
     // need to start up before any application
-    this.addConnector(ConnectorsTypes.migration, connect, Notifier.SERVICE_NOTIFIER);
+    this.addConnector(ConnectorsTypes.migration, connect, 'notifier');
 
     // need to close right before shutdown to publish updates
     this.addDestructor(ConnectorsTypes.essential, close);
   }
 }
 
-Social.SERVICE_FACEBOOK = 'facebook';
-Social.SERVICE_FEED = 'feed';
-Social.SERVICE_INSTAGRAM = 'instagram';
-Social.SERVICE_STORAGE = 'storage';
-Social.SERVICE_TWITTER = 'twitter';
+const deepmerge = Deepmerge({
+  mergeArray(options) {
+    const { clone } = options;
+    return (target, source) => {
+      return clone(source);
+    };
+  },
+});
 
-module.exports = Social;
+module.exports = async function initSocial(opts = {}) {
+  const store = await prepareStore({ env: process.env.NODE_ENV });
+  const config = store.get('/');
+  const social = new Social(deepmerge(config, opts));
+  return social;
+};
+
+module.exports.Social = Social;

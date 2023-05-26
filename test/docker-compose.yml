@@ -5,18 +5,14 @@ services:
     depends_on:
       - redis-cluster
       - rabbitmq
-    image: makeomatic/ms-users:15.1.5
+    image: makeomatic/ms-users:15.11.1
     hostname: ms-users
     volumes:
       - ${PWD}/test/configs:/src/configs:ro
     environment:
-      NODE_ENV: 'production'
       NCONF_FILE_PATH: '["/src/configs/ms-users/config.js"]'
+      MS_USERS__LOGGER__DEFAULT_LOGGER: 'true'
       MS_USERS__INIT_ADMIN_ACCOUNTS_DELAY: '1'
-
-  postgres:
-    ports:
-      - "65432:5432"
 
   tester:
     depends_on:

@@ -5,33 +5,33 @@ const { StatusCodeError } = require('request-promise/errors');
 const assert = require('assert');
 const sinon = require('sinon');
 const { mockPageFeeds, makeRequest } = require('../mocks/facebook/page-feeds');
-const Social = require('../../src');
+const prepareSocial = require('../../src');
+const { SERVICE_STORAGE } = require('../../src/constants');
 
 const chance = new Chance();
 
 describe('service', function suite() {
   describe('facebook', function facebookSuite() {
-    before('create feed', () => {
-      const social = new Social();
+    before('create feed', async () => {
+      const social = await prepareSocial();
 
-      return social
-        .connect()
-        .then(() => social
-          .service('storage')
-          .feeds()
-          .save({
-            internal: chance.email(),
-            network: 'facebook',
-            network_id: '1',
-            meta: JSON.stringify({
-              id: '1',
-              name: 'City',
-              tasks: [],
-              token: 'token1',
-              category: 'News',
-            }),
-          }))
-        .then(() => social
+      await social.connect();
+
+      try {
+        await social.service('storage').feeds().save({
+          internal: chance.email(),
+          network: 'facebook',
+          network_id: '1',
+          meta: JSON.stringify({
+            id: '1',
+            name: 'City',
+            tasks: [],
+            token: 'token1',
+            category: 'News',
+          }),
+        });
+
+        await social
           .service('storage')
           .facebookMedia()
           .save({
@@ -43,11 +43,14 @@ describe('service', function suite() {
               message: 'Post #1',
               created_time: '2016-11-02T20:56:37+0000',
             }),
-          }))
-        .then(() => social.close());
+          });
+      } finally {
+        await social.close();
+      }
     });
-    after('clean up feeds', () => {
-      const social = new Social();
+
+    after('clean up feeds', async () => {
+      const social = await prepareSocial();
 
       return social
         .connect()
@@ -56,9 +59,9 @@ describe('service', function suite() {
         .then(() => social.close());
     });
 
-    it('should be able to synchronize media on start up', () => {
+    it('should be able to synchronize media on start up', async () => {
       const mock = sinon.mock(request);
-      const social = new Social({
+      const social = await prepareSocial({
         facebook: {
           enabled: true,
           syncMediaOnStart: true,
@@ -88,9 +91,9 @@ describe('service', function suite() {
         .finally(() => social.close());
     });
 
-    it('should be able to create subscriptions on start up', () => {
+    it('should be able to create subscriptions on start up', async () => {
       const mock = sinon.mock(request);
-      const social = new Social({
+      const social = await prepareSocial({
         facebook: {
           enabled: true,
           syncMediaOnStart: false,
@@ -138,7 +141,7 @@ describe('service', function suite() {
         .rejects(new StatusCodeError(400, { error: { code: 190 } }))
         .usingPromise(Promise);
 
-      const social = new Social({
+      const social = await prepareSocial({
         facebook: {
           enabled: true,
           syncMediaOnStart: true,
@@ -153,7 +156,7 @@ describe('service', function suite() {
       await social.connect();
 
       const { invalid } = await social
-        .service(Social.SERVICE_STORAGE)
+        .service(SERVICE_STORAGE)
         .feeds()
         .getByNetworkId('facebook', '1');
 
@@ -167,7 +170,7 @@ describe('service', function suite() {
 
     it('should not sync `invalid` feeds', async () => {
       const stub = sinon.stub(request, 'get');
-      const social = new Social({
+      const social = await prepareSocial({
         facebook: {
           enabled: true,
           syncMediaOnStart: true,

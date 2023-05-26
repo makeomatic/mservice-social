@@ -45,7 +45,7 @@ class Facebook {
     const timeout = retry.createTimeout(this.attempt, Facebook.timeoutOptions);
 
     // notify of throttling error
-    self.logger.warn('Trying to repeat request after %d ms because', timeout, response.error.error);
+    self.logger.warn('Trying to repeat request after %d ms because of %j', timeout, response.error.error);
 
     return Promise
       .bind(self, [this.options, this.accessToken, this.attempt + 1])

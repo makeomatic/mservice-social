@@ -1,7 +1,7 @@
 const assert = require('assert');
 const Promise = require('bluebird');
 const request = require('request-promise');
-const Social = require('../../src');
+const prepareSocial = require('../../src');
 
 const pageId = Date.now().toString();
 const config = {
@@ -18,7 +18,6 @@ const http = request.defaults({
   json: true,
   method: 'post',
 });
-const service = new Social(config);
 
 function FacebookMediaFactory(params) {
   return {
@@ -33,7 +32,12 @@ function FacebookMediaFactory(params) {
 }
 
 describe('facebook.media.list', function testSuite() {
-  before('start up service', () => service.connect());
+  let service;
+
+  before('start up service', async () => {
+    service = await prepareSocial(config);
+    await service.connect();
+  });
 
   before('create facebook media', () => {
     const facebook = service.service('facebook');
@@ -50,28 +54,25 @@ describe('facebook.media.list', function testSuite() {
   after('shutdown service', () => service.close());
 
   describe('amqp', () => {
-    it('should be able to get a list of media ordered by desc', () => {
+    it('should be able to get a list of media ordered by desc', async () => {
       const params = { filter: { pageId } };
 
-      return service.amqp
-        .publishAndWait('social.facebook.media.list', params)
-        .then(({ meta, data }) => {
-          const { count, cursor } = meta;
-          const [first, second, third] = data;
+      const { meta, data } = await service.amqp
+        .publishAndWait('social.facebook.media.list', params);
 
-          assert.equal(count, 3);
-          assert.equal(cursor, '2016-10-01T20:00:00.000Z');
-          assert.equal(data.length, 3);
-          assert.equal(first.id, '1111111111111111111');
-          assert.equal(first.type, 'facebookMedia');
-          assert.equal(first.attributes.meta.picture, 'http://i0.wp.com/peopledotcom.files.'
-            + 'wordpress.com/2016/11/carrie-fisher-2.jpg?crop=111px%2C0px%2C1777px%2C1333px'
-            + '&resize=660%2C495&ssl=1');
-          assert.equal(second.id, '1111111111111111113');
-          assert.equal(third.id, '1111111111111111112');
+      const { count, cursor } = meta;
+      const [first, second, third] = data;
 
-          return null;
-        });
+      assert.equal(count, 3);
+      assert.equal(cursor, '2016-10-01T20:00:00.000Z');
+      assert.equal(data.length, 3);
+      assert.equal(first.id, '1111111111111111111');
+      assert.equal(first.type, 'facebookMedia');
+      assert.equal(first.attributes.meta.picture, 'http://i0.wp.com/peopledotcom.files.'
+        + 'wordpress.com/2016/11/carrie-fisher-2.jpg?crop=111px%2C0px%2C1777px%2C1333px'
+        + '&resize=660%2C495&ssl=1');
+      assert.equal(second.id, '1111111111111111113');
+      assert.equal(third.id, '1111111111111111112');
     });
 
     it('should be able to get a list of media ordered by asc', () => {

@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const clone = require('lodash/clone');
 const omit = require('lodash/omit');
 
@@ -40,9 +39,10 @@ async function register(data) {
   // return amount of accounts
   logger.info(`Saved ${accounts.length} accounts`);
 
-  process.nextTick(async () => {
+  (async () => {
     try {
       const results = await Promise.allSettled(syncAccountJobs.map((job) => job()));
+
       for (const [idx, result] of results.entries()) {
         if (result.status !== 'fulfilled') {
           logger.warn({ err: result.reason, account: accounts[idx] }, 'failed to sync');
@@ -54,7 +54,7 @@ async function register(data) {
     } catch (e) {
       logger.error({ err: e }, 'failed to perform async op');
     }
-  });
+  })();
 
   return accounts;
 }

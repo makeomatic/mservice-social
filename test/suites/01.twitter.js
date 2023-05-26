@@ -4,9 +4,9 @@ const sinon = require('sinon');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
 describe('twitter', function testSuite() {
-  this.retries(20);
+  // this.retries(5);
 
-  const Social = require('../../src');
+  const prepareSocial = require('../../src');
   const Notifier = require('../../src/services/notifier');
   const request = require('../helpers/request');
 
@@ -97,14 +97,13 @@ describe('twitter', function testSuite() {
   let broadcastSpy;
 
   before('start service', async () => {
-    service = new Social(global.SERVICES);
+    service = await prepareSocial();
     await service.connect();
   });
 
   before('init spy for amqp.publish', async () => {
-    const { amqpConfig } = service.service(Notifier.SERVICE_NOTIFIER);
     const listenerConfig = {
-      ...amqpConfig,
+      ...Notifier.getInstance(service).amqpConfig,
       listen: '*',
       queue: 'test',
       exchangeArgs: {
@@ -173,7 +172,9 @@ describe('twitter', function testSuite() {
     );
   });
 
-  it('should have collected some tweets', async () => {
+  it('should have collected some tweets', async function retryTweet() {
+    this.retries(5);
+
     await Promise.delay(1500);
     const response = await request(uri.read, payload.read);
 
@@ -190,8 +191,8 @@ describe('twitter', function testSuite() {
     }));
   });
 
-  it('should have collected some tweets', async () => {
-    await Promise.delay(1500);
+  it('should have collected some tweets #2', async function retryTweet() {
+    this.retries(5);
     const response = await request(uri.read, payload.readMultiple);
 
     const { body, statusCode } = response;
@@ -299,7 +300,7 @@ describe('twitter', function testSuite() {
     assert(meta.account_id, '12');
     assert(meta.account);
     assert(meta.account_name);
-    assert(meta.account_verified);
+    assert.equal(meta.account_verified, false); // NOTE: status is gone now in 1.1
     assert(meta.retweet_count);
     assert(meta.favorite_count);
   });

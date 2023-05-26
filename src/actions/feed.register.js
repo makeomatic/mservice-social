@@ -1,6 +1,6 @@
 const { ActionTransport } = require('@microfleet/plugin-router');
 const { collectionResponse, TYPE_FEED } = require('../utils/response');
-const Social = require('..');
+const { SERVICE_FEED } = require('../constants');
 
 /**
  * @api {http} <prefix>.feed.register Register new feed source
@@ -11,7 +11,7 @@ const Social = require('..');
  */
 function feedRegisterAction({ params }) {
   return this
-    .service(Social.SERVICE_FEED)
+    .service(SERVICE_FEED)
     .register(params)
     .then((feeds) => collectionResponse(feeds, TYPE_FEED));
 }
