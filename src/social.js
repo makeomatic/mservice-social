@@ -14,6 +14,11 @@ const addUpsert = require('./utils/knex/upsert');
 
 const services = new WeakMap();
 
+if (process.env.INTERCEPT_TWITTER_API) {
+  const { interceptTwitterApi } = require('./services/twitter/intercepts');
+  interceptTwitterApi();
+}
+
 class Social extends Microfleet {
   static defaultConfig = conf.get('/', {
     env: process.env.NODE_ENV,
