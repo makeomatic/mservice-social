@@ -124,13 +124,6 @@ describe('twitter', function testSuite() {
   after('cleanup feeds', () => service.knex('feeds').delete());
 
   it('should return error if request to register is not valid', async () => {
-    // try {
-    //   const response = service.amqp.publishAndWait(uri.register, payload.registerFail)
-    //   console.log(response)
-    // } catch(err) {
-    //   console.log(err)
-    //   throw err
-    // }
     await assert.rejects(service.amqp.publishAndWait(uri.register, payload.registerFail), {
       name: 'HttpStatusError',
       statusCode: 400,
