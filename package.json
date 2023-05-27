@@ -10,7 +10,6 @@
     "docker-release": "mdep docker release",
     "lint": "eslint . --ext .json --ext .js",
     "semantic-release": "semantic-release",
-    "release": "pnpm --freze-lockfile && pnpm semantic-release",
     "start": "mfleet",
     "prepare": "mdep install || true"
   },
