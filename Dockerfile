@@ -25,3 +25,5 @@ COPY --chown=node:node . /src
 RUN pnpm install --prod --offline
 
 EXPOSE 3000
+
+CMD [ "./node_modules/.bin/mfleet" ]

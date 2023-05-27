@@ -3,4 +3,5 @@ require('bluebird').config({
 });
 const Service = require('./social');
 
-module.exports = Service;
+exports = module.exports = Service;
+exports.default = Service;
