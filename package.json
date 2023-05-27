@@ -2,7 +2,7 @@
   "name": "mservice-social",
   "description": "mservice-social",
   "main": "./src/index.js",
-  "version": "6.5.0",
+  "version": "8.0.0",
   "scripts": {
     "test:e2e": "mdep test run",
     "test": "pnpm lint && pnpm test:e2e",

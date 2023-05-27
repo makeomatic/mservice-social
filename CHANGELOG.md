@@ -1,3 +1,15 @@
+# [8.0.0](https://github.com/makeomatic/mservice-social/compare/v7.3.8...v8.0.0) (2023-05-27)
+
+
+### Features
+
+* remove stream listener, run sync on a loop ([ab631e9](https://github.com/makeomatic/mservice-social/commit/ab631e9acf0a4dc3fae6d6dcaebf7df22b013a87))
+
+
+### BREAKING CHANGES
+
+* updated dependencies, removed streaming as it's no longer supported on v1.1
+
 ## [7.3.8](https://github.com/makeomatic/mservice-social/compare/v7.3.7...v7.3.8) (2023-03-24)
 
 
