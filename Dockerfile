@@ -5,13 +5,13 @@ ENV NCONF_NAMESPACE=MS_SOCIAL \
 
 WORKDIR /src
 
-COPY --chown=node:node package.json pnpm-lock.yaml ./
+COPY --chown=node:node pnpm-lock.yaml ./
 RUN \
   apk --update upgrade \
   && apk add ca-certificates openssl --virtual .buildDeps wget git g++ make python3 linux-headers \
   && update-ca-certificates \
   && chown node:node /src \
-  && su -l node -c "cd /src && pnpm install --prod --frozen-lockfile" \
+  && su -l node -c "cd /src && pnpm fetch --prod" \
   && apk del .buildDeps \
   && rm -rf \
     /tmp/* \
@@ -22,5 +22,6 @@ RUN \
 
 USER node
 COPY --chown=node:node . /src
+RUN pnpm install --prod --offline
 
 EXPOSE 3000
