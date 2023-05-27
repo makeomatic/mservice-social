@@ -1,3 +1,10 @@
+## [8.0.2](https://github.com/makeomatic/mservice-social/compare/v8.0.1...v8.0.2) (2023-05-27)
+
+
+### Bug Fixes
+
+* export default for new loader ([4fcced7](https://github.com/makeomatic/mservice-social/commit/4fcced76d0e4f7b86eda7a472f987557d34fc7d0))
+
 ## [8.0.1](https://github.com/makeomatic/mservice-social/compare/v8.0.0...v8.0.1) (2023-05-27)
 
 
