@@ -51,4 +51,4 @@ blocks:
           - echo '{"experimental":true}' > /etc/docker/daemon.json
           - sudo service docker restart
           - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
-          - pnpm run semantic-release
+          - pnpm run release

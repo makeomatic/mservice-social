@@ -180,6 +180,9 @@ devDependencies:
   rimraf:
     specifier: ^5.0.1
     version: 5.0.1
+  semantic-release:
+    specifier: ^21.0.2
+    version: 21.0.2
   sinon:
     specifier: ^15.1.0
     version: 15.1.0
