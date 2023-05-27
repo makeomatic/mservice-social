@@ -1,3 +1,10 @@
+## [8.0.1](https://github.com/makeomatic/mservice-social/compare/v8.0.0...v8.0.1) (2023-05-27)
+
+
+### Bug Fixes
+
+* files in docker image ([30001ef](https://github.com/makeomatic/mservice-social/commit/30001ef320ccd902bb051b7c606a3b8e6caa2d67))
+
 # [8.0.0](https://github.com/makeomatic/mservice-social/compare/v7.3.8...v8.0.0) (2023-05-27)
 
 
