@@ -21,6 +21,6 @@ RUN \
     /var/cache/apk/*
 
 USER node
-COPY --chown=node:node ./bin ./src ./schemas /src/
+COPY --chown=node:node . /src
 
 EXPOSE 3000

@@ -48,3 +48,6 @@ docker-release.sh
 .gitignore
 .npmignore
 .nyc_output
+.husky
+.semaphore
+lib
