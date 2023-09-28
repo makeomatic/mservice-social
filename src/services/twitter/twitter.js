@@ -17,6 +17,8 @@ const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
 };
 const { kPublishEvent } = require('../notifier');
+const nitter = require('./nitter/nitter');
+const assert = require('assert');
 
 const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
 
@@ -241,8 +243,10 @@ class Twitter {
     this.syncPromise = null;
     this.resyncTimer = null;
 
-    this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
-    this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
+    // this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
+    // this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
+    this.fetchTweets = nitter.fetchTweets;
+    this.fetchById = nitter.fetchById;
 
     // cheaper than bind
     this.onData = (notify) => (json) => this._onData(json, notify);
@@ -459,30 +463,63 @@ class Twitter {
     // calculate notification on sync
     const notify = this.shouldNotifyFor('data', 'sync');
 
-    const fetchedTweets = async (tweet, page = 1) => {
-      const tweets = await this.fetchTweets(
-        cursor || Twitter.cursor(tweet, order),
-        account,
-        order === 'asc' ? 'max_id' : 'since_id'
-      );
+    // const fetchedTweets = async (tweet, page = 1) => {
+    //   const tweets = await this.fetchTweets(
+    //     cursor || Twitter.cursor(tweet, order),
+    //     account,
+    //     order === 'asc' ? 'max_id' : 'since_id'
+    //   );
+    //
+    //   const { length } = tweets;
+    //   this.logger.debug('fetched %d tweets', length);
+    //
+    //   if (length === 0 || page >= maxPages) {
+    //     return;
+    //   }
+    //
+    //   const index = order === 'asc' ? length - 1 : 0;
+    //   const oldestTweet = await Promise
+    //     .map(tweets, this.onData(notify))
+    //     .get(index); // TODO: ensure that we are picking a tweet
+    //
+    //   await fetchedTweets(oldestTweet, page + 1);
+    // };
 
-      const { length } = tweets;
-      this.logger.debug('fetched %d tweets', length);
+    const loader = async (lastKnownTweet) => {
+      let looped = true;
+      let pages = 1;
+      let count = 0;
+      let cursor = null;
 
-      if (length === 0 || page >= maxPages) {
-        return;
+      while(looped) {
+        const { tweets, cursorTop, cursorBottom } = await nitter.fetchTweets(cursor, account, order);
+
+        assert(cursorTop);
+        assert(cursorBottom);
+        assert(tweets !== null);
+
+        if (lastKnownTweet) {
+          for (const tweet of tweets) {
+            if ( lastKnownTweet.id_str === tweet.id_str ) {
+              looped = false;
+              break;
+            }
+          }
+        }
+
+        await Promise.map(tweets, this.onData(notify));
+
+        looped = looped && pages < maxPages && tweets.length > 0;
+        cursor = cursorBottom;
+        count = count + tweets.length;
+        if (looped) {
+          pages++;
+        }
       }
-
-      const index = order === 'asc' ? length - 1 : 0;
-      const oldestTweet = await Promise
-        .map(tweets, this.onData(notify))
-        .get(index); // TODO: ensure that we are picking a tweet
-
-      await fetchedTweets(oldestTweet, page + 1);
     };
 
     // recursively syncs account
-    const [initialTweet] = await twitterStatuses.list({
+    const [lastKnownTweet] = await twitterStatuses.list({
       filter: {
         page: 0,
         account,
@@ -491,8 +528,9 @@ class Twitter {
       },
     });
 
-    this.logger.info({ initialTweet: { id_str: initialTweet?.id_str, id: initialTweet?.id }, account }, 'selected last tweet from account');
-    await fetchedTweets(initialTweet);
+    this.logger.info({ lastKnownTweet: { id_str: lastKnownTweet?.id_str, id: lastKnownTweet?.id }, account }, 'selected last tweet from account');
+    // await fetchedTweets(initialTweet);
+    await loader(lastKnownTweet)
   }
 
   fillUserIds(original) {

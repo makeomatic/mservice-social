@@ -1,6 +1,30 @@
 version: '3'
 
 services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  nitter-redis:
+    image: redis:latest
+
+  nitter:
+    image: kristobalus/nitter:1.0.0
+    platform: "linux/amd64"
+    entrypoint: |
+      /bin/sh -c '
+        cp /config/nitter.conf /src/nitter.conf
+        cp /config/guest_accounts.json /src/guest_accounts.json
+        ./nitter
+      '
+    ports:
+      - "8080:8080"
+    depends_on:
+      - nitter-redis
+    volumes:
+      - ./configs/nitter:/config
+
   ms-users:
     depends_on:
       - redis-cluster
