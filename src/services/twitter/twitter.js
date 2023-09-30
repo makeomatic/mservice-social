@@ -443,6 +443,9 @@ class Twitter {
   async syncTweet(tweetId) {
     try {
       const data = await this.fetchById(tweetId);
+
+      this.logger.debug({ data }, 'tweet fetchById');
+
       if (Twitter.isTweet(data)) {
         // inserted directly using api/sync
         const tweetType = getTweetType(data);

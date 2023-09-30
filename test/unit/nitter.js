@@ -54,7 +54,7 @@ describe('Nitter', function Nitter() {
     const { id_str } = tweetFromList
 
     const tweetById = await nitter.fetchById(id_str)
-    console.log(tweetById)
+    console.log('seek', id_str, 'result', tweetById)
     assert(tweetById.id_str === id_str)
     assert(tweetById.full_text === tweetFromList.full_text)
     assert(tweetById.text === tweetFromList.text)

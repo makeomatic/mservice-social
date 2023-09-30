@@ -23,7 +23,7 @@ services:
     depends_on:
       - nitter-redis
     volumes:
-      - ./configs/nitter:/config
+      - ${PWD}/test/configs/nitter:/config:ro
 
   ms-users:
     depends_on:
@@ -42,9 +42,11 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+      - nitter
     env_file:
       - ${PWD}/.env
     environment:
       NODE_ENV: "test"
+      NITTER_URL: 'http://nitter:8080'
       DEBUG: ${DEBUG}
       NCONF_NAMESPACE: MS_SOCIAL

@@ -4,8 +4,51 @@
 // https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/object-model/tweet
 const axios = require('axios');
 const _ = require('lodash');
+const { HttpStatusError } = require("@microfleet/validation");
 
-function getTweetFromGraphQL(data) {
+
+function throwErrorIfFound(data) {
+  /*
+      {
+        "errors": [
+            {
+                "message": "_Missing: No status found with that ID.",
+                "locations": [
+                    {
+                        "line": 5,
+                        "column": 3
+                    }
+                ],
+                "path": [
+                    "threaded_conversation_with_injections_v2"
+                ],
+                "extensions": {
+                    "name": "GenericError",
+                    "source": "Server",
+                    "code": 144,
+                    "kind": "NonFatal",
+                    "tracing": {
+                        "trace_id": "66958571638a8f07"
+                    }
+                },
+                "code": 144,
+                "kind": "NonFatal",
+                "name": "GenericError",
+                "source": "Server",
+                "tracing": {
+                    "trace_id": "66958571638a8f07"
+                }
+            }
+        ],
+        "data": {}
+    }
+   */
+  if ( data.errors ) {
+    throw data.errors.map(error => ({ code: error.code, message: error.message }))
+  }
+}
+
+function getTweetFromGraphQL(data, id) {
   const list = _.get(data, "data.threaded_conversation_with_injections_v2.instructions")
 
   for(const instruction of list) {
@@ -16,17 +59,20 @@ function getTweetFromGraphQL(data) {
           const itemType = _.get(entry, 'content.itemContent.itemType');
           if ( itemType === 'TimelineTweet' ) {
             const typename = _.get(entry, 'content.itemContent.tweet_results.result.__typename');
-            if ( typename === "Tweet" ){
-              const legacy = _.get(entry, 'content.itemContent.tweet_results.result.legacy');
-              if ( legacy ) {
-                const user = _.get(entry, 'content.itemContent.tweet_results.result.core.user_results.result.legacy');
-                user.id_str = _.get(entry, 'content.itemContent.tweet_results.result.core.user_results.result.rest_id');
-                user.id = parseInt(user.id_str);
-                return {
-                  ...legacy,
-                  user,
-                  text: legacy.full_text,
-                };
+            const rest_id = _.get(entry, 'content.itemContent.tweet_results.result.rest_id');
+            if ( rest_id === id ) {
+              if ( typename === "Tweet" ){
+                const legacy = _.get(entry, 'content.itemContent.tweet_results.result.legacy');
+                if ( legacy ) {
+                  const user = _.get(entry, 'content.itemContent.tweet_results.result.core.user_results.result.legacy');
+                  user.id_str = _.get(entry, 'content.itemContent.tweet_results.result.core.user_results.result.rest_id');
+                  user.id = parseInt(user.id_str);
+                  return {
+                    ...legacy,
+                    user,
+                    text: legacy.full_text,
+                  };
+                }
               }
             }
           }
@@ -89,6 +135,7 @@ function getTweetsFromGraphQL(data) {
   return { tweets, cursorTop, cursorBottom }
 }
 
+
 async function fetchById(id) {
 
   const config = {
@@ -98,7 +145,9 @@ async function fetchById(id) {
 
   const response = await axios.request(config);
 
-  return getTweetFromGraphQL(response.data)
+  throwErrorIfFound(response.data);
+
+  return getTweetFromGraphQL(response.data, id);
 }
 
 /*
@@ -120,6 +169,8 @@ async function fetchTweets(cursor, account, order) {
 
   const response = await axios.request(config);
 
+  throwErrorIfFound(response.data);
+
   return getTweetsFromGraphQL(response.data);
 }
 
@@ -131,6 +182,8 @@ async function fetchUserId(username) {
   }
 
   const response = await axios.request(config);
+
+  throwErrorIfFound(response.data);
 
   const { id } = response.data;
 
