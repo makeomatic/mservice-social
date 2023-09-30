@@ -2,70 +2,35 @@
 // https://developer.twitter.com/en/docs/twitter-api/migrate/data-formats/standard-v1-1-to-v2
 // https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/overview
 // https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/object-model/tweet
-const axios = require('axios');
-const _ = require('lodash');
-const { HttpStatusError } = require("@microfleet/validation");
+// noinspection JSValidateTypes
 
+const undici = require('undici');
 
 function throwErrorIfFound(data) {
-  /*
-      {
-        "errors": [
-            {
-                "message": "_Missing: No status found with that ID.",
-                "locations": [
-                    {
-                        "line": 5,
-                        "column": 3
-                    }
-                ],
-                "path": [
-                    "threaded_conversation_with_injections_v2"
-                ],
-                "extensions": {
-                    "name": "GenericError",
-                    "source": "Server",
-                    "code": 144,
-                    "kind": "NonFatal",
-                    "tracing": {
-                        "trace_id": "66958571638a8f07"
-                    }
-                },
-                "code": 144,
-                "kind": "NonFatal",
-                "name": "GenericError",
-                "source": "Server",
-                "tracing": {
-                    "trace_id": "66958571638a8f07"
-                }
-            }
-        ],
-        "data": {}
-    }
-   */
   if ( data.errors ) {
     throw data.errors.map(error => ({ code: error.code, message: error.message }))
   }
 }
 
 function getTweetFromGraphQL(data, id) {
-  const list = _.get(data, "data.threaded_conversation_with_injections_v2.instructions")
+
+  const list = data?.data?.threaded_conversation_with_injections_v2?.instructions ?? [];
 
   for(const instruction of list) {
     if ( instruction.type === 'TimelineAddEntries' ) {
       for(const entry of instruction.entries){
-        const entryType = _.get(entry, 'content.entryType');
+        const entryType = entry.content?.entryType;
         if ( entryType === 'TimelineTimelineItem' ) {
-          const itemType = _.get(entry, 'content.itemContent.itemType');
+          const itemType = entry.content?.itemContent?.itemType;
           if ( itemType === 'TimelineTweet' ) {
-            const typename = _.get(entry, 'content.itemContent.tweet_results.result.__typename');
-            const rest_id = _.get(entry, 'content.itemContent.tweet_results.result.rest_id');
+            const typename = entry.content?.itemContent?.tweet_results?.result?.__typename;
+            const rest_id = entry.content?.itemContent?.tweet_results?.result?.rest_id;
             if ( rest_id === id ) {
               if ( typename === "Tweet" ){
-                const legacy = _.get(entry, 'content.itemContent.tweet_results.result.legacy');
+                const legacy = entry.content?.itemContent?.tweet_results?.result?.legacy;
                 if ( legacy ) {
-                  const user = _.get(entry, 'content.itemContent.tweet_results.result.core.user_results.result.legacy');
-                  user.id_str = _.get(entry, 'content.itemContent.tweet_results.result.core.user_results.result.rest_id');
+                  const user = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result?.legacy;
+                  user.id_str = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result.rest_id;
                   user.id = parseInt(user.id_str);
                   return {
                     ...legacy,
@@ -87,7 +52,7 @@ function getTweetFromGraphQL(data, id) {
 
 function getTweetsFromGraphQL(data) {
 
-  const list = _.get(data, 'data.user_result.result.timeline_response.timeline.instructions', []);
+  const list = data?.data?.user_result?.result?.timeline_response?.timeline?.instructions ?? [];
 
   const tweets = [];
   let cursorTop
@@ -96,30 +61,32 @@ function getTweetsFromGraphQL(data) {
   for (const item of list) {
     if (item.__typename === 'TimelineAddEntries') {
       for (const entry of item.entries) {
-        const typename = _.get(entry, 'content.__typename');
+        const typename = entry.content?.__typename;
 
         if (typename === 'TimelineTimelineItem') {
-          const tweet = _.get(entry, 'content.content.tweetResult.result');
+          const tweet = entry.content?.content?.tweetResult?.result;
 
           if (tweet?.__typename === 'Tweet') {
             const { rest_id, legacy } = tweet;
 
-            const user = _.get(tweet, 'core.user_result.result.legacy');
-            user.id_str = _.get(tweet, 'core.user_result.result.rest_id');
-            user.id = parseInt(user.id_str);
+            const user = tweet.core?.user_result?.result?.legacy;
+            if ( user ) {
+              user.id_str = tweet.core?.user_result?.result.rest_id;
+              user.id = parseInt(user.id_str);
+            }
 
             const outletTweet = {
               ...legacy,
               id_str: rest_id,
               text: legacy.full_text,
-              user
+              ...( user ? { user } : {})
             };
 
             tweets.push(outletTweet)
           }
         } else if (typename === 'TimelineTimelineCursor') {
-          const cursorType = _.get(entry, 'content.cursorType');
-          const value = _.get(entry, 'content.value');
+          const cursorType = entry.content?.cursorType;
+          const value = entry.content?.value;
 
           if ( cursorType === "Top" ) {
             cursorTop = value
@@ -135,6 +102,26 @@ function getTweetsFromGraphQL(data) {
   return { tweets, cursorTop, cursorBottom }
 }
 
+async function request(config) {
+
+  let { url, params } = config
+
+  if ( params ) {
+    const query = new URLSearchParams(params);
+    url = `${url}?${query}`;
+  }
+
+  const { body, statusCode } = await undici.request(url);
+
+  if (statusCode === 200) {
+    return {
+      statusCode,
+      data: await body.json()
+    };
+  } else {
+    throw new Error(`Request failed with status code: ${statusCode}`);
+  }
+}
 
 async function fetchById(id) {
 
@@ -143,7 +130,7 @@ async function fetchById(id) {
     url: process.env.NITTER_URL + '/api/tweet/' + id,
   }
 
-  const response = await axios.request(config);
+  const response = await request(config);
 
   throwErrorIfFound(response.data);
 
@@ -167,7 +154,7 @@ async function fetchTweets(cursor, account, order) {
     }
   }
 
-  const response = await axios.request(config);
+  const response = await request(config);
 
   throwErrorIfFound(response.data);
 
@@ -181,7 +168,7 @@ async function fetchUserId(username) {
     url: process.env.NITTER_URL + '/api/user/' + username
   }
 
-  const response = await axios.request(config);
+  const response = await request(config);
 
   throwErrorIfFound(response.data);
 

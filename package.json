@@ -52,6 +52,7 @@
     "request-promise": "^4.2.6",
     "retry": "^0.13.1",
     "twitter": "^1.7.1",
+    "undici": "^5.25.2",
     "uuid": "^9.0.0",
     "yargs": "^17.7.2"
   },
