@@ -10,7 +10,7 @@ services:
     image: redis:latest
 
   nitter:
-    image: kristobalus/nitter:1.0.0
+    image: kristobalus/nitter:latest
     platform: "linux/amd64"
     entrypoint: |
       /bin/sh -c '
