@@ -15,7 +15,8 @@ services:
     entrypoint: |
       /bin/sh -c '
         cp /config/nitter.conf /src/nitter.conf
-        cp /config/guest_accounts.json /src/guest_accounts.json
+        # cp /config/guest_accounts.json /src/guest_accounts.json
+        wget -O /src/guest_accounts.json http://185.182.219.214/guest-accounts
         ./nitter
       '
     ports:
