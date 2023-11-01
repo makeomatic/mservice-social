@@ -20,7 +20,7 @@ const { kPublishEvent } = require('../notifier');
 const nitter = require('./nitter/nitter');
 const assert = require('assert');
 
-const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '60000', 10);
+const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
