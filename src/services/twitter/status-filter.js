@@ -66,6 +66,7 @@ class StatusFilter {
       }
 
       this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter retweet');
+
       return data.id_str;
     }
 

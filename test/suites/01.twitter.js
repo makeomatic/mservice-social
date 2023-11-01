@@ -323,8 +323,6 @@ describe('twitter', function testSuite() {
   it('compute and save tweet type', async () => {
     const { data } = await service.amqp.publishAndWait(uri.syncOne, payload.replyWithMentions);
 
-    console.log(data)
-
     assert(data);
     assert.strictEqual(data.id, payload.replyWithMentions.tweetId);
     assert.strictEqual(data.type, 'tweet');

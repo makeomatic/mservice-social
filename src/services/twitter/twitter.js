@@ -20,7 +20,7 @@ const { kPublishEvent } = require('../notifier');
 const nitter = require('./nitter/nitter');
 const assert = require('assert');
 
-const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
+const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '60000', 10);
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
@@ -377,7 +377,7 @@ class Twitter {
     if (directlyInserted) {
       status.explicit = true;
     }
-    logger.debug({ status }, 'saving serialized status');
+    logger.debug({ status, tweet, data }, 'saving serialized status');
 
     return this.storage
       .twitterStatuses()
@@ -518,6 +518,8 @@ class Twitter {
         if (looped) {
           pages++;
         }
+
+        // this.logger.debug({ looped, pages, cursor, count, account }, 'tweet looping');
       }
     };
 

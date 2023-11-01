@@ -12,6 +12,45 @@ function throwErrorIfFound(data) {
   }
 }
 
+function setInReplyTo(legacy)  {
+  if ( legacy.in_reply_to_status_id_str ) {
+    legacy.in_reply_to_status_id = parseInt(legacy.in_reply_to_status_id_str)
+  }
+  if ( legacy.in_reply_to_user_id_str ) {
+    legacy.in_reply_to_user_id = parseInt(legacy.in_reply_to_user_id_str)
+  }
+}
+
+function setRetweetedStatus(legacy) {
+  const retweet = legacy.retweeted_status_result?.result?.legacy
+  if ( retweet ) {
+    const retweetId = legacy.retweeted_status_result?.result?.rest_id
+
+    let user = legacy.retweeted_status_result?.result?.core?.user_results?.result?.legacy;
+    if ( user ) {
+      user.id_str = legacy.retweeted_status_result?.result?.core?.user_results?.result.rest_id;
+      user.id = parseInt(user.id_str);
+    }
+
+    if (!user) {
+      user = legacy.retweeted_status_result?.result?.core?.user_result?.result?.legacy;
+      if (user ) {
+        user.id_str = legacy.retweeted_status_result?.result?.core?.user_result?.result?.rest_id;
+        user.id = parseInt(user.id_str);
+      }
+    }
+
+    if (user) {
+      legacy.retweeted_status = {
+        ...retweet,
+        id: parseInt(retweetId),
+        id_str: retweetId,
+        user
+      }
+    }
+  }
+}
+
 function getTweetFromGraphQL(data, id) {
 
   const list = data?.data?.threaded_conversation_with_injections_v2?.instructions ?? [];
@@ -29,14 +68,20 @@ function getTweetFromGraphQL(data, id) {
               if ( typename === "Tweet" ){
                 const legacy = entry.content?.itemContent?.tweet_results?.result?.legacy;
                 if ( legacy ) {
+                  setRetweetedStatus(legacy)
+                  setInReplyTo(legacy)
+
                   const user = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result?.legacy;
                   user.id_str = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result.rest_id;
                   user.id = parseInt(user.id_str);
+
                   return {
                     ...legacy,
+                    id: parseInt(rest_id),
+                    id_str: rest_id,
                     user,
-                    text: legacy.full_text,
-                  };
+                    text: legacy.full_text
+                  }
                 }
               }
             }
@@ -70,16 +115,18 @@ function getTweetsFromGraphQL(data) {
             const { rest_id, legacy } = tweet;
 
             const user = tweet.core?.user_result?.result?.legacy;
-            if ( user ) {
-              user.id_str = tweet.core?.user_result?.result.rest_id;
-              user.id = parseInt(user.id_str);
-            }
+            user.id_str = tweet.core?.user_result?.result.rest_id;
+            user.id = parseInt(user.id_str);
+
+            setRetweetedStatus(legacy)
+            setInReplyTo(legacy)
 
             const outletTweet = {
               ...legacy,
+              id: parseInt(rest_id),
               id_str: rest_id,
               text: legacy.full_text,
-              ...( user ? { user } : {})
+              user,
             };
 
             tweets.push(outletTweet)

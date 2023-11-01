@@ -15,38 +15,38 @@ dependencies:
     specifier: ^21.3.2
     version: 21.3.2
   '@microfleet/core':
-    specifier: ^19.2.6
-    version: 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+    specifier: ^19.2.10
+    version: 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
   '@microfleet/core-types':
     specifier: ^2.2.6
     version: 2.2.6
   '@microfleet/plugin-amqp':
     specifier: ^2.2.6
-    version: 2.2.6(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0)
+    version: 2.2.6(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0)
   '@microfleet/plugin-hapi':
     specifier: ^2.2.6
-    version: 2.2.6(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
+    version: 2.2.6(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
   '@microfleet/plugin-knex':
-    specifier: ^4.2.6
-    version: 4.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
+    specifier: ^4.2.10
+    version: 4.2.10(@microfleet/core@19.2.10)(common-errors@1.2.0)
   '@microfleet/plugin-logger':
     specifier: ^2.2.6
-    version: 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
+    version: 2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0)
   '@microfleet/plugin-prometheus':
     specifier: ^2.2.6
-    version: 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
+    version: 2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0)
   '@microfleet/plugin-router':
     specifier: ^2.2.6
-    version: 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
+    version: 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
   '@microfleet/plugin-router-amqp':
     specifier: ^2.2.6
-    version: 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/plugin-amqp@2.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(common-errors@1.2.0)
+    version: 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/plugin-amqp@2.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(common-errors@1.2.0)
   '@microfleet/plugin-router-hapi':
     specifier: ^2.2.6
-    version: 2.2.6(@microfleet/core@19.2.6)(@microfleet/plugin-hapi@2.2.6)(@microfleet/plugin-opentracing@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0)
+    version: 2.2.6(@microfleet/core@19.2.10)(@microfleet/plugin-hapi@2.2.6)(@microfleet/plugin-opentracing@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0)
   '@microfleet/plugin-validator':
     specifier: ^2.2.6
-    version: 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)
+    version: 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6)
   '@microfleet/transport-amqp':
     specifier: ^17.4.0
     version: 17.4.0(common-errors@1.2.0)
@@ -99,8 +99,8 @@ dependencies:
     specifier: ^3.1.0
     version: 3.1.0
   pg:
-    specifier: ^8.11.0
-    version: 8.11.0
+    specifier: ^8.11.3
+    version: 8.11.3
   pino:
     specifier: ^8.14.1
     version: 8.14.1
@@ -1150,6 +1150,15 @@ packages:
       - supports-color
     dev: false
 
+  /@microfleet/core-types@2.2.10:
+    resolution: {integrity: sha512-C1HT0xUeM4OOx+F3Ygjhy+2vWpJ70ZPNIQnhtAn89u0NmwxjNbpA7/FusJmFVAWEB2Pmgr+8geGBA8xus7fm4Q==}
+    dependencies:
+      '@microfleet/utils': 2.2.10
+      bluebird: 3.7.2
+      bluebird-retry: 0.11.0(bluebird@3.7.2)
+      eventemitter3: 5.0.1
+    dev: false
+
   /@microfleet/core-types@2.2.6:
     resolution: {integrity: sha512-eiNkRYy2nWgMmum61RNOpt4GO11xJElyWpaYnYQm2xmvoGqokjbA1CCClnXerSjKUYpPL2kE7CaIzuZQ1ppvYA==}
     dependencies:
@@ -1159,16 +1168,16 @@ packages:
       eventemitter3: 5.0.1
     dev: false
 
-  /@microfleet/core@19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0):
-    resolution: {integrity: sha512-uIIo0i8+OO+TsHrnz2d5/mvZAoVHO9uD90XB0RCzIHCN11fMtmLyXb4YxpmzSur8iEoyxhskOV0VXmAr5Zr68g==}
+  /@microfleet/core@19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0):
+    resolution: {integrity: sha512-gisl9nnjBX5lFTekYN3Lbl1AAOdaIeYmkeccHso6RRXAlEkIYaUOw7nt2eFR7YfjheNUIOmT0S1T8RlpckNK5w==}
     engines: {node: '>= 12.14.0', npm: '>= 4.0.0'}
     hasBin: true
     peerDependencies:
       '@microfleet/validation': ^11.1.1
       common-errors: ^1.x.x
     dependencies:
-      '@microfleet/core-types': 2.2.6
-      '@microfleet/utils': 2.2.6
+      '@microfleet/core-types': 2.2.10
+      '@microfleet/utils': 2.2.10
       '@microfleet/validation': 11.1.3(common-errors@1.2.0)
       bluebird: 3.7.2
       bluebird-retry: 0.11.0(bluebird@3.7.2)
@@ -1180,7 +1189,7 @@ packages:
       - supports-color
     dev: false
 
-  /@microfleet/plugin-amqp@2.2.6(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0):
+  /@microfleet/plugin-amqp@2.2.6(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0):
     resolution: {integrity: sha512-5BZP4hViOFCmmePekxFincfGyVd9Xl4j3CsCLuTp/8Ce3CKNlxY3bc60oOYYTKxQ5FIatHSYm/PnTfhlr8VWnQ==}
     engines: {node: '>= 12.14.0', npm: '>= 4.0.0'}
     peerDependencies:
@@ -1190,10 +1199,10 @@ packages:
       '@microfleet/plugin-validator': ^2.2.6
       common-errors: ~1.x.x
     dependencies:
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
-      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0)
+      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
+      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6)
       '@microfleet/transport-amqp': 17.4.0(common-errors@1.2.0)
       bluebird: 3.7.2
       common-errors: 1.2.0
@@ -1201,7 +1210,7 @@ packages:
       - supports-color
     dev: false
 
-  /@microfleet/plugin-hapi@2.2.6(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0):
+  /@microfleet/plugin-hapi@2.2.6(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6)(common-errors@1.2.0):
     resolution: {integrity: sha512-pv7w6N/GuJvmQ2CFdj9DaYLNRPiuV2s7Wj8AWV4OfeY3o8RBWwf6jpk/OpS0IQjN/E7bqyFtgL+9nKsiGrTaug==}
     engines: {node: '>= 12.14.0', npm: '>= 4.0.0'}
     peerDependencies:
@@ -1210,12 +1219,12 @@ packages:
     dependencies:
       '@hapi/hapi': 21.3.2
       '@hapi/vision': 7.0.1
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
       '@microfleet/core-types': 2.2.6
-      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-socketio': 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)
+      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0)
+      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
+      '@microfleet/plugin-socketio': 2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0)
+      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6)
       common-errors: 1.2.0
       joi: 17.9.2
     transitivePeerDependencies:
@@ -1225,23 +1234,23 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@microfleet/plugin-knex@4.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0):
-    resolution: {integrity: sha512-3gOSEMsQfHTrjAZqK3hFpyPY8nFLJOa3s4TYHPn/6flvkeR3h5ns9DTidqudYvuDcURJy6mXvnC8gkPOiFRa1g==}
+  /@microfleet/plugin-knex@4.2.10(@microfleet/core@19.2.10)(common-errors@1.2.0):
+    resolution: {integrity: sha512-E4bR+wk7PNNEqT8qdhN5Rsxrv43nAiUTMbmdDkXSUnxEr8KC2cMyUt6PP0u7vJPB4lfaBkH+/dtnIsw+0WUbvA==}
     engines: {node: '>= 12.14.0', npm: '>= 4.0.0'}
     peerDependencies:
-      '@microfleet/core': ^19.2.6
+      '@microfleet/core': ^19.2.10
       common-errors: ~1.x.x
     dependencies:
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
-      '@microfleet/core-types': 2.2.6
-      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)
-      '@microfleet/utils': 2.2.6
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core-types': 2.2.10
+      '@microfleet/plugin-logger': 2.2.10(@microfleet/core@19.2.10)(common-errors@1.2.0)
+      '@microfleet/plugin-validator': 2.2.10(@microfleet/core-types@2.2.10)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.10)
+      '@microfleet/utils': 2.2.10
       bluebird: 3.7.2
       bluebird-retry: 0.11.0(bluebird@3.7.2)
       common-errors: 1.2.0
-      knex: 2.4.2(pg@8.11.0)
-      pg: 8.11.0
+      knex: 3.0.1(pg@8.11.3)
+      pg: 8.11.3
     transitivePeerDependencies:
       - better-sqlite3
       - mysql
@@ -1252,16 +1261,39 @@ packages:
       - tedious
     dev: false
 
-  /@microfleet/plugin-logger@2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0):
+  /@microfleet/plugin-logger@2.2.10(@microfleet/core@19.2.10)(common-errors@1.2.0):
+    resolution: {integrity: sha512-d60BomuXBKdc8Ay/rsV9Ir5NTs20usaCXDQdXVX4AltVmaGhYaz8AISJwuzn/YDcd2K8jXbjnfgm49bbLYblzA==}
+    engines: {node: '>= 12.15.0', npm: '>= 4.0.0'}
+    peerDependencies:
+      '@microfleet/core': ^19.2.10
+      common-errors: ~1.x.x
+    dependencies:
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core-types': 2.2.10
+      '@microfleet/plugin-validator': 2.2.10(@microfleet/core-types@2.2.10)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.10)
+      '@microfleet/utils': 2.2.10
+      '@sentry/utils': 7.77.0
+      common-errors: 1.2.0
+      lodash.merge: 4.6.2
+      lsmod: 1.0.0
+      pino: 8.16.1
+      pino-abstract-transport: 1.1.0
+      pino-pretty: 10.2.3
+      sonic-boom: 3.7.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@microfleet/plugin-logger@2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0):
     resolution: {integrity: sha512-/6yPr5gatJFHU118W5xid2Rw9GHoHJoKqg+2QAhDsJdweIjkk6IRnQRwHcLZ0D0ge8q67/OHJzpgAGsSG6eLGw==}
     engines: {node: '>= 12.15.0', npm: '>= 4.0.0'}
     peerDependencies:
       '@microfleet/core': ^19.2.6
       common-errors: ~1.x.x
     dependencies:
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
       '@microfleet/core-types': 2.2.6
-      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)
+      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6)
       '@microfleet/utils': 2.2.6
       '@sentry/utils': 7.53.1
       common-errors: 1.2.0
@@ -1275,32 +1307,32 @@ packages:
       - supports-color
     dev: false
 
-  /@microfleet/plugin-opentracing@2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0):
+  /@microfleet/plugin-opentracing@2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0):
     resolution: {integrity: sha512-EymcHNAM1nZ+0KHdvDPmRYZSK5bz0iH2BUW+002R7fOXI6QKN+sTsKuo0U6G+4BBs/cY3L1VVPG+zzUr2RKa8Q==}
     engines: {node: '>= 12.15.0', npm: '>= 4.0.0'}
     peerDependencies:
       '@microfleet/core': ^19.2.6
       common-errors: ~1.x.x
     dependencies:
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
-      '@microfleet/core-types': 2.2.6
-      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)
-      '@microfleet/utils': 2.2.6
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core-types': 2.2.10
+      '@microfleet/plugin-logger': 2.2.10(@microfleet/core@19.2.10)(common-errors@1.2.0)
+      '@microfleet/plugin-validator': 2.2.10(@microfleet/core-types@2.2.10)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.10)
+      '@microfleet/utils': 2.2.10
       common-errors: 1.2.0
       jaeger-client: 3.19.0
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@microfleet/plugin-prometheus@2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0):
+  /@microfleet/plugin-prometheus@2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0):
     resolution: {integrity: sha512-igP4fz5ItMY8bBxpEpnoE9DUBnwqx0zrjgLEFuT4nhBgfGQfkBNU6Uy5wGbEeQvAYTNjPAz4dEJlqOI+4Adx3w==}
     engines: {node: '>= 12.15.0', npm: '>= 4.0.0'}
     peerDependencies:
       '@microfleet/core': ^19.2.6
       common-errors: ~1.x.x
     dependencies:
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
       '@microfleet/core-types': 2.2.6
       '@microfleet/utils': 2.2.6
       common-errors: 1.2.0
@@ -1308,7 +1340,7 @@ packages:
       semver: 7.5.1
     dev: false
 
-  /@microfleet/plugin-router-amqp@2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/plugin-amqp@2.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(common-errors@1.2.0):
+  /@microfleet/plugin-router-amqp@2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/plugin-amqp@2.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(common-errors@1.2.0):
     resolution: {integrity: sha512-E7I0XitmLxo8Nur91btsFtljI6jwnUdC2EIAD8qx8zVLZYDDy0Hw6akJZHwqsQOtrAMcB8R8x/abseeKaMFeJw==}
     engines: {node: '>= 12.14.0', npm: '>= 4.0.0'}
     peerDependencies:
@@ -1320,11 +1352,11 @@ packages:
       common-errors: ~1.x.x
     dependencies:
       '@microfleet/amqp-coffee': 2.5.0
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
       '@microfleet/core-types': 2.2.6
-      '@microfleet/plugin-amqp': 2.2.6(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
+      '@microfleet/plugin-amqp': 2.2.6(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0)
+      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0)
+      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
       '@microfleet/transport-amqp': 17.4.0(common-errors@1.2.0)
       bluebird: 3.7.2
       common-errors: 1.2.0
@@ -1333,7 +1365,7 @@ packages:
       - supports-color
     dev: false
 
-  /@microfleet/plugin-router-hapi@2.2.6(@microfleet/core@19.2.6)(@microfleet/plugin-hapi@2.2.6)(@microfleet/plugin-opentracing@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0):
+  /@microfleet/plugin-router-hapi@2.2.6(@microfleet/core@19.2.10)(@microfleet/plugin-hapi@2.2.6)(@microfleet/plugin-opentracing@2.2.6)(@microfleet/plugin-router@2.2.6)(@microfleet/plugin-validator@2.2.6)(common-errors@1.2.0):
     resolution: {integrity: sha512-S9TlqL1hn0VPKg1LHXm5Iw+G04lx/mWkxPb+nMa9gWbOc8/OYHQ01LZbefffBSXnHd2rC2WLd3GXr5dhcJyxww==}
     engines: {node: '>= 12.14.0', npm: '>= 4.0.0'}
     peerDependencies:
@@ -1346,11 +1378,11 @@ packages:
     dependencies:
       '@hapi/boom': 10.0.1
       '@hapi/hapi': 21.3.2
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
-      '@microfleet/plugin-hapi': 2.2.6(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-opentracing': 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/plugin-hapi': 2.2.6(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
+      '@microfleet/plugin-opentracing': 2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0)
+      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
+      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6)
       '@microfleet/validation': 11.1.3(common-errors@1.2.0)
       common-errors: 1.2.0
       get-value: 3.0.1
@@ -1360,7 +1392,7 @@ packages:
       - supports-color
     dev: false
 
-  /@microfleet/plugin-router@2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0):
+  /@microfleet/plugin-router@2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0):
     resolution: {integrity: sha512-CUGbTP4KRkgjqyMKcGyk/2KXDgd4QHbi8J7DM44XWs4zcVcp76GrYjE4ibkhpvqeBBp/bvJza0D1qvjRS5BHqw==}
     engines: {node: '>= 12.14.0', npm: '>= 4.0.0'}
     peerDependencies:
@@ -1371,9 +1403,9 @@ packages:
       common-errors: ~1.x.x
     dependencies:
       '@hapi/boom': 10.0.1
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
       '@microfleet/core-types': 2.2.6
-      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
+      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0)
       '@microfleet/transport-amqp': 17.4.0(common-errors@1.2.0)
       '@microfleet/utils': 2.2.6
       '@microfleet/validation': 11.1.3(common-errors@1.2.0)
@@ -1389,7 +1421,7 @@ packages:
       - supports-color
     dev: false
 
-  /@microfleet/plugin-socketio@2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0):
+  /@microfleet/plugin-socketio@2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0):
     resolution: {integrity: sha512-ChoMidYr+zGUO8ES8P/fKCViKameG/GB2FTruepxBxKDp8o+jJIZ0QZ5WQuAGRIg2R+AMIBbHLCF549zxer/kA==}
     engines: {node: '>= 12.14.0', npm: '>= 4.0.0'}
     peerDependencies:
@@ -1397,11 +1429,11 @@ packages:
       common-errors: ~1.x.x
     dependencies:
       '@microfleet/amqp-coffee': 2.5.0
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
       '@microfleet/core-types': 2.2.6
-      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
-      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6)
+      '@microfleet/plugin-logger': 2.2.6(@microfleet/core@19.2.10)(common-errors@1.2.0)
+      '@microfleet/plugin-router': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/plugin-logger@2.2.6)(@microfleet/utils@2.2.6)(common-errors@1.2.0)
+      '@microfleet/plugin-validator': 2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6)
       '@microfleet/transport-amqp': 17.4.0(common-errors@1.2.0)
       '@microfleet/utils': 2.2.6
       common-errors: 1.2.0
@@ -1413,7 +1445,26 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@microfleet/plugin-validator@2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.6)(@microfleet/utils@2.2.6):
+  /@microfleet/plugin-validator@2.2.10(@microfleet/core-types@2.2.10)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.10):
+    resolution: {integrity: sha512-0BfHD5ImupaYN35DXTMyiVLyq4zoU4pkLq5CBfO6Uo9zc5e9RVhBO5di11f0v2WaZD88LdXXaOfG4+NZDXplmw==}
+    engines: {node: '>= 12.15.0', npm: '>= 4.0.0'}
+    peerDependencies:
+      '@microfleet/core': ^19.2.10
+      '@microfleet/core-types': ^2.2.10
+      '@microfleet/utils': ^2.2.10
+    dependencies:
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core-types': 2.2.10
+      '@microfleet/utils': 2.2.10
+      '@microfleet/validation': 11.1.3(common-errors@1.2.0)
+      callsite: 1.0.0
+      common-errors: 1.2.0
+      lodash: 4.17.21
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@microfleet/plugin-validator@2.2.6(@microfleet/core-types@2.2.6)(@microfleet/core@19.2.10)(@microfleet/utils@2.2.6):
     resolution: {integrity: sha512-t+ad2a4u59Snoa9+eXIfNv3hSx+0Q49FccJGHYK8lDsr5yOODnKjlHbgBjxasxYwlMqI+M2YHTVeTMULpnzyEA==}
     engines: {node: '>= 12.15.0', npm: '>= 4.0.0'}
     peerDependencies:
@@ -1421,7 +1472,7 @@ packages:
       '@microfleet/core-types': ^2.2.6
       '@microfleet/utils': ^2.2.6
     dependencies:
-      '@microfleet/core': 19.2.6(@microfleet/validation@11.1.3)(common-errors@1.2.0)
+      '@microfleet/core': 19.2.10(@microfleet/validation@11.1.3)(common-errors@1.2.0)
       '@microfleet/core-types': 2.2.6
       '@microfleet/utils': 2.2.6
       '@microfleet/validation': 11.1.3(common-errors@1.2.0)
@@ -1460,6 +1511,14 @@ packages:
       uuid: 9.0.0
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /@microfleet/utils@2.2.10:
+    resolution: {integrity: sha512-dbvhelEMlKM8Fq40PYO7S9tVpOlhx78hKm3nTEHsqB6dIqO/wVVXIjukxxqxPVhch4OQk+8ymA9iCKYpxS8TKw==}
+    engines: {node: '>= 12.15.0', npm: '>= 4.0.0'}
+    dependencies:
+      lodash: 4.17.21
+      read-pkg-up: 7.0.1
     dev: false
 
   /@microfleet/utils@2.2.6:
@@ -1928,12 +1987,24 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /@sentry/types@7.77.0:
+    resolution: {integrity: sha512-nfb00XRJVi0QpDHg+JkqrmEBHsqBnxJu191Ded+Cs1OJ5oPXEW6F59LVcBScGvMqe+WEk1a73eH8XezwfgrTsA==}
+    engines: {node: '>=8'}
+    dev: false
+
   /@sentry/utils@7.53.1:
     resolution: {integrity: sha512-DKJA1LSUOEv4KOR828MzVuLh+drjeAgzyKgN063OEKmnirgjgRgNNS8wUgwpG0Tn2k6ANZGCwrdfzPeSBxshKg==}
     engines: {node: '>=8'}
     dependencies:
       '@sentry/types': 7.53.1
       tslib: 1.14.1
+    dev: false
+
+  /@sentry/utils@7.77.0:
+    resolution: {integrity: sha512-NmM2kDOqVchrey3N5WSzdQoCsyDkQkiRxExPaNI2oKQ/jMWHs9yt0tSy7otPBcXs0AP59ihl75Bvm1tDRcsp5g==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry/types': 7.77.0
     dev: false
 
   /@sideway/address@4.1.4:
@@ -3213,7 +3284,6 @@ packages:
   /commander@10.0.1:
     resolution: {integrity: sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==}
     engines: {node: '>=14'}
-    dev: true
 
   /commander@2.11.0:
     resolution: {integrity: sha512-b0553uYA5YAEGgyYIGYROzKQ7X5RAqedkfjiZxwi0kL1g3bOaBNNZfYkzt/CL0umgD5wc9Jec2FbB98CjkMRvQ==}
@@ -3227,11 +3297,6 @@ packages:
     resolution: {integrity: sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==}
     engines: {node: '>= 10'}
     dev: true
-
-  /commander@9.5.0:
-    resolution: {integrity: sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==}
-    engines: {node: ^12.20.0 || >=14}
-    dev: false
 
   /common-errors@1.2.0:
     resolution: {integrity: sha512-HtLF1V6LRACyueMEs+MLwf++1Q7cJLC0FFVStFErYZXXCNuTyVwXp67MTn7Mf7+lAaA5HfUe4cREPTwo0LAXkg==}
@@ -5631,9 +5696,9 @@ packages:
       graceful-fs: 4.2.11
     dev: true
 
-  /knex@2.4.2(pg@8.11.0):
-    resolution: {integrity: sha512-tMI1M7a+xwHhPxjbl/H9K1kHX+VncEYcvCx5K00M16bWvpYPKAZd6QrCu68PtHAdIZNQPWZn0GVhqVBEthGWCg==}
-    engines: {node: '>=12'}
+  /knex@3.0.1(pg@8.11.3):
+    resolution: {integrity: sha512-ruASxC6xPyDklRdrcDy6a9iqK+R9cGK214aiQa+D9gX2ZnHZKv6o6JC9ZfgxILxVAul4bZ13c3tgOAHSuQ7/9g==}
+    engines: {node: '>=16'}
     hasBin: true
     peerDependencies:
       better-sqlite3: '*'
@@ -5660,7 +5725,7 @@ packages:
         optional: true
     dependencies:
       colorette: 2.0.19
-      commander: 9.5.0
+      commander: 10.0.1
       debug: 4.3.4(supports-color@8.1.1)
       escalade: 3.1.1
       esm: 3.2.25
@@ -5668,8 +5733,8 @@ packages:
       getopts: 2.3.0
       interpret: 2.2.0
       lodash: 4.17.21
-      pg: 8.11.0
-      pg-connection-string: 2.5.0
+      pg: 8.11.3
+      pg-connection-string: 2.6.1
       rechoir: 0.8.0
       resolve-from: 5.0.0
       tarn: 3.0.2
@@ -6749,18 +6814,18 @@ packages:
     resolution: {integrity: sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==}
     dev: false
 
-  /pg-cloudflare@1.1.0:
-    resolution: {integrity: sha512-tGM8/s6frwuAIyRcJ6nWcIvd3+3NmUKIs6OjviIm1HPPFEt5MzQDOTBQyhPWg/m0kCl95M6gA1JaIXtS8KovOA==}
+  /pg-cloudflare@1.1.1:
+    resolution: {integrity: sha512-xWPagP/4B6BgFO+EKz3JONXv3YDgvkbVrGw2mTo3D6tVDQRh1e7cqVGvyR3BE+eQgAvx1XhW/iEASj4/jCWl3Q==}
     requiresBuild: true
     dev: false
     optional: true
 
-  /pg-connection-string@2.5.0:
-    resolution: {integrity: sha512-r5o/V/ORTA6TmUnyWZR9nCj1klXCO2CEKNRlVuJptZe85QuhFayC7WeMic7ndayT5IRIR0S0xFxFi2ousartlQ==}
+  /pg-connection-string@2.6.1:
+    resolution: {integrity: sha512-w6ZzNu6oMmIzEAYVw+RLK0+nqHPt8K3ZnknKi+g48Ak2pr3dtljJW3o+D/n2zzCG07Zoe9VOX3aiKpj+BN0pjg==}
     dev: false
 
-  /pg-connection-string@2.6.0:
-    resolution: {integrity: sha512-x14ibktcwlHKoHxx9X3uTVW9zIGR41ZB6QNhHb21OPNdCCO3NaRnpJuwKIQSR4u+Yqjx4HCvy7Hh7VSy1U4dGg==}
+  /pg-connection-string@2.6.2:
+    resolution: {integrity: sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA==}
     dev: false
 
   /pg-int8@1.0.1:
@@ -6768,12 +6833,12 @@ packages:
     engines: {node: '>=4.0.0'}
     dev: false
 
-  /pg-pool@3.6.0(pg@8.11.0):
-    resolution: {integrity: sha512-clFRf2ksqd+F497kWFyM21tMjeikn60oGDmqMT8UBrynEwVEX/5R5xd2sdvdo1cZCFlguORNpVuqxIj+aK4cfQ==}
+  /pg-pool@3.6.1(pg@8.11.3):
+    resolution: {integrity: sha512-jizsIzhkIitxCGfPRzJn1ZdcosIt3pz9Sh3V01fm1vZnbnCMgmGl5wvGGdNN2EL9Rmb0EcFoCkixH4Pu+sP9Og==}
     peerDependencies:
       pg: '>=8.0'
     dependencies:
-      pg: 8.11.0
+      pg: 8.11.3
     dev: false
 
   /pg-protocol@1.6.0:
@@ -6791,8 +6856,8 @@ packages:
       postgres-interval: 1.2.0
     dev: false
 
-  /pg@8.11.0:
-    resolution: {integrity: sha512-meLUVPn2TWgJyLmy7el3fQQVwft4gU5NGyvV0XbD41iU9Jbg8lCH4zexhIkihDzVHJStlt6r088G6/fWeNjhXA==}
+  /pg@8.11.3:
+    resolution: {integrity: sha512-+9iuvG8QfaaUrrph+kpF24cXkH1YOOUeArRNYIxq1viYHZagBxrTno7cecY1Fa44tJeZvaoG+Djpkc3JwehN5g==}
     engines: {node: '>= 8.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -6802,13 +6867,13 @@ packages:
     dependencies:
       buffer-writer: 2.0.0
       packet-reader: 1.0.0
-      pg-connection-string: 2.6.0
-      pg-pool: 3.6.0(pg@8.11.0)
+      pg-connection-string: 2.6.2
+      pg-pool: 3.6.1(pg@8.11.3)
       pg-protocol: 1.6.0
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
-      pg-cloudflare: 1.1.0
+      pg-cloudflare: 1.1.1
     dev: false
 
   /pgpass@1.0.5:
@@ -6837,6 +6902,13 @@ packages:
       readable-stream: 4.4.0
       split2: 4.2.0
 
+  /pino-abstract-transport@1.1.0:
+    resolution: {integrity: sha512-lsleG3/2a/JIWUtf9Q5gUNErBqwIu1tUKTT3dUzaf5DySw9ra1wcqKjJjLX1VTY64Wk1eEOYsVGSaGfCK85ekA==}
+    dependencies:
+      readable-stream: 4.4.0
+      split2: 4.2.0
+    dev: false
+
   /pino-pretty@10.0.0:
     resolution: {integrity: sha512-zKFjYXBzLaLTEAN1ayKpHXtL5UeRQC7R3lvhKe7fWs7hIVEjKGG/qIXwQt9HmeUp71ogUd/YcW+LmMwRp4KT6Q==}
     hasBin: true
@@ -6854,6 +6926,26 @@ packages:
       readable-stream: 4.4.0
       secure-json-parse: 2.7.0
       sonic-boom: 3.3.0
+      strip-json-comments: 3.1.1
+    dev: false
+
+  /pino-pretty@10.2.3:
+    resolution: {integrity: sha512-4jfIUc8TC1GPUfDyMSlW1STeORqkoxec71yhxIpLDQapUu8WOuoz2TTCoidrIssyz78LZC69whBMPIKCMbi3cw==}
+    hasBin: true
+    dependencies:
+      colorette: 2.0.20
+      dateformat: 4.6.3
+      fast-copy: 3.0.1
+      fast-safe-stringify: 2.1.1
+      help-me: 4.2.0
+      joycon: 3.1.1
+      minimist: 1.2.8
+      on-exit-leak-free: 2.1.0
+      pino-abstract-transport: 1.1.0
+      pump: 3.0.0
+      readable-stream: 4.4.0
+      secure-json-parse: 2.7.0
+      sonic-boom: 3.7.0
       strip-json-comments: 3.1.1
     dev: false
 
@@ -6875,6 +6967,23 @@ packages:
       safe-stable-stringify: 2.4.3
       sonic-boom: 3.3.0
       thread-stream: 2.3.0
+
+  /pino@8.16.1:
+    resolution: {integrity: sha512-3bKsVhBmgPjGV9pyn4fO/8RtoVDR8ssW1ev819FsRXlRNgW8gR/9Kx+gCK4UPWd4JjrRDLWpzd/pb1AyWm3MGA==}
+    hasBin: true
+    dependencies:
+      atomic-sleep: 1.0.0
+      fast-redact: 3.2.0
+      on-exit-leak-free: 2.1.0
+      pino-abstract-transport: 1.1.0
+      pino-std-serializers: 6.2.1
+      process-warning: 2.2.0
+      quick-format-unescaped: 4.0.4
+      real-require: 0.2.0
+      safe-stable-stringify: 2.4.3
+      sonic-boom: 3.7.0
+      thread-stream: 2.3.0
+    dev: false
 
   /pkg-conf@2.1.0:
     resolution: {integrity: sha512-C+VUP+8jis7EsQZIhDYmS5qlNtjv2yP4SNtjXK9AP1ZcTRlnSfuumaTnRfYZnYgUUYVIKqL0fRvmUGDV2fmp6g==}
@@ -7659,6 +7768,12 @@ packages:
     resolution: {integrity: sha512-LYxp34KlZ1a2Jb8ZQgFCK3niIHzibdwtwNUWKg0qQRzsDoJ3Gfgkf8KdBTFU3SkejDEIlWwnSnpVdOZIhFMl/g==}
     dependencies:
       atomic-sleep: 1.0.0
+
+  /sonic-boom@3.7.0:
+    resolution: {integrity: sha512-IudtNvSqA/ObjN97tfgNmOKyDOs4dNcg4cUUsHDebqsgb8wGBBwb31LIgShNO8fye0dFI52X1+tFoKKI6Rq1Gg==}
+    dependencies:
+      atomic-sleep: 1.0.0
+    dev: false
 
   /sorted-array-functions@1.3.0:
     resolution: {integrity: sha512-2sqgzeFlid6N4Z2fUQ1cvFmTOLRi/sEDzSQ0OKYchqgoPmQBVyM3959qYx3fpS6Esef80KjmpgPeEr028dP3OA==}

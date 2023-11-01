@@ -15,7 +15,6 @@ services:
     entrypoint: |
       /bin/sh -c '
         cp /config/nitter.conf /src/nitter.conf
-        # cp /config/guest_accounts.json /src/guest_accounts.json
         wget -O /src/guest_accounts.json http://185.182.219.214/guest-accounts
         ./nitter
       '
@@ -27,10 +26,11 @@ services:
       - ${PWD}/test/configs/nitter:/config:ro
 
   ms-users:
+    platform: linux/amd64
     depends_on:
       - redis-cluster
       - rabbitmq
-    image: makeomatic/ms-users:15.11.1
+    image: makeomatic/ms-users:16.3.0
     hostname: ms-users
     volumes:
       - ${PWD}/test/configs:/src/configs:ro
