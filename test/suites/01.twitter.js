@@ -125,8 +125,8 @@ describe('twitter', function testSuite() {
   it('should return error if request to register is not valid', async () => {
     await assert.rejects(service.amqp.publishAndWait(uri.register, payload.registerFail), {
       name: 'HttpStatusError',
-      statusCode: 400,
-      message: JSON.stringify([{ code: 17, message: 'No user matches for specified terms.' }]),
+      statusCode: 404,
+      message: "User not found",
     });
   });
 

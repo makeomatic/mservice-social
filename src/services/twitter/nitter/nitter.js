@@ -4,6 +4,7 @@
 // https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/object-model/tweet
 // noinspection JSValidateTypes
 
+const { HttpStatusError } = require('common-errors');
 const undici = require('undici');
 
 function throwErrorIfFound(data) {
@@ -191,11 +192,11 @@ async function fetchById(id) {
  */
 async function fetchTweets(cursor, account, order) {
 
-  const userId = await fetchUserId(account)
+  const { id } = await fetchUserId(account)
 
   const config = {
     method: 'get',
-    url: process.env.NITTER_URL + '/api/user/' + userId  + '/tweets',
+    url: process.env.NITTER_URL + '/api/user/' + id  + '/tweets',
     params: {
       cursor
     }
@@ -208,20 +209,23 @@ async function fetchTweets(cursor, account, order) {
   return getTweetsFromGraphQL(response.data);
 }
 
-async function fetchUserId(username) {
+async function fetchUserId(_username) {
 
   const config = {
     method: 'get',
-    url: process.env.NITTER_URL + '/api/user/' + username
+    url: process.env.NITTER_URL + '/api/user/' + _username
   }
 
   const response = await request(config);
 
   throwErrorIfFound(response.data);
 
-  const { id } = response.data;
+  const { id, username } = response.data;
+  if ( id === "" ) {
+    throw new HttpStatusError(404, "User not found");
+  }
 
-  return id;
+  return { id, username }
 }
 
 module.exports = {

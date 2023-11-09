@@ -538,44 +538,52 @@ class Twitter {
     await loader(lastKnownTweet)
   }
 
-  fillUserIds(original) {
+  async fillUserIds(original) {
     const screenNames = original
       .filter((element) => (element.id === undefined))
       .map((element) => (element.username));
 
-    const usersParams = screenNames.join(',');
+    // const usersParams = screenNames.join(',');
+    //
+    // const validateAccounts = (userNames, accounts) => {
+    //   for (const username of userNames) {
+    //     const account = find(accounts, (x) => x.username.toLowerCase() === username.toLowerCase());
+    //     if (account === undefined) {
+    //       throw new HttpStatusError(400, `Users lookup failed for '${username}'`);
+    //     }
+    //   }
+    //   return true;
+    // };
 
-    const validateAccounts = (userNames, accounts) => {
-      for (const username of userNames) {
-        const account = find(accounts, (x) => x.username.toLowerCase() === username.toLowerCase());
-        if (account === undefined) {
-          throw new HttpStatusError(400, `Users lookup failed for '${username}'`);
-        }
-      }
-      return true;
-    };
+    const accounts = []
+    for(const _username of screenNames) {
+      const { id, username } = await nitter.fetchUserId(_username)
+      accounts.push({ id, username })
+    }
 
-    return Promise
-      .fromCallback((next) => {
-        if (screenNames === '') {
-          next(null, []);
-        } else {
-          this.client.get('users/lookup', { screen_name: usersParams }, next);
-        }
-      })
-      .catch((e) => Array.isArray(e), (err) => {
-        this.logger.warn({ err }, 'failed to lookup %j', usersParams);
-        throw new HttpStatusError(400, JSON.stringify(err));
-      })
-      .reduce((acc, value) => {
-        acc.push({ id: value.id_str, username: value.screen_name });
-        return acc;
-      }, [])
-      .then((accounts) => {
-        validateAccounts(screenNames, accounts);
+    return merge(original, accounts);
 
-        return merge(original, accounts);
-      });
+    // return Promise
+    //   .fromCallback((next) => {
+    //     if (screenNames === '') {
+    //       next(null, []);
+    //     } else {
+    //       // this.client.get('users/lookup', { screen_name: usersParams }, next);
+    //     }
+    //   })
+    //   .catch((e) => Array.isArray(e), (err) => {
+    //     this.logger.warn({ err }, 'failed to lookup %j', usersParams);
+    //     throw new HttpStatusError(400, JSON.stringify(err));
+    //   })
+    //   .reduce((acc, value) => {
+    //     acc.push({ id: value.id_str, username: value.screen_name });
+    //     return acc;
+    //   }, [])
+    //   .then((accounts) => {
+    //     validateAccounts(screenNames, accounts);
+    //
+    //     return merge(original, accounts);
+    //   });
   }
 }
 
