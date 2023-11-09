@@ -9,7 +9,7 @@ process.env.NITTER_URL = 'http://localhost:8080';
 describe('Nitter', function Nitter() {
 
   it('should fetch id by username', async () => {
-    const id = await nitter.fetchUserId('elonmusk');
+    const { id } = await nitter.fetchUserId('elonmusk');
     console.log('elonmusk id=', id);
     assert(id);
   });
