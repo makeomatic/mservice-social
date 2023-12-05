@@ -26,9 +26,8 @@ services:
       - rabbitmq
     env_file:
       - ${PWD}/.env
-    dns: "8.8.8.8"
     environment:
       NODE_ENV: "test"
-      NITTER_URL: ${NITTER_URL}"
+      NITTER_URL: ${NITTER_URL}
       DEBUG: ${DEBUG}
       NCONF_NAMESPACE: MS_SOCIAL
