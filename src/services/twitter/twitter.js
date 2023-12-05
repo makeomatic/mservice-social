@@ -9,6 +9,7 @@ const {
   isObject, isString, conforms, merge, find, isNil,
 } = require('lodash');
 
+const assert = require('assert');
 const StatusFilter = require('./status-filter');
 const { transform, TYPE_TWEET } = require('../../utils/response');
 const { getTweetType, TweetTypeByName } = require('./tweet-types');
@@ -18,7 +19,6 @@ const EXTENDED_TWEET_MODE = {
 };
 const { kPublishEvent } = require('../notifier');
 const nitter = require('./nitter/nitter');
-const assert = require('assert');
 
 const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
 
@@ -36,16 +36,16 @@ function extractAccount(accum, value) {
   return accum;
 }
 
-function twitterApiConfig(config) {
-  const TWITTER_API_DEFAULTS = {
-    // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline
-    user_timeline: {
-      exclude_replies: false,
-      include_rts: true,
-    },
-  };
-  return merge(TWITTER_API_DEFAULTS, config.api);
-}
+// function twitterApiConfig(config) {
+//   const TWITTER_API_DEFAULTS = {
+//     // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline
+//     user_timeline: {
+//       exclude_replies: false,
+//       include_rts: true,
+//     },
+//   };
+//   return merge(TWITTER_API_DEFAULTS, config.api);
+// }
 
 /**
  * @property {TwitterClient} client
@@ -461,32 +461,10 @@ class Twitter {
     }
   }
 
-  async syncAccount({ cursor, account }, order = 'asc', maxPages = 20) {
+  async syncAccount({ account }, order = 'asc', maxPages = 20) {
     const twitterStatuses = this.storage.twitterStatuses();
     // calculate notification on sync
     const notify = this.shouldNotifyFor('data', 'sync');
-
-    // const fetchedTweets = async (tweet, page = 1) => {
-    //   const tweets = await this.fetchTweets(
-    //     cursor || Twitter.cursor(tweet, order),
-    //     account,
-    //     order === 'asc' ? 'max_id' : 'since_id'
-    //   );
-    //
-    //   const { length } = tweets;
-    //   this.logger.debug('fetched %d tweets', length);
-    //
-    //   if (length === 0 || page >= maxPages) {
-    //     return;
-    //   }
-    //
-    //   const index = order === 'asc' ? length - 1 : 0;
-    //   const oldestTweet = await Promise
-    //     .map(tweets, this.onData(notify))
-    //     .get(index); // TODO: ensure that we are picking a tweet
-    //
-    //   await fetchedTweets(oldestTweet, page + 1);
-    // };
 
     const loader = async (lastKnownTweet) => {
       let looped = true;
@@ -494,7 +472,8 @@ class Twitter {
       let count = 0;
       let cursor = null;
 
-      while(looped) {
+      while (looped) {
+        // eslint-disable-next-line no-await-in-loop
         const { tweets, cursorTop, cursorBottom } = await nitter.fetchTweets(cursor, account, order);
 
         assert(cursorTop);
@@ -503,23 +482,26 @@ class Twitter {
 
         if (lastKnownTweet) {
           for (const tweet of tweets) {
-            if ( lastKnownTweet.id_str === tweet.id_str ) {
+            if (lastKnownTweet.id_str === tweet.id_str) {
               looped = false;
               break;
             }
           }
         }
 
+        // eslint-disable-next-line no-await-in-loop
         await Promise.map(tweets, this.onData(notify));
 
         looped = looped && pages < maxPages && tweets.length > 0;
         cursor = cursorBottom;
-        count = count + tweets.length;
+        count += tweets.length;
         if (looped) {
-          pages++;
+          pages += 1;
         }
 
-        // this.logger.debug({ looped, pages, cursor, count, account }, 'tweet looping');
+        this.logger.debug({
+          looped, pages, cursor, count, account,
+        }, 'tweet looping');
       }
     };
 
@@ -535,55 +517,23 @@ class Twitter {
 
     this.logger.info({ lastKnownTweet: { id_str: lastKnownTweet?.id_str, id: lastKnownTweet?.id }, account }, 'selected last tweet from account');
     // await fetchedTweets(initialTweet);
-    await loader(lastKnownTweet)
+    await loader(lastKnownTweet);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   async fillUserIds(original) {
     const screenNames = original
       .filter((element) => (element.id === undefined))
       .map((element) => (element.username));
 
-    // const usersParams = screenNames.join(',');
-    //
-    // const validateAccounts = (userNames, accounts) => {
-    //   for (const username of userNames) {
-    //     const account = find(accounts, (x) => x.username.toLowerCase() === username.toLowerCase());
-    //     if (account === undefined) {
-    //       throw new HttpStatusError(400, `Users lookup failed for '${username}'`);
-    //     }
-    //   }
-    //   return true;
-    // };
-
-    const accounts = []
-    for(const _username of screenNames) {
-      const { id, username } = await nitter.fetchUserId(_username)
-      accounts.push({ id, username })
+    const accounts = [];
+    for (const _username of screenNames) {
+      // eslint-disable-next-line no-await-in-loop
+      const { id, username } = await nitter.fetchUserId(_username);
+      accounts.push({ id, username });
     }
 
     return merge(original, accounts);
-
-    // return Promise
-    //   .fromCallback((next) => {
-    //     if (screenNames === '') {
-    //       next(null, []);
-    //     } else {
-    //       // this.client.get('users/lookup', { screen_name: usersParams }, next);
-    //     }
-    //   })
-    //   .catch((e) => Array.isArray(e), (err) => {
-    //     this.logger.warn({ err }, 'failed to lookup %j', usersParams);
-    //     throw new HttpStatusError(400, JSON.stringify(err));
-    //   })
-    //   .reduce((acc, value) => {
-    //     acc.push({ id: value.id_str, username: value.screen_name });
-    //     return acc;
-    //   }, [])
-    //   .then((accounts) => {
-    //     validateAccounts(screenNames, accounts);
-    //
-    //     return merge(original, accounts);
-    //   });
   }
 }
 

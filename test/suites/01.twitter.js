@@ -126,7 +126,7 @@ describe('twitter', function testSuite() {
     await assert.rejects(service.amqp.publishAndWait(uri.register, payload.registerFail), {
       name: 'HttpStatusError',
       statusCode: 404,
-      message: "User not found",
+      message: 'User not found',
     });
   });
 

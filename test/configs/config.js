@@ -1,4 +1,3 @@
-const path = require("path");
 module.exports = {
   amqp: {
     transport: {
@@ -38,5 +37,5 @@ module.exports = {
   },
   logger: {
     debug: true,
-  }
+  },
 };
