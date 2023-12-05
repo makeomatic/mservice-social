@@ -8,34 +8,34 @@ const { HttpStatusError } = require('common-errors');
 const undici = require('undici');
 
 function throwErrorIfFound(data) {
-  if ( data.errors ) {
+  if (data.errors) {
     throw data.errors.map(error => ({ code: error.code, message: error.message }))
   }
 }
 
-function setInReplyTo(legacy)  {
-  if ( legacy.in_reply_to_status_id_str ) {
+function setInReplyTo(legacy) {
+  if (legacy.in_reply_to_status_id_str) {
     legacy.in_reply_to_status_id = parseInt(legacy.in_reply_to_status_id_str)
   }
-  if ( legacy.in_reply_to_user_id_str ) {
+  if (legacy.in_reply_to_user_id_str) {
     legacy.in_reply_to_user_id = parseInt(legacy.in_reply_to_user_id_str)
   }
 }
 
 function setRetweetedStatus(legacy) {
   const retweet = legacy.retweeted_status_result?.result?.legacy
-  if ( retweet ) {
+  if (retweet) {
     const retweetId = legacy.retweeted_status_result?.result?.rest_id
 
     let user = legacy.retweeted_status_result?.result?.core?.user_results?.result?.legacy;
-    if ( user ) {
+    if (user) {
       user.id_str = legacy.retweeted_status_result?.result?.core?.user_results?.result.rest_id;
       user.id = parseInt(user.id_str);
     }
 
     if (!user) {
       user = legacy.retweeted_status_result?.result?.core?.user_result?.result?.legacy;
-      if (user ) {
+      if (user) {
         user.id_str = legacy.retweeted_status_result?.result?.core?.user_result?.result?.rest_id;
         user.id = parseInt(user.id_str);
       }
@@ -56,19 +56,19 @@ function getTweetFromGraphQL(data, id) {
 
   const list = data?.data?.threaded_conversation_with_injections_v2?.instructions ?? [];
 
-  for(const instruction of list) {
-    if ( instruction.type === 'TimelineAddEntries' ) {
-      for(const entry of instruction.entries){
+  for (const instruction of list) {
+    if (instruction.type === 'TimelineAddEntries') {
+      for (const entry of instruction.entries) {
         const entryType = entry.content?.entryType;
-        if ( entryType === 'TimelineTimelineItem' ) {
+        if (entryType === 'TimelineTimelineItem') {
           const itemType = entry.content?.itemContent?.itemType;
-          if ( itemType === 'TimelineTweet' ) {
+          if (itemType === 'TimelineTweet') {
             const typename = entry.content?.itemContent?.tweet_results?.result?.__typename;
             const rest_id = entry.content?.itemContent?.tweet_results?.result?.rest_id;
-            if ( rest_id === id ) {
-              if ( typename === "Tweet" ){
+            if (rest_id === id) {
+              if (typename === "Tweet") {
                 const legacy = entry.content?.itemContent?.tweet_results?.result?.legacy;
-                if ( legacy ) {
+                if (legacy) {
                   setRetweetedStatus(legacy)
                   setInReplyTo(legacy)
 
@@ -136,10 +136,9 @@ function getTweetsFromGraphQL(data) {
           const cursorType = entry.content?.cursorType;
           const value = entry.content?.value;
 
-          if ( cursorType === "Top" ) {
+          if (cursorType === "Top") {
             cursorTop = value
-          }
-          else if ( cursorType === "Bottom" ) {
+          } else if (cursorType === "Bottom") {
             cursorBottom = value
           }
         }
@@ -154,7 +153,7 @@ async function request(config) {
 
   let { url, params } = config
 
-  if ( params ) {
+  if (params) {
     const query = new URLSearchParams(params);
     url = `${url}?${query}`;
   }
@@ -171,11 +170,15 @@ async function request(config) {
   }
 }
 
+function getBaseUrl() {
+  return process.env.NITTER_URL;
+}
+
 async function fetchById(id) {
 
   const config = {
     method: 'get',
-    url: process.env.NITTER_URL + '/api/tweet/' + id,
+    url: getBaseUrl() + '/api/tweet/' + id,
   }
 
   const response = await request(config);
@@ -196,7 +199,7 @@ async function fetchTweets(cursor, account, order) {
 
   const config = {
     method: 'get',
-    url: process.env.NITTER_URL + '/api/user/' + id  + '/tweets',
+    url: getBaseUrl() + '/api/user/' + id + '/tweets',
     params: {
       cursor
     }
@@ -213,7 +216,7 @@ async function fetchUserId(_username) {
 
   const config = {
     method: 'get',
-    url: process.env.NITTER_URL + '/api/user/' + _username
+    url: getBaseUrl() + '/api/user/' + _username
   }
 
   const response = await request(config);
@@ -221,7 +224,7 @@ async function fetchUserId(_username) {
   throwErrorIfFound(response.data);
 
   const { id, username } = response.data;
-  if ( id === "" ) {
+  if (id === "") {
     throw new HttpStatusError(404, "User not found");
   }
 

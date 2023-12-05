@@ -6,28 +6,6 @@ services:
     ports:
       - "6379:6379"
 
-  nitter-redis:
-    image: redis:latest
-
-  nitter:
-    image: kristobalus/nitter:latest
-    platform: "linux/amd64"
-    environment:
-      NITTER_GUEST_ACCOUNTS_URL: "${NITTER_GUEST_ACCOUNTS_URL}"
-    entrypoint: |
-      /bin/sh -c '
-        echo $NITTER_GUEST_ACCOUNTS_URL
-        cp /config/nitter.conf /src/nitter.conf
-        wget -O /src/guest_accounts.json $NITTER_GUEST_ACCOUNTS_URL
-        ./nitter
-      '
-    ports:
-      - "8080:8080"
-    depends_on:
-      - nitter-redis
-    volumes:
-      - ${PWD}/test/configs/nitter:/config:ro
-
   ms-users:
     platform: linux/amd64
     depends_on:
@@ -46,11 +24,11 @@ services:
     depends_on:
       - postgres
       - rabbitmq
-      - nitter
     env_file:
       - ${PWD}/.env
+    dns: "8.8.8.8"
     environment:
       NODE_ENV: "test"
-      NITTER_URL: 'http://nitter:8080'
+      NITTER_URL: ${NITTER_URL}"
       DEBUG: ${DEBUG}
       NCONF_NAMESPACE: MS_SOCIAL
