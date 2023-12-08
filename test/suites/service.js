@@ -204,7 +204,7 @@ describe('service', function suite() {
     });
   });
 
-  after('after all', async () => {
+  after(async () => {
     wtf.dump();
     process.exit(0);
   });

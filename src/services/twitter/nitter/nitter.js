@@ -7,6 +7,8 @@
 const { HttpStatusError } = require('common-errors');
 const { Pool } = require('undici');
 
+// const axios = require('axios');
+
 function throwErrorIfFound(data) {
   if (data.errors) {
     throw data.errors.map(error => ({ code: error.code, message: error.message }))
@@ -153,7 +155,12 @@ class NitterClient {
 
   constructor(options = {}) {
     this.baseUrl = options?.baseUrl ?? process.env.NITTER_URL;
-    this.pool = new Pool(this.baseUrl, { connections: options?.connections ?? 5 });
+    this.pool = new Pool(this.baseUrl, {
+      connections: options?.connections ?? 5,
+      pipelining: 1,
+      bodyTimeout: 5000,
+      headersTimeout: 5000
+    });
   }
 
   async _request(config) {
@@ -164,6 +171,18 @@ class NitterClient {
       const query = new URLSearchParams(params);
       url = `${url}?${query}`;
     }
+
+    // const response = await axios.request({ url, baseURL: this.baseUrl, params, method, timeout: 5000 })
+    // const statusCode = response.status
+    //
+    // if (statusCode === 200) {
+    //   return {
+    //     statusCode,
+    //     data: response.data
+    //   };
+    // } else {
+    //   throw new Error(`Request failed with status code: ${statusCode}, body: ${ response.data }`);
+    // }
 
     const { body, statusCode } = await this.pool.request({ path: url, method: method.toUpperCase() });
 
@@ -235,11 +254,15 @@ class NitterClient {
   }
 
   async destroy() {
-    return this.pool.destroy();
+    if (this.pool) {
+      await this.pool.destroy();
+    }
   }
 
   async close() {
-    return this.pool.close();
+    if (this.pool) {
+      await this.pool.close();
+    }
   }
 }
 

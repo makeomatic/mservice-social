@@ -362,11 +362,7 @@ class Twitter {
       this.resyncTimer = null;
     }
 
-    try {
-      await this.nitter.destroy();
-    } catch (err) {
-      this.logger.warn({ err }, 'nitter destroyed');
-    }
+    await this.nitter.destroy();
   }
 
   shouldNotifyFor(event, from) {
@@ -456,7 +452,9 @@ class Twitter {
       const { tweets, cursorTop, cursorBottom } = await this.nitter.fetchTweets(cursor, account, order);
 
       if (this.isDestroyed) {
-        this.logger.trace('twitter is destroyed, loader should be stopped');
+        this.logger.debug({
+          pages, cursor, count, account,
+        }, 'tweet loading terminated');
         break;
       }
 
@@ -482,7 +480,7 @@ class Twitter {
 
       this.logger.debug({
         looped, pages, cursor, count, account,
-      }, 'tweet page load completed');
+      }, 'tweet page loaded');
 
       if (looped) {
         pages += 1;

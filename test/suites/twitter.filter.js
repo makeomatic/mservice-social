@@ -1,6 +1,5 @@
 const Promise = require('bluebird');
 const assert = require('assert');
-const wtf = require('wtfnode');
 const prepareService = require('../../src');
 
 const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.attributes.type, 10) === type);
@@ -9,14 +8,14 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
 describe('twitter.filter.js', function () {
   const tests = [
     {
-      name: 'test-1',
+      name: 'test-1, filters ignored, expected types 0 and 1',
       ignoreFilters: true,
       filters: { filterReplies: true, filterRetweets: true },
       expectedTypes: [0, 1],
       filteredTypes: [],
     },
     {
-      name: 'test-2',
+      name: 'test-2, filters active, expected type 0',
       ignoreFilters: false,
       filters: { filterReplies: true, filterRetweets: true },
       expectedTypes: [0],
@@ -31,7 +30,7 @@ describe('twitter.filter.js', function () {
     describe(`${name}`, function testSuite() {
       let service;
 
-      before('start service', async () => {
+      before(async () => {
         const { filterReplies, filterRetweets } = filters;
 
         service = await prepareService({
@@ -52,6 +51,8 @@ describe('twitter.filter.js', function () {
         await service.connect();
         await service.knex('feeds').delete();
       });
+
+      after(async () => service.close());
 
       it('should register feed', async () => {
         const payload = {
@@ -84,14 +85,6 @@ describe('twitter.filter.js', function () {
           assert.strictEqual(tweets.length, 0, `unsupported tweet type ${type} received`);
         });
       });
-
-      after('shutdown service', async () => service.close());
     });
-  });
-
-  after('after all', async () => {
-    await Promise.delay(1000);
-    wtf.dump();
-    process.exit(0);
   });
 });

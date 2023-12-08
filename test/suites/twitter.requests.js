@@ -1,6 +1,5 @@
 const Promise = require('bluebird');
 const assert = require('assert');
-const wtf = require('wtfnode');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
 const prepareSocial = require('../../src');
 
@@ -8,17 +7,17 @@ const prepareSocial = require('../../src');
 describe('tweeter.requests.js', function () {
   const tests = [
     {
-      name: 'test-1',
+      name: 'test-1, restricted to tweet and retweet with types: reply, quote',
       restrictedTypeNames: ['tweet', 'retweet'],
       allowedTypes: [TweetType.REPLY, TweetType.QUOTE],
     },
     {
-      name: 'test-2',
+      name: 'test-2, restricted to replies with types: original, retweet, quote',
       restrictedTypeNames: ['reply'],
       allowedTypes: [TweetType.ORIGINAL, TweetType.RETWEET, TweetType.QUOTE],
     },
     {
-      name: 'test-3',
+      name: 'test-3, restricted to retweet, reply, quote with types: original only',
       restrictedTypeNames: ['retweet', 'reply', 'quote'],
       allowedTypes: [TweetType.ORIGINAL],
     },
@@ -28,7 +27,8 @@ describe('tweeter.requests.js', function () {
     // eslint-disable-next-line func-names
     describe(`${name}`, function () {
       let service;
-      before('start service', async () => {
+
+      before(async () => {
         service = await prepareSocial({
           notifier: {
             enabled: false,
@@ -41,6 +41,10 @@ describe('tweeter.requests.js', function () {
         });
         await service.connect();
         await service.knex('feeds').delete();
+      });
+
+      after(async () => {
+        await service.close();
       });
 
       it('should register feed', async () => {
@@ -69,14 +73,6 @@ describe('tweeter.requests.js', function () {
           assert(allowedTypes.includes(+tweet.attributes.type));
         });
       });
-
-      after('shutdown service', async () => service.close());
     });
-  });
-
-  after('after all', async () => {
-    await Promise.delay(1000);
-    wtf.dump();
-    process.exit(0);
   });
 });
