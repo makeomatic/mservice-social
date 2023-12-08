@@ -30,7 +30,7 @@ class StatusFilter {
    * @param {object} data - fetched tweet
    * @param {number} tweetType - computed tweet type
    * @param {Object} accountIds - valid accounts map
-   * @returns {bool|number}  - False if we want to allow tweet, tweet id if we want to skip tweet, and update pointer for cursor
+   * @returns {boolean|string}  - False if we want to allow tweet, tweet id if we want to skip tweet, and update pointer for cursor
    */
   apply(data, tweetType, accountIds) {
     const {
@@ -61,26 +61,27 @@ class StatusFilter {
     if (retweets && tweetType === TweetType.RETWEET) {
       // Keep the tweets which are retweeted by the user
       if (threads === false && get(data.retweeted_status, 'user.id_str') === data.user.id_str) {
-        this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'keep own retweet');
+        this.logger.trace({ id: data.id_str, user: data.user.screen_name }, 'keep own retweet');
         return false;
       }
 
-      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter retweet');
+      this.logger.trace({ id: data.id_str, user: data.user.screen_name }, 'filter retweet');
+
       return data.id_str;
     }
 
     if (quotes && tweetType === TweetType.QUOTE) {
-      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter quote');
+      this.logger.trace({ id: data.id_str, user: data.user.screen_name }, 'filter quote');
       return data.id_str;
     }
 
     if (userMentions && hasUserMentions(data)) {
-      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter mentions');
+      this.logger.trace({ id: data.id_str, user: data.user.screen_name }, 'filter mentions');
       return data.id_str;
     }
 
     if (hashTags && hasHashTags(data)) {
-      this.logger.debug({ id: data.id_str, user: data.user.screen_name }, 'filter hashtag');
+      this.logger.trace({ id: data.id_str, user: data.user.screen_name }, 'filter hashtag');
       return data.id_str;
     }
 
