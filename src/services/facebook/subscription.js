@@ -93,7 +93,7 @@ class Subscription {
 
         return this.facebook.request(options);
       })
-      .each((subcription) => logger.info('Facebook subcription:', subcription))
+      .each((subscription) => logger.info('Facebook subscription:', subscription))
       .catch((e) => {
         logger.error('Failed to subscribe', e);
       });
