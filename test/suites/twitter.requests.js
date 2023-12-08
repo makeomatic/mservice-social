@@ -40,7 +40,7 @@ const prepareSocial = require('../../src');
         .publishAndWait('social.feed.register', payload, { timeout: 15000 });
     });
 
-    it('wait for stream to startup', () => Promise.delay(30000));
+    it('wait for stream to startup', () => Promise.delay(5000));
 
     it('should have collected some tweets', async () => {
       const response = await service.amqp

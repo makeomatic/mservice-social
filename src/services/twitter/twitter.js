@@ -445,6 +445,11 @@ class Twitter {
       // eslint-disable-next-line no-await-in-loop
       const { tweets, cursorTop, cursorBottom } = await nitter.fetchTweets(cursor, account, order);
 
+      if (!this.core.knex.client.pool) {
+        this.logger.debug('service is closed, loader stopped');
+        break;
+      }
+
       assert(cursorTop);
       assert(cursorBottom);
       assert(tweets !== null);
@@ -456,11 +461,6 @@ class Twitter {
             break;
           }
         }
-      }
-
-      if (!this.core.knex.client.pool) {
-        this.logger.debug('Knex pool destroyed. Microfleet service is closed.');
-        break;
       }
 
       // eslint-disable-next-line no-await-in-loop
