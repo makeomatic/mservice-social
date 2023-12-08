@@ -403,7 +403,7 @@ class Twitter {
       const tweetType = getTweetType(data);
 
       if (this.shouldFilterTweet(data, tweetType) !== false) {
-        this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'skip tweet');
+        this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'tweet skipped by type filter');
         await this._saveCursor(data);
 
         return false;
@@ -490,7 +490,11 @@ class Twitter {
         }
 
         // eslint-disable-next-line no-await-in-loop
-        await Promise.map(tweets, this.onData(notify));
+        const store = this.onData(notify);
+        for(const tweet of tweets) {
+          await store(tweet)
+        }
+        // await Promise.map(tweets, this.onData(notify));
 
         looped = looped && pages < maxPages && tweets.length > 0;
         cursor = cursorBottom;

@@ -64,7 +64,6 @@ describe('service', function suite() {
         .connect()
         .then(() => social.knex('feeds').delete())
         .then(() => social.knex('facebook_media').delete())
-        .then(() => social.knex.destroy())
         .then(() => social.close());
     });
 
