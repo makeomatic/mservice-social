@@ -206,7 +206,7 @@ describe('service', function suite() {
       stub.restore();
     });
 
-    after(`after all`, async () => {
+    after('after all', async () => {
       wtf.dump();
     });
   });
