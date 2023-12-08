@@ -57,6 +57,7 @@ const prepareSocial = require('../../src');
     after('shutdown service', async () => {
       await service.close();
       wtf.dump();
+      process.exit(0);
     });
   });
 });

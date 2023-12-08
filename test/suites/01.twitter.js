@@ -338,5 +338,6 @@ describe('01.twitter.js', function testSuite() {
   after('shutdown service', async () => {
     await service.close();
     wtf.dump();
+    process.exit(0);
   });
 });

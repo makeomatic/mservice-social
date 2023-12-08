@@ -106,7 +106,7 @@ describe('service', function suite() {
         facebook: {
           enabled: true,
           syncMediaOnStart: false,
-          subscribeOnStart: false,
+          subscribeOnStart: true,
           app: {
             id: '2',
             secret: 'secret1',
@@ -139,10 +139,9 @@ describe('service', function suite() {
 
       return social
         .connect()
-        // .then(() => mock.verify())
+        .then(() => mock.verify())
         .finally(async () => {
           await social.close();
-          wtf.dump();
         });
     });
 
@@ -208,6 +207,7 @@ describe('service', function suite() {
 
     after('after all', async () => {
       wtf.dump();
+      process.exit(0);
     });
   });
 });

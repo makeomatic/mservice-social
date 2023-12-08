@@ -71,6 +71,7 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
     after('shutdown service', async () => {
       await service.close();
       wtf.dump();
+      process.exit(0);
     });
   });
 });
