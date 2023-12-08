@@ -489,10 +489,10 @@ class Twitter {
           }
         }
 
-        // eslint-disable-next-line no-await-in-loop
         const store = this.onData(notify);
-        for(const tweet of tweets) {
-          await store(tweet)
+        for (const tweet of tweets) {
+          // eslint-disable-next-line no-await-in-loop
+          await store(tweet);
         }
         // await Promise.map(tweets, this.onData(notify));
 
