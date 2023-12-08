@@ -256,12 +256,14 @@ class NitterClient {
   async destroy() {
     if (this.pool) {
       await this.pool.destroy();
+      this.pool = undefined;
     }
   }
 
   async close() {
     if (this.pool) {
       await this.pool.close();
+      this.pool = undefined;
     }
   }
 }
