@@ -400,6 +400,10 @@ class Twitter {
   }
 
   async _onData(data, notify = true) {
+    if (!this.core.knex.client.pool) {
+      throw new Error('Knex pool destroyed. Microfleet service is closed.');
+    }
+
     if (Twitter.isTweet(data)) {
       const tweetType = getTweetType(data);
 
@@ -493,10 +497,7 @@ class Twitter {
           }
         }
 
-        if ( !this.core.knex.client.pool ) {
-          throw new Error('Knex pool destroyed')
-        }
-
+        // eslint-disable-next-line no-await-in-loop
         await Promise.map(tweets, this.onData(notify));
 
         looped = looped && pages < maxPages && tweets.length > 0;

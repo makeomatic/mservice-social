@@ -8,7 +8,7 @@ const prepareSocial = require('../../src');
   [['reply'], [TweetType.ORIGINAL, TweetType.RETWEET, TweetType.QUOTE]],
   [['retweet', 'reply', 'quote'], [TweetType.ORIGINAL]],
 ].forEach(([restrictedTypeNames, allowedTypes]) => {
-  describe(`tweeter.requests.js: restricted types->${restrictedTypeNames.join(',')} `, function() {
+  describe(`tweeter.requests.js: restricted types->${restrictedTypeNames.join(',')} `, function testSuit() {
     let service;
     before('start service', async () => {
       service = await prepareSocial({
