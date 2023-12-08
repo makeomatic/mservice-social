@@ -9,7 +9,6 @@ const {
   isObject, isString, conforms, merge, find, isNil,
 } = require('lodash');
 
-const assert = require('assert');
 const StatusFilter = require('./status-filter');
 const { transform, TYPE_TWEET } = require('../../utils/response');
 const { getTweetType, TweetTypeByName } = require('./tweet-types');
@@ -362,7 +361,7 @@ class Twitter {
       this.resyncTimer = null;
     }
 
-    await this.nitter.destroy();
+    await this.nitter?.destroy();
   }
 
   shouldNotifyFor(event, from) {
@@ -451,16 +450,13 @@ class Twitter {
       // eslint-disable-next-line no-await-in-loop
       const { tweets, cursorTop, cursorBottom } = await this.nitter.fetchTweets(cursor, account, order);
 
-      if (this.isDestroyed) {
+      const terminated = this.isDestroyed || !tweets?.length || !cursorTop || !cursorBottom;
+      if (terminated) {
         this.logger.debug({
           pages, cursor, count, account,
         }, 'tweet loading terminated');
         break;
       }
-
-      assert(cursorTop);
-      assert(cursorBottom);
-      assert(tweets !== null);
 
       if (lastKnownTweet) {
         for (const tweet of tweets) {
@@ -504,14 +500,16 @@ class Twitter {
     try {
       const data = await this.nitter.fetchById(tweetId);
 
-      this.logger.debug({ data }, 'tweet fetchById');
+      if (data) {
+        this.logger.debug({ data }, 'tweet fetchById');
 
-      if (Twitter.isTweet(data)) {
-        // inserted directly using api/sync
-        const tweetType = getTweetType(data);
-        const saved = await this._saveToStatuses(data, tweetType, true, this.logger);
-        this.logger.debug({ tweetId }, 'tweet synced');
-        return saved;
+        if (Twitter.isTweet(data)) {
+          // inserted directly using api/sync
+          const tweetType = getTweetType(data);
+          const saved = await this._saveToStatuses(data, tweetType, true, this.logger);
+          this.logger.debug({ tweetId }, 'tweet synced');
+          return saved;
+        }
       }
 
       return false;
@@ -553,7 +551,9 @@ class Twitter {
     for (const _username of screenNames) {
       // eslint-disable-next-line no-await-in-loop
       const { id, username } = await this.nitter.fetchUserId(_username);
-      accounts.push({ id, username });
+      if (id) {
+        accounts.push({ id, username });
+      }
     }
 
     return merge(original, accounts);
