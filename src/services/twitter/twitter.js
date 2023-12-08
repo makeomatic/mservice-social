@@ -405,13 +405,13 @@ class Twitter {
       const tweetType = getTweetType(data);
 
       if (this.shouldFilterTweet(data, tweetType) !== false) {
-        this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'tweet skipped by type filter');
+        this.logger.trace({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'tweet skipped by type filter');
         await this._saveCursor(data);
 
         return false;
       }
 
-      this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
+      // this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
 
       try {
@@ -422,7 +422,7 @@ class Twitter {
           this.publish(saved);
         }
 
-        this.logger.debug({ id: data.id_str }, 'tweet saved');
+        this.logger.trace({ id: data.id_str }, 'tweet saved');
 
         return saved;
       } catch (err) {
