@@ -15,8 +15,8 @@ describe('service', function suite() {
     before('create feed', async () => {
       const social = await prepareSocial({
         facebook: {
-          subscribeOnStart: false
-        }
+          subscribeOnStart: false,
+        },
       });
 
       await social.connect();
@@ -56,8 +56,8 @@ describe('service', function suite() {
     after('clean up feeds', async () => {
       const social = await prepareSocial({
         facebook: {
-          subscribeOnStart: false
-        }
+          subscribeOnStart: false,
+        },
       });
 
       return social
@@ -65,7 +65,7 @@ describe('service', function suite() {
         .then(() => social.knex('feeds').delete())
         .then(() => social.knex('facebook_media').delete())
         .then(() => social.knex.destroy())
-        .then(() => social.close())
+        .then(() => social.close());
     });
 
     it('should be able to synchronize media on start up', async () => {
@@ -93,7 +93,6 @@ describe('service', function suite() {
           pageToken: '42',
         }
       );
-
 
       return social
         .connect()
