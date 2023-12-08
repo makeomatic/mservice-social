@@ -425,7 +425,7 @@ class Twitter {
 
         return saved;
       } catch (err) {
-        this.logger.warn({ data, err }, 'failed to save tweet');
+        this.logger.warn({ id: data.id_str, err }, 'failed to save tweet');
       }
     }
 
