@@ -158,7 +158,8 @@ async function request(config) {
     url = `${url}?${query}`;
   }
 
-  const { body, statusCode } = await undici.request(url);
+  const client = undici;
+  const { body, statusCode } = await client.request(url);
 
   if (statusCode === 200) {
     return {
