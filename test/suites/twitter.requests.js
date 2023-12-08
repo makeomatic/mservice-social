@@ -53,6 +53,9 @@ const prepareSocial = require('../../src');
       });
     });
 
-    after('shutdown service', () => service.close());
+    after('shutdown service', async () => {
+      await service.close();
+      await Promise.delay(5000);
+    });
   });
 });
