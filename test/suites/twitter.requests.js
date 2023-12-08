@@ -56,7 +56,6 @@ const prepareSocial = require('../../src');
 
     after('shutdown service', async () => {
       await service.close();
-      await Promise.delay(15000);
       wtf.dump();
     });
   });

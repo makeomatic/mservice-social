@@ -4,7 +4,8 @@
   "main": "./src/index.js",
   "version": "8.0.2",
   "scripts": {
-    "test:e2e": "mdep test run --exit",
+    "test:e2e:exit": "mdep test run --test_args -- --exit",
+    "test:e2e": "mdep test run",
     "test": "pnpm lint && pnpm test:e2e",
     "doc": "cd schemas && apidoc -i ../src/actions -v -o ../docs",
     "docker-release": "mdep docker release",

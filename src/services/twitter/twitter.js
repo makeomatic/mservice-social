@@ -18,7 +18,7 @@ const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
 };
 const { kPublishEvent } = require('../notifier');
-const nitter = require('./nitter/nitter');
+const { NitterClient } = require('./nitter/nitter');
 
 const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
 
@@ -226,11 +226,11 @@ class Twitter {
     this.core = core;
     this.client = new TwitterClient(config);
     this.loaderMaxPages = config.max_pages ?? 20;
-
+    this.isDestroyed = false;
     this.notifyConfig = config.notifications;
     this.requestsConfig = config.requests;
     this.storage = storage;
-
+    this.nitter = new NitterClient();
     this.logger = logger.child({ namespace: '@social/twitter' });
 
     const { restrictedTypes = [] } = config.requests || {};
@@ -246,8 +246,8 @@ class Twitter {
 
     // this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
     // this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
-    this.fetchTweets = nitter.fetchTweets;
-    this.fetchById = nitter.fetchById;
+    // this.fetchTweets = this.nitter.fetchTweets.bind(this.nitter);
+    // this.fetchById = this.nitter.fetchById.bind(this.nitter);
 
     // cheaper than bind
     this.onData = (notify) => (json) => this._onData(json, notify);
@@ -349,7 +349,10 @@ class Twitter {
     }
   }
 
-  destroy() {
+  async destroy() {
+    this.logger.debug('twitter service to be destroyed');
+    this.isDestroyed = true;
+
     if (this.syncPromise) {
       this.syncPromise.cancel();
     }
@@ -358,6 +361,8 @@ class Twitter {
       clearTimeout(this.resyncTimer);
       this.resyncTimer = null;
     }
+
+    await this.nitter.destroy();
   }
 
   shouldNotifyFor(event, from) {
@@ -442,12 +447,12 @@ class Twitter {
     let count = 0;
     let cursor = null;
 
-    while (looped) {
+    while (looped && !this.isDestroyed) {
       // eslint-disable-next-line no-await-in-loop
-      const { tweets, cursorTop, cursorBottom } = await nitter.fetchTweets(cursor, account, order);
+      const { tweets, cursorTop, cursorBottom } = await this.nitter.fetchTweets(cursor, account, order);
 
-      if (!this.core.knex.client.pool) {
-        this.logger.trace('service is closed, loader stopped');
+      if (this.isDestroyed) {
+        this.logger.trace('twitter is destroyed, loader should be stopped');
         break;
       }
 
@@ -495,7 +500,7 @@ class Twitter {
 
   async syncTweet(tweetId) {
     try {
-      const data = await this.fetchById(tweetId);
+      const data = await this.nitter.fetchById(tweetId);
 
       this.logger.debug({ data }, 'tweet fetchById');
 
@@ -545,7 +550,7 @@ class Twitter {
     const accounts = [];
     for (const _username of screenNames) {
       // eslint-disable-next-line no-await-in-loop
-      const { id, username } = await nitter.fetchUserId(_username);
+      const { id, username } = await this.nitter.fetchUserId(_username);
       accounts.push({ id, username });
     }
 

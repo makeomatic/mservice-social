@@ -142,7 +142,6 @@ describe('service', function suite() {
         .then(() => mock.verify())
         .finally(async () => {
           await social.close();
-          await Promise.delay(15000);
           wtf.dump();
         });
     });
@@ -176,7 +175,6 @@ describe('service', function suite() {
       assert.equal(invalid, true);
 
       await social.close();
-      await Promise.delay(15000);
       wtf.dump();
 
       stub.reset();
@@ -202,7 +200,6 @@ describe('service', function suite() {
       assert(stub.notCalled);
 
       await social.close();
-      await Promise.delay(15000);
       wtf.dump();
 
       stub.reset();

@@ -5,7 +5,7 @@
 // noinspection JSValidateTypes
 
 const { HttpStatusError } = require('common-errors');
-const undici = require('undici');
+const { Pool } = require('undici');
 
 function throwErrorIfFound(data) {
   if (data.errors) {
@@ -149,91 +149,100 @@ function getTweetsFromGraphQL(data) {
   return { tweets, cursorTop, cursorBottom }
 }
 
-async function request(config) {
+class NitterClient {
 
-  let { url, params } = config
-
-  if (params) {
-    const query = new URLSearchParams(params);
-    url = `${url}?${query}`;
+  constructor(options = {}) {
+    this.baseUrl = options?.baseUrl ?? process.env.NITTER_URL;
+    this.pool = new Pool(this.baseUrl, { connections: options?.connections ?? 5 });
   }
 
-  const client = undici;
-  const { body, statusCode } = await client.request(url);
+  async _request(config) {
 
-  if (statusCode === 200) {
-    return {
-      statusCode,
-      data: await body.json()
-    };
-  } else {
-    throw new Error(`Request failed with status code: ${statusCode}`);
-  }
-}
+    let { url, params, method } = config
 
-function getBaseUrl() {
-  return process.env.NITTER_URL;
-}
+    if (params) {
+      const query = new URLSearchParams(params);
+      url = `${url}?${query}`;
+    }
 
-async function fetchById(id) {
+    const { body, statusCode } = await this.pool.request({ path: url, method: method.toUpperCase() });
 
-  const config = {
-    method: 'get',
-    url: getBaseUrl() + '/api/tweet/' + id,
-  }
-
-  const response = await request(config);
-
-  throwErrorIfFound(response.data);
-
-  return getTweetFromGraphQL(response.data, id);
-}
-
-/*
-  cursor || Twitter.cursor(tweet, order),
-  account,
-  order === 'asc' ? 'max_id' : 'since_id'
- */
-async function fetchTweets(cursor, account, order) {
-
-  const { id } = await fetchUserId(account)
-
-  const config = {
-    method: 'get',
-    url: getBaseUrl() + '/api/user/' + id + '/tweets',
-    params: {
-      cursor
+    if (statusCode === 200) {
+      return {
+        statusCode,
+        data: await body.json()
+      };
+    } else {
+      throw new Error(`Request failed with status code: ${statusCode}, body: ${await body.text()}`);
     }
   }
 
-  const response = await request(config);
+  async fetchById(id) {
 
-  throwErrorIfFound(response.data);
+    const config = {
+      method: 'get',
+      url: '/api/tweet/' + id,
+    }
 
-  return getTweetsFromGraphQL(response.data);
-}
+    const response = await this._request(config);
 
-async function fetchUserId(_username) {
+    throwErrorIfFound(response.data);
 
-  const config = {
-    method: 'get',
-    url: getBaseUrl() + '/api/user/' + _username
+    return getTweetFromGraphQL(response.data, id);
   }
 
-  const response = await request(config);
+  /*
+    cursor || Twitter.cursor(tweet, order),
+    account,
+    order === 'asc' ? 'max_id' : 'since_id'
+   */
+  async fetchTweets(cursor, account, order) {
 
-  throwErrorIfFound(response.data);
+    const { id } = await this.fetchUserId(account)
 
-  const { id, username } = response.data;
-  if (id === "") {
-    throw new HttpStatusError(404, "User not found");
+    const config = {
+      method: 'get',
+      url: '/api/user/' + id + '/tweets',
+      params: {
+        cursor
+      }
+    }
+
+    const response = await this._request(config);
+
+    throwErrorIfFound(response.data);
+
+    return getTweetsFromGraphQL(response.data);
   }
 
-  return { id, username }
+  async fetchUserId(_username) {
+
+    const config = {
+      method: 'get',
+      url: '/api/user/' + _username
+    }
+
+    const response = await this._request(config);
+
+    throwErrorIfFound(response.data);
+
+    const { id, username } = response.data;
+    if (id === "") {
+      throw new HttpStatusError(404, "User not found");
+    }
+
+    return { id, username }
+  }
+
+  async destroy() {
+    return this.pool.destroy();
+  }
+
+  async close() {
+    return this.pool.close();
+  }
 }
 
 module.exports = {
-  fetchById,
-  fetchTweets,
-  fetchUserId
+  NitterClient
 };
