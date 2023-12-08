@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const assert = require('assert');
 const sinon = require('sinon');
+const wtf = require('wtfnode');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
 describe('01.twitter.js', function testSuite() {
@@ -330,6 +331,12 @@ describe('01.twitter.js', function testSuite() {
     assert.notStrictEqual(data.attributes.type, 1); // reply
   });
 
-  after('close consumer', async () => listener.close());
-  after('shutdown service', async () => service.close());
+  after('close consumer', async () => {
+    await listener.close();
+  });
+
+  after('shutdown service', async () => {
+    await service.close();
+    wtf.dump();
+  });
 });

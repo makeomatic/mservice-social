@@ -362,7 +362,11 @@ class Twitter {
       this.resyncTimer = null;
     }
 
-    await this.nitter.destroy();
+    try {
+      await this.nitter.destroy();
+    } catch(err) {
+      this.logger.warn({ err }, `nitter destroyed`)
+    }
   }
 
   shouldNotifyFor(event, from) {
