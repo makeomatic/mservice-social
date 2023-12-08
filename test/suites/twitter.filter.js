@@ -6,8 +6,8 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
 [
   [true, [true, true], [0, 1], []],
   [false, [true, true], [0], []], // check filteredTypes more correctly with own later
-].forEach(options => {
-  const [ignoreFilters, filters, expectedTypes, filteredTypes] = options
+].forEach((options) => {
+  const [ignoreFilters, filters, expectedTypes, filteredTypes] = options;
   describe(`twitter.filter.js: options = ${JSON.stringify(options)}`, function testSuite() {
     const prepareService = require('../../src');
     let service;
@@ -68,8 +68,8 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
     });
 
     after('shutdown service', async () => {
-      await service.close()
-      await Promise.delay(5000)
+      await service.close();
+      await Promise.delay(5000);
     });
   });
 });
