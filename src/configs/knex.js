@@ -9,6 +9,7 @@ module.exports = {
       user: 'postgres',
       password: '',
     },
+    pool: { min: 0, max: 10 },
     searchPath: ['public', 'social'],
     migrations: {
       tableName: 'migrations',
