@@ -23,6 +23,12 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
         },
       });
       await service.connect();
+
+      if (service.knex._singleton) {
+        throw new Error('Knex singleton failure')
+      } else {
+        service.knex._singleton = true
+      }
     });
 
     after('clean up feeds', async () => service.knex('feeds').delete());
@@ -54,9 +60,6 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
       });
     });
 
-    after('shutdown service', async () => {
-      await service.close();
-      await Promise.delay(5000);
-    });
+    after('shutdown service', () => service.close());
   });
 });

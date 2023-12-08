@@ -10,7 +10,7 @@ module.exports = {
       password: '',
     },
     pool: {
-      min: 2,
+      min: 5,
       max: 10,
       acquireTimeoutMillis: 30000,
     },
