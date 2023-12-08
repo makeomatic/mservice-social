@@ -493,12 +493,11 @@ class Twitter {
           }
         }
 
-        const store = this.onData(notify);
-        for (const tweet of tweets) {
-          // eslint-disable-next-line no-await-in-loop
-          await store(tweet);
+        if ( !this.core.knex.client.pool ) {
+          throw new Error('Knex pool destroyed')
         }
-        // await Promise.map(tweets, this.onData(notify));
+
+        await Promise.map(tweets, this.onData(notify));
 
         looped = looped && pages < maxPages && tweets.length > 0;
         cursor = cursorBottom;
