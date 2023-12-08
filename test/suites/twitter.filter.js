@@ -4,6 +4,14 @@ const wtf = require('wtfnode');
 
 const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.attributes.type, 10) === type);
 
+let checkCount = 0;
+function check() {
+  checkCount += 1;
+  if (checkCount === 2) {
+    wtf.dump();
+  }
+}
+
 [
   [true, [true, true], [0, 1], []],
   [false, [true, true], [0], []], // check filteredTypes more correctly with own later
@@ -70,8 +78,7 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
 
     after('shutdown service', async () => {
       await service.close();
-      wtf.dump();
-      process.exit(0);
+      check();
     });
   });
 });

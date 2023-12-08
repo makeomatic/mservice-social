@@ -4,6 +4,14 @@ const wtf = require('wtfnode');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
 const prepareSocial = require('../../src');
 
+let checkCount = 0;
+function check() {
+  checkCount += 1;
+  if (checkCount === 3) {
+    wtf.dump();
+  }
+}
+
 [ // restrictedTypeNames, allowedTypes
   [['tweet', 'retweet'], [TweetType.REPLY, TweetType.QUOTE]],
   [['reply'], [TweetType.ORIGINAL, TweetType.RETWEET, TweetType.QUOTE]],
@@ -56,8 +64,7 @@ const prepareSocial = require('../../src');
 
     after('shutdown service', async () => {
       await service.close();
-      wtf.dump();
-      process.exit(0);
+      check();
     });
   });
 });

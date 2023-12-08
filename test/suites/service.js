@@ -174,7 +174,6 @@ describe('service', function suite() {
       assert.equal(invalid, true);
 
       await social.close();
-      wtf.dump();
 
       stub.reset();
       stub.restore();
@@ -199,7 +198,6 @@ describe('service', function suite() {
       assert(stub.notCalled);
 
       await social.close();
-      wtf.dump();
 
       stub.reset();
       stub.restore();
