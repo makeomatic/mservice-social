@@ -3,8 +3,8 @@ const assert = require('assert');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
 
 [ // restrictedTypeNames, allowedTypes
-  [['tweet', 'retweet'], [TweetType.REPLY, TweetType.QUOTE]],
-  // [['reply'], [TweetType.ORIGINAL, TweetType.RETWEET, TweetType.QUOTE]],
+  // [['tweet', 'retweet'], [TweetType.REPLY, TweetType.QUOTE]],
+  [['reply'], [TweetType.ORIGINAL, TweetType.RETWEET, TweetType.QUOTE]],
   // [['retweet', 'reply', 'quote'], [TweetType.ORIGINAL]],
 ].forEach(([restrictedTypeNames, allowedTypes]) => {
   describe(`tweeter.requests.js: restricted types->${restrictedTypeNames.join(',')} `, function testSuite() {
