@@ -378,7 +378,7 @@ class Twitter {
     if (directlyInserted) {
       status.explicit = true;
     }
-    logger.debug({ id: status.id }, 'saving serialized status');
+    // logger.debug({ id: status.id }, 'saving serialized status');
     logger.trace({ status }, 'saving serialized status data');
 
     return this.storage
