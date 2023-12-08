@@ -7,7 +7,7 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
   [['reply'], [TweetType.ORIGINAL, TweetType.RETWEET, TweetType.QUOTE]],
   [['retweet', 'reply', 'quote'], [TweetType.ORIGINAL]],
 ].forEach(([restrictedTypeNames, allowedTypes]) => {
-  describe(`tweeter.requests.js: ${restrictedTypeNames.join(',')} `, function testSuite() {
+  describe(`tweeter.requests.js: restricted types->${restrictedTypeNames.join(',')} `, function testSuite() {
     const prepareSocial = require('../../src');
     let service;
 
@@ -54,6 +54,9 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
       });
     });
 
-    after('shutdown service', async () => service.close());
+    after('shutdown service', async () => {
+      await service.close();
+      await Promise.delay(5000);
+    });
   });
 });
