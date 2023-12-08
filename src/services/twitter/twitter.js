@@ -501,7 +501,7 @@ class Twitter {
 
         this.logger.debug({
           looped, pages, cursor, count, account,
-        }, 'tweet looping');
+        }, 'tweet loader');
       }
     };
 

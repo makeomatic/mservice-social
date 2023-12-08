@@ -54,6 +54,7 @@
     "twitter": "^1.7.1",
     "undici": "^5.25.2",
     "uuid": "^9.0.0",
+    "wtfnode": "^0.9.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

@@ -125,6 +125,9 @@ dependencies:
   uuid:
     specifier: ^9.0.0
     version: 9.0.0
+  wtfnode:
+    specifier: ^0.9.1
+    version: 0.9.1
   yargs:
     specifier: ^17.7.2
     version: 17.7.2
@@ -4778,11 +4781,13 @@ packages:
 
   /get-symbol-from-current-process-h@1.0.2:
     resolution: {integrity: sha512-syloC6fsCt62ELLrr1VKBM1ggOpMdetX9hTrdW77UQdcApPHLmf7CI7OKcN1c9kYuNxKcDe4iJ4FY9sX3aw2xw==}
+    requiresBuild: true
     dev: false
     optional: true
 
   /get-uv-event-loop-napi-h@1.0.6:
     resolution: {integrity: sha512-t5c9VNR84nRoF+eLiz6wFrEp1SE2Acg0wS+Ysa2zF0eROes+LzOfuTaVHxGy8AbS8rq7FHEJzjnCZo1BupwdJg==}
+    requiresBuild: true
     dependencies:
       get-symbol-from-current-process-h: 1.0.2
     dev: false
@@ -6308,6 +6313,7 @@ packages:
 
   /node-addon-api@3.2.1:
     resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
+    requiresBuild: true
     dev: false
     optional: true
 
@@ -6332,6 +6338,7 @@ packages:
   /node-gyp-build@4.6.0:
     resolution: {integrity: sha512-NTZVKn9IylLwUzaKjkas1e4u2DLNcV4rdYagA4PWdPwW87Bi7z+BznyKSRwS/761tV/lzCGXplWsiaMjLqP2zQ==}
     hasBin: true
+    requiresBuild: true
     dev: false
     optional: true
 
@@ -7293,6 +7300,7 @@ packages:
 
   /ref-struct-di@1.1.1:
     resolution: {integrity: sha512-2Xyn/0Qgz89VT+++WP0sTosdm9oeowLP23wRJYhG4BFdMUrLj3jhwHZNEytYNYgtPKLNTP3KJX4HEgBvM1/Y2g==}
+    requiresBuild: true
     dependencies:
       debug: 3.2.7(supports-color@5.5.0)
     transitivePeerDependencies:
@@ -8765,6 +8773,11 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+    dev: false
+
+  /wtfnode@0.9.1:
+    resolution: {integrity: sha512-Ip6C2KeQPl/F3aP1EfOnPoQk14Udd9lffpoqWDNH3Xt78svxPbv53ngtmtfI0q2Te3oTq79XKTnRNXVIn/GsPA==}
+    hasBin: true
     dev: false
 
   /xorshift@1.2.0:
