@@ -400,10 +400,6 @@ class Twitter {
   }
 
   async _onData(data, notify = true) {
-    if (!this.core.knex.client.pool) {
-      throw new Error('Knex pool destroyed. Microfleet service is closed.');
-    }
-
     if (Twitter.isTweet(data)) {
       const tweetType = getTweetType(data);
 
@@ -460,6 +456,11 @@ class Twitter {
             break;
           }
         }
+      }
+
+      if (!this.core.knex.client.pool) {
+        this.logger.debug('Knex pool destroyed. Microfleet service is closed.');
+        break;
       }
 
       // eslint-disable-next-line no-await-in-loop
