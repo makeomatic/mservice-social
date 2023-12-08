@@ -364,8 +364,8 @@ class Twitter {
 
     try {
       await this.nitter.destroy();
-    } catch(err) {
-      this.logger.warn({ err }, `nitter destroyed`)
+    } catch (err) {
+      this.logger.warn({ err }, 'nitter destroyed');
     }
   }
 
