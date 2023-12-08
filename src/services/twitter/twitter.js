@@ -436,6 +436,48 @@ class Twitter {
     return false;
   }
 
+  async _tweetLoader(options) {
+    const {
+      lastKnownTweet, account, order, notify, maxPages,
+    } = options;
+    let looped = true;
+    let pages = 1;
+    let count = 0;
+    let cursor = null;
+
+    while (looped) {
+      // eslint-disable-next-line no-await-in-loop
+      const { tweets, cursorTop, cursorBottom } = await nitter.fetchTweets(cursor, account, order);
+
+      assert(cursorTop);
+      assert(cursorBottom);
+      assert(tweets !== null);
+
+      if (lastKnownTweet) {
+        for (const tweet of tweets) {
+          if (lastKnownTweet.id_str === tweet.id_str) {
+            looped = false;
+            break;
+          }
+        }
+      }
+
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.map(tweets, this.onData(notify));
+
+      looped = looped && pages < maxPages && tweets.length > 0;
+      cursor = cursorBottom;
+      count += tweets.length;
+      if (looped) {
+        pages += 1;
+      }
+
+      this.logger.debug({
+        looped, pages, cursor, count, account,
+      }, 'tweet loader');
+    }
+  }
+
   publish(tweet) {
     const account = get(tweet, 'meta.account', false);
     const { following } = this;
@@ -474,45 +516,6 @@ class Twitter {
     // calculate notification on sync
     const notify = this.shouldNotifyFor('data', 'sync');
 
-    const loader = async (lastKnownTweet) => {
-      let looped = true;
-      let pages = 1;
-      let count = 0;
-      let cursor = null;
-
-      while (looped) {
-        // eslint-disable-next-line no-await-in-loop
-        const { tweets, cursorTop, cursorBottom } = await nitter.fetchTweets(cursor, account, order);
-
-        assert(cursorTop);
-        assert(cursorBottom);
-        assert(tweets !== null);
-
-        if (lastKnownTweet) {
-          for (const tweet of tweets) {
-            if (lastKnownTweet.id_str === tweet.id_str) {
-              looped = false;
-              break;
-            }
-          }
-        }
-
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.map(tweets, this.onData(notify));
-
-        looped = looped && pages < maxPages && tweets.length > 0;
-        cursor = cursorBottom;
-        count += tweets.length;
-        if (looped) {
-          pages += 1;
-        }
-
-        this.logger.debug({
-          looped, pages, cursor, count, account,
-        }, 'tweet loader');
-      }
-    };
-
     // recursively syncs account
     const [lastKnownTweet] = await twitterStatuses.list({
       filter: {
@@ -525,7 +528,9 @@ class Twitter {
 
     this.logger.info({ lastKnownTweet: { id_str: lastKnownTweet?.id_str, id: lastKnownTweet?.id }, account }, 'selected last tweet from account');
     // await fetchedTweets(initialTweet);
-    await loader(lastKnownTweet);
+    await this._tweetLoader({
+      lastKnownTweet, account, order, notify, maxPages,
+    });
   }
 
   // eslint-disable-next-line class-methods-use-this
