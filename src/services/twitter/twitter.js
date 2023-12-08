@@ -377,7 +377,7 @@ class Twitter {
     if (directlyInserted) {
       status.explicit = true;
     }
-    logger.debug({ status, tweet, data }, 'saving serialized status');
+    logger.debug({ status }, 'saving serialized status');
 
     return this.storage
       .twitterStatuses()
@@ -411,15 +411,16 @@ class Twitter {
 
       this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
+
       try {
         const saved = await this._saveToStatuses(data, tweetType, false, this.logger);
         await this._saveCursor(data);
 
-        this.logger.debug({ data }, 'tweet saved');
-
         if (notify) {
           this.publish(saved);
         }
+
+        this.logger.debug({ id: data.id_str }, 'tweet saved');
 
         return saved;
       } catch (err) {
