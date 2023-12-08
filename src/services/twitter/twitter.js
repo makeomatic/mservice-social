@@ -440,7 +440,7 @@ class Twitter {
       const payload = transform(tweet, TYPE_TWEET);
       this.core.emit(kPublishEvent, route, payload);
     } else {
-      this.logger.warn({ tweet, account, following }, 'skipped broadcast');
+      this.logger.warn({ tweet: tweet.id, account, following }, 'skipped broadcast');
     }
   }
 
