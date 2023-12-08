@@ -7,7 +7,7 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
   [true, [true, true], [0, 1], []],
   [false, [true, true], [0], []], // check filteredTypes more correctly with own later
 ].forEach(([ignoreFilters, filters, expectedTypes, filteredTypes]) => {
-  describe('twitter filter statuses', function testSuite() {
+  describe('twitter.filter.js: filter statuses', function testSuite() {
     const prepareService = require('../../src');
     let service;
 
