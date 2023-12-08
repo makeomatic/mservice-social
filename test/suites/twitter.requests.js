@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
 const assert = require('assert');
+const wtf = require('wtfnode');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
 const prepareSocial = require('../../src');
 
@@ -55,8 +56,7 @@ const prepareSocial = require('../../src');
 
     after('shutdown service', async () => {
       await service.close();
-      await Promise.delay(5000);
-      require('wtfnode').dump();
+      wtf.dump();
     });
   });
 });
