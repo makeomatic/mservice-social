@@ -415,6 +415,8 @@ class Twitter {
         const saved = await this._saveToStatuses(data, tweetType, false, this.logger);
         await this._saveCursor(data);
 
+        this.logger.debug({ data }, 'tweet saved');
+
         if (notify) {
           this.publish(saved);
         }
