@@ -225,6 +225,7 @@ class Twitter {
   constructor(core, config, storage, logger) {
     this.core = core;
     this.client = new TwitterClient(config);
+    this.loaderMaxPages = config.twitter.max_pages ?? 20;
 
     this.notifyConfig = config.notifications;
     this.requestsConfig = config.requests;
@@ -512,7 +513,7 @@ class Twitter {
     }
   }
 
-  async syncAccount({ account }, order = 'asc', maxPages = 20) {
+  async syncAccount({ account }, order = 'asc') {
     const twitterStatuses = this.storage.twitterStatuses();
     // calculate notification on sync
     const notify = this.shouldNotifyFor('data', 'sync');
@@ -528,9 +529,9 @@ class Twitter {
     });
 
     this.logger.info({ lastKnownTweet: { id_str: lastKnownTweet?.id_str, id: lastKnownTweet?.id }, account }, 'selected last tweet from account');
-    // await fetchedTweets(initialTweet);
+
     await this._tweetLoader({
-      lastKnownTweet, account, order, notify, maxPages,
+      lastKnownTweet, account, order, notify, maxPages: this.loaderMaxPages,
     });
   }
 
