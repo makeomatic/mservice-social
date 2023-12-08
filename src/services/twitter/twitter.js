@@ -225,7 +225,7 @@ class Twitter {
   constructor(core, config, storage, logger) {
     this.core = core;
     this.client = new TwitterClient(config);
-    this.loaderMaxPages = config.twitter.max_pages ?? 20;
+    this.loaderMaxPages = config.max_pages ?? 20;
 
     this.notifyConfig = config.notifications;
     this.requestsConfig = config.requests;
