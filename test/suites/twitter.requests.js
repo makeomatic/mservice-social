@@ -25,9 +25,9 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
       await service.connect();
 
       if (service.knex._singleton) {
-        throw new Error('Knex singleton failure')
+        throw new Error('Knex singleton failure');
       } else {
-        service.knex._singleton = true
+        service.knex._singleton = true;
       }
     });
 
