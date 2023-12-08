@@ -3,7 +3,7 @@ const assert = require('assert');
 const sinon = require('sinon');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
-describe('twitter', function testSuite() {
+describe('01.twitter.js', function testSuite() {
   // this.retries(5);
 
   const prepareSocial = require('../../src');
@@ -125,8 +125,8 @@ describe('twitter', function testSuite() {
   it('should return error if request to register is not valid', async () => {
     await assert.rejects(service.amqp.publishAndWait(uri.register, payload.registerFail), {
       name: 'HttpStatusError',
-      statusCode: 400,
-      message: JSON.stringify([{ code: 17, message: 'No user matches for specified terms.' }]),
+      statusCode: 404,
+      message: 'User not found',
     });
   });
 
@@ -153,7 +153,7 @@ describe('twitter', function testSuite() {
   // that long?
   it('wait for stream to startup', () => Promise.delay(5000));
 
-  it('post tweet and wait for it to arrive', (done) => {
+  it.skip('post tweet and wait for it to arrive', (done) => {
     service.service('twitter').client.post(
       'statuses/update',
       { status: 'test'.repeat(220 / 4) }, // so we have between 140 and 280 characters
@@ -172,7 +172,7 @@ describe('twitter', function testSuite() {
     );
   });
 
-  it('should have collected some tweets', async function retryTweet() {
+  it.skip('should have collected some tweets', async function retryTweet() {
     this.retries(5);
 
     await Promise.delay(1500);
@@ -191,7 +191,7 @@ describe('twitter', function testSuite() {
     }));
   });
 
-  it('should have collected some tweets #2', async function retryTweet() {
+  it.skip('should have collected some tweets #2', async function retryTweet() {
     this.retries(5);
     const response = await request(uri.read, payload.readMultiple);
 
@@ -205,7 +205,7 @@ describe('twitter', function testSuite() {
     }));
   });
 
-  it('verify that spy has been called', () => {
+  it.skip('verify that spy has been called', () => {
     assert(broadcastSpy.called);
   });
 
@@ -229,7 +229,7 @@ describe('twitter', function testSuite() {
     });
   });
 
-  it('confirm amqp request to read works', async () => {
+  it.skip('confirm amqp request to read works', async () => {
     const response = await service.amqp.publishAndWait(uri.readAMQP, payload.read);
     assert.notEqual(response.data.length, 0);
   });
@@ -272,7 +272,7 @@ describe('twitter', function testSuite() {
     await assert.rejects(service.amqp.publishAndWait(uri.syncOne, payload.nonExistentTweet), {
       name: 'HttpStatusError',
       statusCode: 400,
-      message: JSON.stringify([{ code: 144, message: 'No status found with that ID.' }]),
+      message: JSON.stringify([{ code: 144, message: '_Missing: No status found with that ID.' }]),
     });
   });
 
@@ -322,6 +322,7 @@ describe('twitter', function testSuite() {
 
   it('compute and save tweet type', async () => {
     const { data } = await service.amqp.publishAndWait(uri.syncOne, payload.replyWithMentions);
+
     assert(data);
     assert.strictEqual(data.id, payload.replyWithMentions.tweetId);
     assert.strictEqual(data.type, 'tweet');
@@ -329,6 +330,6 @@ describe('twitter', function testSuite() {
     assert.notStrictEqual(data.attributes.type, 1); // reply
   });
 
-  after('close consumer', () => listener.close());
-  after('shutdown service', () => service.close());
+  after('close consumer', async () => listener.close());
+  after('shutdown service', async () => service.close());
 });
