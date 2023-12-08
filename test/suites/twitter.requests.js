@@ -1,16 +1,16 @@
 const Promise = require('bluebird');
 const assert = require('assert');
+const wtf = require('wtfnode');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
+const prepareSocial = require('../../src');
 
 [ // restrictedTypeNames, allowedTypes
   [['tweet', 'retweet'], [TweetType.REPLY, TweetType.QUOTE]],
   [['reply'], [TweetType.ORIGINAL, TweetType.RETWEET, TweetType.QUOTE]],
   [['retweet', 'reply', 'quote'], [TweetType.ORIGINAL]],
 ].forEach(([restrictedTypeNames, allowedTypes]) => {
-  describe(`tweet requests: ${restrictedTypeNames.join(',')} `, function testSuite() {
-    const prepareSocial = require('../../src');
+  describe(`tweeter.requests.js: restricted types->${restrictedTypeNames.join(',')} `, function testSuit() {
     let service;
-
     before('start service', async () => {
       service = await prepareSocial({
         notifier: {
@@ -25,7 +25,7 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
       await service.connect();
     });
 
-    after('cleanup feeds', () => service.knex('feeds').delete());
+    after('clean up feeds', () => service.knex('feeds').delete());
 
     it('should register feed', async () => {
       const payload = {
@@ -54,6 +54,10 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
       });
     });
 
-    after('shutdown service', () => service.close());
+    after('shutdown service', async () => {
+      await service.close();
+      wtf.dump();
+      process.exit(0);
+    });
   });
 });
