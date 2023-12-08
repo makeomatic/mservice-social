@@ -25,7 +25,7 @@ const { TweetType } = require('../../src/services/twitter/tweet-types');
       await service.connect();
     });
 
-    after('stop service', async () => service.knex('feeds').delete());
+    after('clean up feeds', async () => service.knex('feeds').delete());
 
     it('should register feed', async () => {
       const payload = {

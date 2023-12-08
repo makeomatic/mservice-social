@@ -3,7 +3,7 @@ const assert = require('assert');
 const sinon = require('sinon');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
-describe('twitter', function testSuite() {
+describe('01.twitter.js', function testSuite() {
   // this.retries(5);
 
   const prepareSocial = require('../../src');
@@ -330,6 +330,6 @@ describe('twitter', function testSuite() {
     assert.notStrictEqual(data.attributes.type, 1); // reply
   });
 
-  after('close consumer', () => listener.close());
-  after('shutdown service', () => service.close());
+  after('close consumer', async () => listener.close());
+  after('shutdown service', async () => service.close());
 });
