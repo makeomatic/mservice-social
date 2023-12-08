@@ -9,6 +9,7 @@ function check() {
   checkCount += 1;
   if (checkCount === 2) {
     wtf.dump();
+    process.exit(0);
   }
 }
 

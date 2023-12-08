@@ -202,10 +202,10 @@ describe('service', function suite() {
       stub.reset();
       stub.restore();
     });
+  });
 
-    after('after all', async () => {
-      wtf.dump();
-      process.exit(0);
-    });
+  after('after all', async () => {
+    wtf.dump();
+    process.exit(0);
   });
 });
