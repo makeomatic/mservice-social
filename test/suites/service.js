@@ -4,6 +4,7 @@ const request = require('request-promise');
 const { StatusCodeError } = require('request-promise/errors');
 const assert = require('assert');
 const sinon = require('sinon');
+const wtf = require('wtfnode');
 const { mockPageFeeds, makeRequest } = require('../mocks/facebook/page-feeds');
 const prepareSocial = require('../../src');
 const { SERVICE_STORAGE } = require('../../src/constants');
@@ -105,7 +106,7 @@ describe('service', function suite() {
         facebook: {
           enabled: true,
           syncMediaOnStart: false,
-          subscribeOnStart: false,
+          subscribeOnStart: true,
           app: {
             id: '2',
             secret: 'secret1',
@@ -138,8 +139,12 @@ describe('service', function suite() {
 
       return social
         .connect()
-        // .then(() => mock.verify())
-        .finally(() => social.close());
+        .then(() => mock.verify())
+        .finally(async () => {
+          await social.close();
+          await Promise.delay(30000);
+          wtf.dump();
+        });
     });
 
     it('should invalidate feed on `invalid token` response', async () => {
@@ -171,6 +176,8 @@ describe('service', function suite() {
       assert.equal(invalid, true);
 
       await social.close();
+      await Promise.delay(30000);
+      wtf.dump();
 
       stub.reset();
       stub.restore();
@@ -195,6 +202,8 @@ describe('service', function suite() {
       assert(stub.notCalled);
 
       await social.close();
+      await Promise.delay(30000);
+      wtf.dump();
 
       stub.reset();
       stub.restore();
