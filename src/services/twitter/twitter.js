@@ -447,7 +447,7 @@ class Twitter {
       const { tweets, cursorTop, cursorBottom } = await nitter.fetchTweets(cursor, account, order);
 
       if (!this.core.knex.client.pool) {
-        this.logger.debug('service is closed, loader stopped');
+        this.logger.trace('service is closed, loader stopped');
         break;
       }
 
@@ -470,13 +470,14 @@ class Twitter {
       looped = looped && pages < maxPages && tweets.length > 0;
       cursor = cursorBottom;
       count += tweets.length;
-      if (looped) {
-        pages += 1;
-      }
 
       this.logger.debug({
         looped, pages, cursor, count, account,
-      }, 'tweet loader');
+      }, 'tweet page load completed');
+
+      if (looped) {
+        pages += 1;
+      }
     }
   }
 
