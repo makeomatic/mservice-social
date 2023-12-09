@@ -154,6 +154,7 @@ function getTweetsFromGraphQL(data) {
 class NitterClient {
 
   constructor(options = {}) {
+    this.logger = options?.logger;
     this.baseUrl = options?.baseUrl ?? process.env.NITTER_URL;
     this.pool = new Pool(this.baseUrl, {
       connections: options?.connections ?? 1,
@@ -255,14 +256,22 @@ class NitterClient {
 
   async destroy() {
     if (this.pool) {
-      await this.pool.destroy();
+      try {
+        await this.pool.destroy();
+      } catch (err) {
+        this.logger?.warn({ err }, `error occurred while destroying connection pool`)
+      }
       this.pool = undefined;
     }
   }
 
   async close() {
     if (this.pool) {
-      await this.pool.close();
+      try {
+        await this.pool.close();
+      } catch (err) {
+        this.logger?.warn({ err }, `error occurred while closing connection pool`)
+      }
       this.pool = undefined;
     }
   }
