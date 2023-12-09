@@ -1,8 +1,8 @@
 const Promise = require('bluebird');
 const assert = require('assert');
+const whatIsRunning = require('why-is-node-running');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
 const prepareSocial = require('../../src');
-const whatIsRunning = require('why-is-node-running');
 
 // eslint-disable-next-line func-names
 describe('tweeter.requests.js', function () {
