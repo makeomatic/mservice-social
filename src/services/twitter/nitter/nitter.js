@@ -156,7 +156,7 @@ class NitterClient {
   constructor(options = {}) {
     this.baseUrl = options?.baseUrl ?? process.env.NITTER_URL;
     this.pool = new Pool(this.baseUrl, {
-      connections: options?.connections ?? 5,
+      connections: options?.connections ?? 1,
       pipelining: 1,
       bodyTimeout: 5000,
       headersTimeout: 5000
