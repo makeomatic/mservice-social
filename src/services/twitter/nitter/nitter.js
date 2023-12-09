@@ -185,12 +185,24 @@ class NitterClient {
     //   throw new Error(`Request failed with status code: ${statusCode}, body: ${ response.data }`);
     // }
 
-    const { body, statusCode } = await this.pool.request({ path: url, method: method.toUpperCase() });
+    let data
+    let statusCode
+
+    try {
+      const response = await this.pool.request({ path: url, method: method.toUpperCase() });
+      statusCode = response.statusCode
+      data = await response.body.json()
+    } catch (err) {
+      if ( err instanceof  ClientDestroyedError ) {
+        statusCode = 200
+        data = null
+      }
+    }
 
     if (statusCode === 200) {
       return {
         statusCode,
-        data: await body.json()
+        data
       };
     } else {
       throw new Error(`Request failed with status code: ${statusCode}, body: ${await body.text()}`);
