@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const assert = require('assert');
 const prepareService = require('../../src');
+const whatIsRunning = require("why-is-node-running");
 
 const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.attributes.type, 10) === type);
 
@@ -27,7 +28,7 @@ describe('twitter.filter.js', function () {
     name, ignoreFilters, filters, expectedTypes, filteredTypes,
   }) => {
     // eslint-disable-next-line func-names
-    describe(`${name}`, function testSuite() {
+    describe(`${name}`, function() {
       let service;
 
       before(async () => {
@@ -52,7 +53,9 @@ describe('twitter.filter.js', function () {
         await service.knex('feeds').delete();
       });
 
-      after(async () => service.close());
+      after(async () => {
+        await service.close();
+      });
 
       it('should register feed', async () => {
         const payload = {
@@ -67,7 +70,7 @@ describe('twitter.filter.js', function () {
           .publishAndWait('social.feed.register', payload, { timeout: 15000 });
       });
 
-      it('wait for stream to startup', () => Promise.delay(10000));
+      it('wait for stream to startup', () => Promise.delay(5000));
 
       it(`tweet filtering [skip_valid_acc=${ignoreFilters}]`, async () => {
         const response = await service.amqp
@@ -86,5 +89,9 @@ describe('twitter.filter.js', function () {
         });
       });
     });
+  });
+
+  after(async () => {
+    whatIsRunning();
   });
 });
