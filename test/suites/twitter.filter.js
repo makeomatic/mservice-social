@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
 const assert = require('assert');
+const why = require('why-is-node-running');
 const prepareService = require('../../src');
 
 const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.attributes.type, 10) === type);
@@ -52,9 +53,7 @@ describe('twitter.filter.js', function () {
         await service.knex('feeds').delete();
       });
 
-      after(async () => {
-        await service.close();
-      });
+      after(() => service.close());
 
       it('should register feed', async () => {
         const payload = {
@@ -88,5 +87,9 @@ describe('twitter.filter.js', function () {
         });
       });
     });
+  });
+
+  after(() => {
+    why();
   });
 });

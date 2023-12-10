@@ -27,6 +27,9 @@ module.exports = {
     "nitter": {
       "ports": ["8080:8080"]
     },
+    "rabbitmq": {
+      "ports": ["15672:15672"]
+    },
   },
   pre: 'rimraf ./coverage/tmp',
   post_exec: 'pnpm exec -- c8 report -r text -r lcov',

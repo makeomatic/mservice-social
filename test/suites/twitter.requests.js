@@ -43,9 +43,7 @@ describe('tweeter.requests.js', function () {
         await service.knex('feeds').delete();
       });
 
-      after(async () => {
-        await service.close();
-      });
+      after(() => service.close());
 
       it('should register feed', async () => {
         const payload = {
