@@ -437,50 +437,47 @@ class Twitter {
     return false;
   }
 
-  async _tweetLoader(options) {
+  async _runTweetLoader(options) {
     const {
       lastKnownTweet, account, order, notify, maxPages,
     } = options;
-    let looped = true;
-    let pages = 1;
-    let count = 0;
-    let cursor = null;
 
-    while (looped && !this.isDestroyed) {
-      // eslint-disable-next-line no-await-in-loop
-      const { tweets, cursorTop, cursorBottom } = await this.nitter.fetchTweets(cursor, account, order);
+    try {
+      let looped = true;
+      let pages = 1;
+      let count = 0;
+      let cursor = null;
 
-      const terminated = this.isDestroyed || !tweets?.length || !cursorTop || !cursorBottom;
-      if (terminated) {
-        this.logger.debug({
-          pages, cursor, count, account,
-        }, 'tweet loading terminated');
-        break;
-      }
+      do {
+        // eslint-disable-next-line no-await-in-loop
+        const { tweets, cursorBottom } = await this.nitter.fetchTweets(cursor, account, order);
 
-      if (lastKnownTweet) {
-        for (const tweet of tweets) {
-          if (lastKnownTweet.id_str === tweet.id_str) {
-            looped = false;
-            break;
+        if (lastKnownTweet) {
+          for (const tweet of tweets) {
+            if (lastKnownTweet.id_str === tweet.id_str) {
+              looped = false;
+              break;
+            }
           }
         }
-      }
 
-      // eslint-disable-next-line no-await-in-loop
-      await Promise.map(tweets, this.onData(notify));
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.map(tweets, this.onData(notify));
 
-      looped = looped && pages < maxPages && tweets.length > 0;
-      cursor = cursorBottom;
-      count += tweets.length;
+        looped = looped && pages < maxPages && tweets.length > 0;
+        cursor = cursorBottom;
+        count += tweets.length;
 
-      this.logger.debug({
-        looped, pages, cursor, count, account,
-      }, 'tweet page loaded');
+        this.logger.debug({
+          looped, pages, cursor, count, account,
+        }, 'tweet page loaded');
 
-      if (looped) {
-        pages += 1;
-      }
+        if (looped) {
+          pages += 1;
+        }
+      } while (looped && !this.isDestroyed);
+    } catch (err) {
+      this.logger.warn({ err }, 'error occurred while tweet loading');
     }
   }
 
@@ -536,7 +533,7 @@ class Twitter {
 
     this.logger.info({ lastKnownTweet: { id_str: lastKnownTweet?.id_str, id: lastKnownTweet?.id }, account }, 'selected last tweet from account');
 
-    await this._tweetLoader({
+    await this._runTweetLoader({
       lastKnownTweet, account, order, notify, maxPages: this.loaderMaxPages,
     });
   }

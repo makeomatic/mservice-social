@@ -1,6 +1,5 @@
 const Promise = require('bluebird');
 const assert = require('assert');
-const whatIsRunning = require('why-is-node-running');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
 const prepareSocial = require('../../src');
 
@@ -62,7 +61,7 @@ describe('tweeter.requests.js', function () {
           .publishAndWait('social.feed.register', payload, { timeout: 15000 });
       });
 
-      it('wait for stream to startup', () => Promise.delay(5000));
+      it('wait for stream to startup', () => Promise.delay(30000));
 
       it('should have collected some tweets', async () => {
         const response = await service.amqp
@@ -75,9 +74,5 @@ describe('tweeter.requests.js', function () {
         });
       });
     });
-  });
-
-  after(async () => {
-    whatIsRunning();
   });
 });

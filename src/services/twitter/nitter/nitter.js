@@ -157,7 +157,7 @@ class NitterClient {
     this.logger = options?.logger;
     this.baseUrl = options?.baseUrl ?? process.env.NITTER_URL;
     this.pool = new Pool(this.baseUrl, {
-      connections: options?.connections ?? 1,
+      connections: options?.connections ?? 10,
       pipelining: 1,
       bodyTimeout: 5000,
       headersTimeout: 5000
@@ -173,31 +173,9 @@ class NitterClient {
       url = `${url}?${query}`;
     }
 
-    // const response = await axios.request({ url, baseURL: this.baseUrl, params, method, timeout: 5000 })
-    // const statusCode = response.status
-    //
-    // if (statusCode === 200) {
-    //   return {
-    //     statusCode,
-    //     data: response.data
-    //   };
-    // } else {
-    //   throw new Error(`Request failed with status code: ${statusCode}, body: ${ response.data }`);
-    // }
-
-    let data
-    let statusCode
-
-    try {
-      const response = await this.pool.request({ path: url, method: method.toUpperCase() });
-      statusCode = response.statusCode
-      data = await response.body.json()
-    } catch (err) {
-      if ( err.type  === "ClientDestroyedError" ) {
-        statusCode = 200
-        data = null
-      }
-    }
+    const response = await this.pool.request({ path: url, method: method.toUpperCase() });
+    const statusCode = response.statusCode
+    const data = await response.body.json()
 
     if (statusCode === 200) {
       return {
@@ -205,7 +183,7 @@ class NitterClient {
         data
       };
     } else {
-      throw new Error(`Request failed with status code: ${statusCode}, body: ${await body.text()}`);
+      throw new Error(`Request failed with status code: ${statusCode}, body: ${data}`);
     }
   }
 
@@ -273,7 +251,6 @@ class NitterClient {
       } catch (err) {
         this.logger?.warn({ err }, `error occurred while destroying connection pool`)
       }
-      this.pool = undefined;
     }
   }
 
@@ -284,7 +261,6 @@ class NitterClient {
       } catch (err) {
         this.logger?.warn({ err }, `error occurred while closing connection pool`)
       }
-      this.pool = undefined;
     }
   }
 }

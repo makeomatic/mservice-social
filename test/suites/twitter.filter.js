@@ -1,6 +1,5 @@
 const Promise = require('bluebird');
 const assert = require('assert');
-const whatIsRunning = require('why-is-node-running');
 const prepareService = require('../../src');
 
 const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.attributes.type, 10) === type);
@@ -89,9 +88,5 @@ describe('twitter.filter.js', function () {
         });
       });
     });
-  });
-
-  after(async () => {
-    whatIsRunning();
   });
 });
