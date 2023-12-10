@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const assert = require('assert');
+const whatIsRunning = require('why-is-node-running');
 const prepareService = require('../../src');
-const whatIsRunning = require("why-is-node-running");
 
 const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.attributes.type, 10) === type);
 
@@ -28,7 +28,7 @@ describe('twitter.filter.js', function () {
     name, ignoreFilters, filters, expectedTypes, filteredTypes,
   }) => {
     // eslint-disable-next-line func-names
-    describe(`${name}`, function() {
+    describe(`${name}`, function () {
       let service;
 
       before(async () => {
