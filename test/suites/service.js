@@ -4,6 +4,7 @@ const request = require('request-promise');
 const { StatusCodeError } = require('request-promise/errors');
 const assert = require('assert');
 const sinon = require('sinon');
+const why = require('why-is-node-running');
 const wtf = require('wtfnode');
 const { mockPageFeeds, makeRequest } = require('../mocks/facebook/page-feeds');
 const prepareSocial = require('../../src');
@@ -205,6 +206,7 @@ describe('service', function suite() {
   });
 
   after(() => {
+    why();
     wtf.dump();
     process.exit(0);
   });

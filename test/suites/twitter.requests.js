@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const assert = require('assert');
 const why = require('why-is-node-running');
+const wtf = require('wtfnode');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
 const prepareSocial = require('../../src');
 
@@ -76,8 +77,8 @@ describe('tweeter.requests.js', function () {
   });
 
   after(() => {
-    // re-run
     why();
+    wtf.dump();
     process.exit(0);
   });
 });

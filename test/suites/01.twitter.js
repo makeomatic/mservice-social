@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const assert = require('assert');
 const sinon = require('sinon');
+const why = require('why-is-node-running');
 const wtf = require('wtfnode');
 const AMQPTransport = require('@microfleet/transport-amqp');
 
@@ -337,6 +338,7 @@ describe('01.twitter.js', function testSuite() {
 
   after('shutdown service', async () => {
     await service.close();
+    why();
     wtf.dump();
   });
 });

@@ -55,8 +55,6 @@
     "twitter": "^1.7.1",
     "undici": "^5.25.2",
     "uuid": "^9.0.0",
-    "why-is-node-running": "^2.2.2",
-    "wtfnode": "^0.9.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
@@ -81,7 +79,9 @@
     "mocha": "^10.2.0",
     "rimraf": "^5.0.1",
     "semantic-release": "^21.0.2",
-    "sinon": "^15.1.0"
+    "sinon": "^15.1.0",
+    "why-is-node-running": "^2.2.2",
+    "wtfnode": "^0.9.1"
   },
   "files": [
     "./src",

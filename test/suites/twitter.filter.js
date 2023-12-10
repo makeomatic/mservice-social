@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const assert = require('assert');
 const why = require('why-is-node-running');
+const wtf = require('wtfnode');
 const prepareService = require('../../src');
 
 const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.attributes.type, 10) === type);
@@ -90,8 +91,8 @@ describe('twitter.filter.js', function () {
   });
 
   after(() => {
-    // re-run
     why();
+    wtf.dump();
     process.exit(0);
   });
 });
