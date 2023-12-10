@@ -92,5 +92,6 @@ describe('twitter.filter.js', function () {
   after(() => {
     // re-run
     why();
+    process.exit(0);
   });
 });
