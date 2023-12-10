@@ -39,7 +39,7 @@ async function register(data) {
   // return amount of accounts
   logger.info(`Saved ${accounts.length} accounts`);
 
-  (async () => {
+  await (async () => {
     try {
       const results = await Promise.allSettled(syncAccountJobs.map((job) => job()));
 
