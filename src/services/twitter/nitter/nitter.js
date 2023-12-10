@@ -193,7 +193,7 @@ class NitterClient {
       statusCode = response.statusCode
       data = await response.body.json()
     } catch (err) {
-      if ( err instanceof  ClientDestroyedError ) {
+      if ( err.type  === "ClientDestroyedError" ) {
         statusCode = 200
         data = null
       }
