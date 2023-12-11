@@ -121,7 +121,7 @@ class Social extends Microfleet {
     this.addConnector(ConnectorsTypes.application, () => twitter.init(), 'twitter');
 
     /* so that it stops before database is closed, but after transport is unavailable */
-    this.addDestructor(ConnectorsTypes.migration, () => twitter.destroy(true), 'twitter');
+    this.addDestructor(ConnectorsTypes.migration, () => twitter.destroy(), 'twitter');
 
     this.service(k.SERVICE_TWITTER, twitter);
     feed.service(k.SERVICE_TWITTER, twitter);

@@ -39,7 +39,7 @@ async function register(data) {
   // return amount of accounts
   logger.info(`Saved ${accounts.length} accounts`);
 
-  (async () => {
+  await (async () => {
     try {
       const results = await Promise.allSettled(syncAccountJobs.map((job) => job()));
 
@@ -49,8 +49,8 @@ async function register(data) {
         }
       }
 
-      // update twitter feed
-      twitter.connect();
+      // update Twitter feed
+      await twitter.connect();
     } catch (e) {
       logger.error({ err: e }, 'failed to perform async op');
     }

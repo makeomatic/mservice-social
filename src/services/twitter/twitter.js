@@ -17,6 +17,7 @@ const EXTENDED_TWEET_MODE = {
   tweet_mode: 'extended',
 };
 const { kPublishEvent } = require('../notifier');
+const { NitterClient } = require('./nitter/nitter');
 
 const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
 
@@ -34,16 +35,16 @@ function extractAccount(accum, value) {
   return accum;
 }
 
-function twitterApiConfig(config) {
-  const TWITTER_API_DEFAULTS = {
-    // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline
-    user_timeline: {
-      exclude_replies: false,
-      include_rts: true,
-    },
-  };
-  return merge(TWITTER_API_DEFAULTS, config.api);
-}
+// function twitterApiConfig(config) {
+//   const TWITTER_API_DEFAULTS = {
+//     // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline
+//     user_timeline: {
+//       exclude_replies: false,
+//       include_rts: true,
+//     },
+//   };
+//   return merge(TWITTER_API_DEFAULTS, config.api);
+// }
 
 /**
  * @property {TwitterClient} client
@@ -223,11 +224,12 @@ class Twitter {
   constructor(core, config, storage, logger) {
     this.core = core;
     this.client = new TwitterClient(config);
-
+    this.loaderMaxPages = config.max_pages ?? 20;
+    this.isDestroyed = false;
     this.notifyConfig = config.notifications;
     this.requestsConfig = config.requests;
     this.storage = storage;
-
+    this.nitter = new NitterClient();
     this.logger = logger.child({ namespace: '@social/twitter' });
 
     const { restrictedTypes = [] } = config.requests || {};
@@ -241,8 +243,10 @@ class Twitter {
     this.syncPromise = null;
     this.resyncTimer = null;
 
-    this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
-    this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
+    // this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
+    // this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
+    // this.fetchTweets = this.nitter.fetchTweets.bind(this.nitter);
+    // this.fetchById = this.nitter.fetchById.bind(this.nitter);
 
     // cheaper than bind
     this.onData = (notify) => (json) => this._onData(json, notify);
@@ -344,7 +348,10 @@ class Twitter {
     }
   }
 
-  destroy() {
+  async destroy() {
+    this.logger.debug('twitter service to be destroyed');
+    this.isDestroyed = true;
+
     if (this.syncPromise) {
       this.syncPromise.cancel();
     }
@@ -353,6 +360,8 @@ class Twitter {
       clearTimeout(this.resyncTimer);
       this.resyncTimer = null;
     }
+
+    await this.nitter?.close();
   }
 
   shouldNotifyFor(event, from) {
@@ -373,7 +382,8 @@ class Twitter {
     if (directlyInserted) {
       status.explicit = true;
     }
-    logger.debug({ status }, 'saving serialized status');
+    // logger.debug({ id: status.id }, 'saving serialized status');
+    logger.trace({ status }, 'saving serialized status data');
 
     return this.storage
       .twitterStatuses()
@@ -399,14 +409,15 @@ class Twitter {
       const tweetType = getTweetType(data);
 
       if (this.shouldFilterTweet(data, tweetType) !== false) {
-        this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'skip tweet');
+        this.logger.trace({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'tweet skipped by type filter');
         await this._saveCursor(data);
 
         return false;
       }
 
-      this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
+      // this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
       this.logger.trace({ data }, 'inserting tweet data');
+
       try {
         const saved = await this._saveToStatuses(data, tweetType, false, this.logger);
         await this._saveCursor(data);
@@ -415,13 +426,61 @@ class Twitter {
           this.publish(saved);
         }
 
+        this.logger.trace({ id: data.id_str }, 'tweet saved');
+
         return saved;
       } catch (err) {
-        this.logger.warn({ data, err }, 'failed to save tweet');
+        this.logger.warn({ id: data.id_str, err }, 'failed to save tweet');
       }
     }
 
     return false;
+  }
+
+  async _runLoader(options) {
+    const {
+      lastKnownTweet, account, order, onSaveTweet, maxPages,
+    } = options;
+
+    try {
+      let looped = true;
+      let pages = 1;
+      let count = 0;
+      let cursor = null;
+
+      do {
+        // eslint-disable-next-line no-await-in-loop
+        const { tweets, cursorBottom } = await this.nitter.fetchTweets(cursor, account, order);
+
+        if (lastKnownTweet) {
+          for (const tweet of tweets) {
+            if (lastKnownTweet.id_str === tweet.id_str) {
+              looped = false;
+              break;
+            }
+          }
+        }
+
+        if (tweets && tweets.length) {
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.map(tweets, onSaveTweet);
+        }
+
+        looped = looped && pages < maxPages && tweets.length > 0;
+        cursor = cursorBottom;
+        count += tweets.length;
+
+        this.logger.debug({
+          looped, pages, cursor, count, account,
+        }, 'tweet page loaded');
+
+        if (looped) {
+          pages += 1;
+        }
+      } while (looped && !this.isDestroyed);
+    } catch (err) {
+      this.logger.warn({ err }, 'error occurred while tweet loading');
+    }
   }
 
   publish(tweet) {
@@ -432,19 +491,24 @@ class Twitter {
       const payload = transform(tweet, TYPE_TWEET);
       this.core.emit(kPublishEvent, route, payload);
     } else {
-      this.logger.warn({ tweet, account, following }, 'skipped broadcast');
+      this.logger.trace({ tweet: tweet.id, account, following }, 'skipped broadcast');
     }
   }
 
   async syncTweet(tweetId) {
     try {
-      const data = await this.fetchById(tweetId);
-      if (Twitter.isTweet(data)) {
-        // inserted directly using api/sync
-        const tweetType = getTweetType(data);
-        const saved = await this._saveToStatuses(data, tweetType, true, this.logger);
-        this.logger.debug({ tweetId }, 'tweet synced');
-        return saved;
+      const data = await this.nitter.fetchById(tweetId);
+
+      if (data) {
+        this.logger.debug({ data }, 'tweet fetchById');
+
+        if (Twitter.isTweet(data)) {
+          // inserted directly using api/sync
+          const tweetType = getTweetType(data);
+          const saved = await this._saveToStatuses(data, tweetType, true, this.logger);
+          this.logger.debug({ tweetId }, 'tweet synced');
+          return saved;
+        }
       }
 
       return false;
@@ -454,35 +518,13 @@ class Twitter {
     }
   }
 
-  async syncAccount({ cursor, account }, order = 'asc', maxPages = 20) {
+  async syncAccount({ account }, order = 'asc') {
     const twitterStatuses = this.storage.twitterStatuses();
     // calculate notification on sync
     const notify = this.shouldNotifyFor('data', 'sync');
 
-    const fetchedTweets = async (tweet, page = 1) => {
-      const tweets = await this.fetchTweets(
-        cursor || Twitter.cursor(tweet, order),
-        account,
-        order === 'asc' ? 'max_id' : 'since_id'
-      );
-
-      const { length } = tweets;
-      this.logger.debug('fetched %d tweets', length);
-
-      if (length === 0 || page >= maxPages) {
-        return;
-      }
-
-      const index = order === 'asc' ? length - 1 : 0;
-      const oldestTweet = await Promise
-        .map(tweets, this.onData(notify))
-        .get(index); // TODO: ensure that we are picking a tweet
-
-      await fetchedTweets(oldestTweet, page + 1);
-    };
-
     // recursively syncs account
-    const [initialTweet] = await twitterStatuses.list({
+    const [lastKnownTweet] = await twitterStatuses.list({
       filter: {
         page: 0,
         account,
@@ -491,48 +533,33 @@ class Twitter {
       },
     });
 
-    this.logger.info({ initialTweet: { id_str: initialTweet?.id_str, id: initialTweet?.id }, account }, 'selected last tweet from account');
-    await fetchedTweets(initialTweet);
+    this.logger.info({ lastKnownTweet: { id_str: lastKnownTweet?.id_str, id: lastKnownTweet?.id }, account }, 'selected last tweet from account');
+
+    await this._runLoader({
+      lastKnownTweet,
+      account,
+      order,
+      onSaveTweet: this.onData(notify),
+      maxPages: this.loaderMaxPages,
+    });
   }
 
-  fillUserIds(original) {
+  // eslint-disable-next-line class-methods-use-this
+  async fillUserIds(original) {
     const screenNames = original
       .filter((element) => (element.id === undefined))
       .map((element) => (element.username));
 
-    const usersParams = screenNames.join(',');
-
-    const validateAccounts = (userNames, accounts) => {
-      for (const username of userNames) {
-        const account = find(accounts, (x) => x.username.toLowerCase() === username.toLowerCase());
-        if (account === undefined) {
-          throw new HttpStatusError(400, `Users lookup failed for '${username}'`);
-        }
+    const accounts = [];
+    for (const _username of screenNames) {
+      // eslint-disable-next-line no-await-in-loop
+      const { id, username } = await this.nitter.fetchUserId(_username);
+      if (id) {
+        accounts.push({ id, username });
       }
-      return true;
-    };
+    }
 
-    return Promise
-      .fromCallback((next) => {
-        if (screenNames === '') {
-          next(null, []);
-        } else {
-          this.client.get('users/lookup', { screen_name: usersParams }, next);
-        }
-      })
-      .catch((e) => Array.isArray(e), (err) => {
-        this.logger.warn({ err }, 'failed to lookup %j', usersParams);
-        throw new HttpStatusError(400, JSON.stringify(err));
-      })
-      .reduce((acc, value) => {
-        acc.push({ id: value.id_str, username: value.screen_name });
-        return acc;
-      }, [])
-      .then((accounts) => {
-        validateAccounts(screenNames, accounts);
-
-        return merge(original, accounts);
-      });
+    return merge(original, accounts);
   }
 }
 
