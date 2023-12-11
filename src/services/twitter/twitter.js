@@ -361,7 +361,7 @@ class Twitter {
       this.resyncTimer = null;
     }
 
-    await this.nitter?.destroy();
+    await this.nitter?.close();
   }
 
   shouldNotifyFor(event, from) {
@@ -437,9 +437,9 @@ class Twitter {
     return false;
   }
 
-  async _runTweetLoader(options) {
+  async _runLoader(options) {
     const {
-      lastKnownTweet, account, order, notify, maxPages,
+      lastKnownTweet, account, order, onSaveTweet, maxPages,
     } = options;
 
     try {
@@ -461,8 +461,10 @@ class Twitter {
           }
         }
 
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.map(tweets, this.onData(notify));
+        if (tweets && tweets.length) {
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.map(tweets, onSaveTweet);
+        }
 
         looped = looped && pages < maxPages && tweets.length > 0;
         cursor = cursorBottom;
@@ -533,8 +535,12 @@ class Twitter {
 
     this.logger.info({ lastKnownTweet: { id_str: lastKnownTweet?.id_str, id: lastKnownTweet?.id }, account }, 'selected last tweet from account');
 
-    await this._runTweetLoader({
-      lastKnownTweet, account, order, notify, maxPages: this.loaderMaxPages,
+    await this._runLoader({
+      lastKnownTweet,
+      account,
+      order,
+      onSaveTweet: this.onData(notify),
+      maxPages: this.loaderMaxPages,
     });
   }
 

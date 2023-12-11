@@ -49,8 +49,8 @@ async function register(data) {
         }
       }
 
-      // update twitter feed
-      twitter.connect();
+      // update Twitter feed
+      await twitter.connect();
     } catch (e) {
       logger.error({ err: e }, 'failed to perform async op');
     }

@@ -156,9 +156,10 @@ class NitterClient {
   constructor(options = {}) {
     this.logger = options?.logger;
     this.baseUrl = options?.baseUrl ?? process.env.NITTER_URL;
+    this.abortController = new AbortController()
     this.pool = new Pool(this.baseUrl, {
-      connections: options?.connections ?? 10,
-      pipelining: 1,
+      connections: options?.connections ?? 5,
+      pipelining: 0,
       bodyTimeout: 5000,
       headersTimeout: 5000
     });
@@ -173,7 +174,12 @@ class NitterClient {
       url = `${url}?${query}`;
     }
 
-    const response = await this.pool.request({ path: url, method: method.toUpperCase() });
+    const response = await this.pool.request({
+      path: url,
+      method: method.toUpperCase(),
+      signal: this.abortController.signal
+    });
+
     const statusCode = response.statusCode
     const data = await response.body.json()
 
@@ -237,8 +243,8 @@ class NitterClient {
     throwErrorIfFound(response.data);
 
     const { id, username } = response.data;
-    if (id === "") {
-      throw new HttpStatusError(404, "User not found");
+    if (!id) {
+      throw new HttpStatusError(404, `User not found: ${_username}`);
     }
 
     return { id, username }
@@ -247,6 +253,7 @@ class NitterClient {
   async destroy() {
     if (this.pool) {
       try {
+        this.abortController.abort()
         await this.pool.destroy();
       } catch (err) {
         this.logger?.warn({ err }, `error occurred while destroying connection pool`)
@@ -257,6 +264,7 @@ class NitterClient {
   async close() {
     if (this.pool) {
       try {
+        // this.abortController.abort()
         await this.pool.close();
       } catch (err) {
         this.logger?.warn({ err }, `error occurred while closing connection pool`)

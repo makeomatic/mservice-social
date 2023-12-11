@@ -47,7 +47,7 @@
     "ms-conf": "^8.1.2",
     "p-limit": "^3.1.0",
     "pg": "^8.11.3",
-    "pino": "^8.14.1",
+    "pino": "^8.16.2",
     "prom-client": "^14.2.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
