@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
 const assert = require('assert');
-const { NitterClient } = require('../../src/services/twitter/nitter/nitter');
-// const Twitter = require('../../src/services/twitter/twitter');
+const { NitterClient: NitterClientTest } = require('../../src/services/twitter/nitter/nitter-request');
 
 process.env.NITTER_URL = 'https://api-nitter.fly.dev';
 
 describe('NitterClient', function Nitter() {
-  const nitter = new NitterClient();
+  const nitter = new NitterClientTest();
 
   it('should fetch id by username', async () => {
     const { id } = await nitter.fetchUserId('elonmusk');

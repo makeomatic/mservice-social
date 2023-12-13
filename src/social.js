@@ -1,4 +1,5 @@
 const { Microfleet, ConnectorsTypes } = require('@microfleet/core');
+// eslint-disable-next-line no-unused-vars
 const Promise = require('bluebird');
 const { NotFoundError } = require('common-errors');
 const Deepmerge = require('@fastify/deepmerge');
@@ -85,15 +86,20 @@ class Social extends Microfleet {
     const storage = this.service(k.SERVICE_STORAGE);
     const facebook = new Facebook(this, config.facebook, storage, feed, log);
 
-    if (config.facebook.subscribeOnStart) {
-      this.addConnector(ConnectorsTypes.application, () => Promise
-        .delay(60000)
-        .then(() => facebook.subscription.subscribe()));
-    }
+    this.addConnector(ConnectorsTypes.application, () => facebook.init(), 'facebook');
 
-    if (config.facebook.syncMediaOnStart) {
-      this.addConnector(ConnectorsTypes.application, () => facebook.media.syncPagesHistory());
-    }
+    /* so that it stops before database is closed, but after transport is unavailable */
+    this.addDestructor(ConnectorsTypes.migration, () => facebook.destroy(), 'facebook');
+
+    // if (config.facebook.subscribeOnStart) {
+    //   this.addConnector(ConnectorsTypes.application, () => Promise
+    //     .delay(60000)
+    //     .then(() => facebook.subscription.subscribe()));
+    // }
+    //
+    // if (config.facebook.syncMediaOnStart) {
+    //   this.addConnector(ConnectorsTypes.application, () => facebook.media.syncPagesHistory());
+    // }
 
     this.service(k.SERVICE_FACEBOOK, facebook);
     feed.service(k.SERVICE_FACEBOOK, facebook);

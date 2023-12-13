@@ -1,11 +1,13 @@
 const Promise = require('bluebird');
 const assert = require('assert');
-// const why = require('why-is-node-running');
+const whyRunning = require('why-is-node-running');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
 const prepareSocial = require('../../src');
 
 // eslint-disable-next-line func-names
 describe('tweeter.requests.js', function () {
+  this.timeout(180000);
+
   const tests = [
     {
       enabled: true,
@@ -63,10 +65,10 @@ describe('tweeter.requests.js', function () {
           };
 
           await service.amqp
-            .publishAndWait('social.feed.register', payload, { timeout: 15000 });
+            .publishAndWait('social.feed.register', payload, { timeout: 30000 });
         });
 
-        it('wait for stream to startup', () => Promise.delay(10000));
+        it('wait for stream to startup', () => Promise.delay(30000));
 
         it('should have collected some tweets', async () => {
           // eslint-disable-next-line  no-unused-vars
@@ -81,4 +83,20 @@ describe('tweeter.requests.js', function () {
         });
       });
     });
+
+  after(() => {
+    whyRunning();
+  });
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Application specific logging, throwing an error, or other logic here
+  process.exit(1); // Exit with a failure code
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Application specific logging, throwing an error, or other logic here
+  process.exit(1); // Exit with a failure code
 });

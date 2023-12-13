@@ -1,23 +1,15 @@
-const Promise = require('bluebird');
-const TwitterClient = require('twitter');
-const BN = require('bn.js');
 const get = require('get-value');
-const pLimit = require('p-limit');
-const { v4: uuid } = require('uuid');
 const { HttpStatusError } = require('common-errors');
-const {
-  isObject, isString, conforms, merge, find, isNil,
-} = require('lodash');
+const { merge, find } = require('lodash');
+// eslint-disable-next-line no-unused-vars
+const Promise = require('bluebird');
 
 const StatusFilter = require('./status-filter');
 const { transform, TYPE_TWEET } = require('../../utils/response');
-const { getTweetType, TweetTypeByName } = require('./tweet-types');
+const { getTweetType, TweetTypeByName, isTweet } = require('./tweet-types');
 
-const EXTENDED_TWEET_MODE = {
-  tweet_mode: 'extended',
-};
 const { kPublishEvent } = require('../notifier');
-const { NitterClient } = require('./nitter/nitter');
+const { NitterClient } = require('./nitter/nitter-request');
 
 const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
 
@@ -35,17 +27,6 @@ function extractAccount(accum, value) {
   return accum;
 }
 
-// function twitterApiConfig(config) {
-//   const TWITTER_API_DEFAULTS = {
-//     // Refer to https://developer.twitter.com/en/docs/twitter-api/v1/tweets/timelines/api-reference/get-statuses-user_timeline
-//     user_timeline: {
-//       exclude_replies: false,
-//       include_rts: true,
-//     },
-//   };
-//   return merge(TWITTER_API_DEFAULTS, config.api);
-// }
-
 /**
  * @property {TwitterClient} client
  * @property {array} listeners
@@ -53,62 +34,6 @@ function extractAccount(accum, value) {
  * @property {Logger} logger
  */
 class Twitter {
-  /**
-   *  static helpers
-   */
-  static one = new BN('1', 10);
-
-  // isTweet checker
-  static isTweet = conforms({
-    entities: isObject,
-    id_str: isString,
-    text: isString,
-  });
-
-  static isRetweet = (data) => {
-    const retweet = data.retweeted_status;
-    if (isNil(retweet)) {
-      return false;
-    }
-    const tweetOwnerId = get(retweet, 'user.id');
-    // Keep the tweets which are retweeted by the user
-    return tweetOwnerId !== data.user.id;
-  };
-
-  static isReply = (data) => {
-    const toUserId = data.in_reply_to_user_id;
-    if (isNil(toUserId)) {
-      return false;
-    }
-    // Keep the tweets which are replied by the user
-    if (toUserId === data.user.id) {
-      return false;
-    }
-    return !isNil(data.in_reply_to_status_id);
-  };
-
-  /**
-   * cursor extractor
-   * @param {object} tweet
-   * @param {string} order
-   */
-  static cursor(tweet, order = 'asc') {
-    const cursor = tweet?.id_str || tweet?.id;
-
-    // no tweet / cursor
-    if (!cursor) {
-      return undefined;
-    }
-
-    if (order === 'desc') {
-      return cursor;
-    }
-
-    return new BN(cursor, 10)
-      .sub(Twitter.one)
-      .toString(10);
-  }
-
   /**
    * @param {object} data
    * @param {boolean} noSerialize
@@ -145,76 +70,6 @@ class Twitter {
     return tweet;
   }
 
-  static tweetSyncFactory(twitter, logger) {
-    // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/get-statuses-show-id
-    const fetch = (id) => Promise.fromCallback((next) => (
-      twitter.get('statuses/show', {
-        ...EXTENDED_TWEET_MODE,
-        id,
-      }, (err, tweet) => {
-        if (err) {
-          return next(err);
-        }
-        return next(null, tweet);
-      })
-    ));
-
-    return async (tweetId) => {
-      logger.debug({ tweetId }, 'fetching tweet by id');
-      const tweet = await fetch(tweetId);
-      return tweet;
-    };
-  }
-
-  static tweetFetcherFactory(twitter, logger, apiConfig) {
-    logger.debug('timeline config: %j', apiConfig.user_timeline);
-    const limit = pLimit(1);
-    const fetch = (cursor, account, cursorField = 'max_id') => Promise.fromCallback((next) => (
-      twitter.get('statuses/user_timeline', {
-        ...EXTENDED_TWEET_MODE,
-        count: 200,
-        screen_name: account,
-        trim_user: false,
-        ...apiConfig.user_timeline,
-        [cursorField]: cursor,
-      }, (err, tweets, response) => {
-        if (err) {
-          if (response) {
-            err.headers = response.headers;
-            err.statusCode = response.statusCode;
-          }
-
-          return next(err);
-        }
-        return next(null, tweets);
-      })
-    ));
-
-    return (cursor, account, cursorField = 'max_id') => {
-      const time = process.hrtime();
-      const quid = uuid();
-      logger.debug('%s => queueing at %s', quid, time);
-      return limit(async () => {
-        logger.debug('fetching tweets for %s based on %s %s', account, cursorField, cursor);
-        logger.debug('%s => starting to fetch tweets: %s', quid, process.hrtime(time));
-        try {
-          return await fetch(cursor, account, cursorField);
-        } catch (err) {
-          if (err.statusCode === 429) {
-            const reset = err.headers['x-rate-limit-reset'] * 1000;
-            logger.warn('Rate limit exceeded and would be refreshed at %s', new Date(reset));
-            await Promise.delay(reset - Date.now());
-            // make one more attempt while holding the same limit
-            return await fetch(cursor, account, cursorField);
-          }
-          throw err;
-        } finally {
-          logger.debug('%s => got response: %s', quid, process.hrtime(time));
-        }
-      });
-    };
-  }
-
   /**
    * @param {Social} core
    * @param {object} config
@@ -223,13 +78,14 @@ class Twitter {
    */
   constructor(core, config, storage, logger) {
     this.core = core;
-    this.client = new TwitterClient(config);
+    this.syncOnStart = config.syncOnStart;
     this.loaderMaxPages = config.max_pages ?? 20;
-    this.isDestroyed = false;
+    this.isStopped = false;
     this.notifyConfig = config.notifications;
-    this.requestsConfig = config.requests;
     this.storage = storage;
-    this.nitter = new NitterClient();
+    this.nitter = new NitterClient({
+      logger: logger.child({ namespace: '@social/nitter' }),
+    });
     this.logger = logger.child({ namespace: '@social/twitter' });
 
     const { restrictedTypes = [] } = config.requests || {};
@@ -240,16 +96,14 @@ class Twitter {
 
     this.following = [];
     this.accountIds = {};
-    this.syncPromise = null;
-    this.resyncTimer = null;
+    this.syncTimer = null;
 
     // this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
     // this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
     // this.fetchTweets = this.nitter.fetchTweets.bind(this.nitter);
     // this.fetchById = this.nitter.fetchById.bind(this.nitter);
 
-    // cheaper than bind
-    this.onData = (notify) => (json) => this._onData(json, notify);
+    this.syncFeed = this.syncFeed.bind(this);
     this.init = this.init.bind(this);
   }
 
@@ -257,69 +111,42 @@ class Twitter {
     return this.restrictedStatusTypes;
   }
 
+  /**
+   * @description method of microfleet plugin lifecycle, plugin initialization
+   * @returns {Promise<void>}
+   */
   async init() {
-    if (this.resyncTimer) {
-      clearTimeout(this.resyncTimer);
-      this.resyncTimer = null;
+    if (this.syncOnStart) {
+      await this.start();
+      this.logger.debug('twitter initialized, sync started');
+    } else {
+      this.logger.debug('twitter plugin initialized, no sync on start');
     }
+  }
 
-    try {
-      this.syncPromise = Promise
-        .resolve()
-        .then(async () => {
-          const accounts = await this.storage
-            .feeds()
-            .fetch({ network: 'twitter' });
+  /**
+   * @description method of microfleet plugin lifecycle, plugin destruction
+   * @returns {Promise<void>}
+   */
+  async destroy() {
+    this.logger.debug('twitter service to be stopped');
+    await this.stop();
+  }
 
-          return Promise
-            .reduce(accounts, extractAccount, [])
-            .filter(async (twAccount) => {
-              try {
-                await this.syncAccount(twAccount, 'desc');
-              } catch (exception) {
-                const isAccountInaccessible = exception.statusCode === 401
-                  || (Array.isArray(exception) && exception.find((it) => (it.code === 34)));
+  async start() {
+    this.isStopped = false;
+    this.startTimer();
+  }
 
-                // removed twitter account
-                if (isAccountInaccessible) {
-                  this.logger.warn({ twAccount }, 'removing tw from database');
-                  await this.storage.feeds().remove({
-                    internal: twAccount.internal,
-                    network: 'twitter',
-                    network_id: twAccount.network_id,
-                  });
-                  return false;
-                }
+  async stop() {
+    this.isStopped = true;
+    this.stopTimer();
+    await this.nitter.cancel();
+  }
 
-                // augment with the account data
-                exception.account = twAccount;
-                this.logger.fatal({ err: exception }, 'unknown error from twitter');
-                throw exception;
-              }
-
-              return true;
-              /* to avoid rate limits */
-            }, { concurrency: 50 });
-        });
-
-      const validAccounts = await this.syncPromise;
-
-      this.logger.info({ validAccounts }, 'resolved accounts');
-
-      // TODO: no need to re-do this every sync cycle
-      this.setFollowing(validAccounts);
-      this.fillAccountIds(validAccounts);
-
-      this.resyncTimer = setTimeout(this.init, SYNC_INTERVAL);
-    } catch (err) {
-      if (this.syncPromise && !this.syncPromise.isCancelled) {
-        this.logger.warn({ err }, 'error syncing accounts');
-        this.resyncTimer = setTimeout(this.init, SYNC_INTERVAL);
-        this.syncPromise = null;
-      } else {
-        this.logger.warn({ err }, 'sync promise cancelled');
-      }
-    }
+  // eslint-disable-next-line class-methods-use-this
+  async connect() {
+    // noop
   }
 
   setFollowing(accounts) {
@@ -336,34 +163,6 @@ class Twitter {
     Object.setPrototypeOf(this.accountIds, null);
   }
 
-  async connect() {
-    // schedule reconnect
-    if (this.resyncTimer) {
-      this.logger.warn('reconnect was scheduled, skipping...');
-      return;
-    }
-
-    if (!this.syncPromise) {
-      await this.init();
-    }
-  }
-
-  async destroy() {
-    this.logger.debug('twitter service to be destroyed');
-    this.isDestroyed = true;
-
-    if (this.syncPromise) {
-      this.syncPromise.cancel();
-    }
-
-    if (this.resyncTimer) {
-      clearTimeout(this.resyncTimer);
-      this.resyncTimer = null;
-    }
-
-    await this.nitter?.close();
-  }
-
   shouldNotifyFor(event, from) {
     const allow = this.notifyConfig[event];
 
@@ -374,7 +173,7 @@ class Twitter {
     return this.statusFilter.apply(data, tweetType, this.accountIds);
   }
 
-  async _saveToStatuses(data, tweetType, directlyInserted, logger) {
+  async _saveToStatuses(data, tweetType, directlyInserted) {
     const tweet = Twitter.serializeTweet(data);
 
     const status = { ...tweet, type: tweetType };
@@ -383,103 +182,51 @@ class Twitter {
       status.explicit = true;
     }
     // logger.debug({ id: status.id }, 'saving serialized status');
-    logger.trace({ status }, 'saving serialized status data');
+    // this.logger.trace({ status }, 'saving serialized status data');
 
     return this.storage
       .twitterStatuses()
       .save(status);
   }
 
-  async _saveCursor(data) {
-    const tweet = Twitter.serializeTweet(data, true);
-
-    return this.storage
-      .feeds()
-      .saveCursor(tweet.id, tweet.meta.account_id, 'twitter');
-  }
-
-  async _getCursor(account) {
-    return this.storage
-      .feeds()
-      .getCursor(account, 'twitter');
-  }
-
   async _onData(data, notify = true) {
-    if (Twitter.isTweet(data)) {
-      const tweetType = getTweetType(data);
-
-      if (this.shouldFilterTweet(data, tweetType) !== false) {
-        this.logger.trace({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'tweet skipped by type filter');
-        await this._saveCursor(data);
-
-        return false;
-      }
-
-      // this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
-      this.logger.trace({ data }, 'inserting tweet data');
-
-      try {
-        const saved = await this._saveToStatuses(data, tweetType, false, this.logger);
-        await this._saveCursor(data);
-
-        if (notify) {
-          this.publish(saved);
-        }
-
-        this.logger.trace({ id: data.id_str }, 'tweet saved');
-
-        return saved;
-      } catch (err) {
-        this.logger.warn({ id: data.id_str, err }, 'failed to save tweet');
-      }
+    if (!this.isSyncable()) {
+      return false;
     }
 
-    return false;
-  }
+    if (!isTweet(data)) {
+      return false;
+    }
 
-  async _runLoader(options) {
-    const {
-      lastKnownTweet, account, order, onSaveTweet, maxPages,
-    } = options;
+    const tweetType = getTweetType(data);
+
+    if (this.shouldFilterTweet(data, tweetType) !== false) {
+      // this.logger.trace({
+      //   id: data.id_str,
+      //   type: tweetType,
+      //   user: data.user.screen_name
+      // }, 'tweet skipped by type filter');
+      // await this._saveCursor(data);
+      return false;
+    }
+
+    // this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
+    // this.logger.trace({ data }, 'inserting tweet data');
 
     try {
-      let looped = true;
-      let pages = 1;
-      let count = 0;
-      let cursor = null;
+      const saved = await this._saveToStatuses(data, tweetType, false);
+      // await this._saveCursor(data);
 
-      do {
-        // eslint-disable-next-line no-await-in-loop
-        const { tweets, cursorBottom } = await this.nitter.fetchTweets(cursor, account, order);
+      if (notify) {
+        this.publish(saved);
+      }
 
-        if (lastKnownTweet) {
-          for (const tweet of tweets) {
-            if (lastKnownTweet.id_str === tweet.id_str) {
-              looped = false;
-              break;
-            }
-          }
-        }
+      // this.logger.trace({ id: data.id_str }, 'tweet saved');
 
-        if (tweets && tweets.length) {
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.map(tweets, onSaveTweet);
-        }
-
-        looped = looped && pages < maxPages && tweets.length > 0;
-        cursor = cursorBottom;
-        count += tweets.length;
-
-        this.logger.debug({
-          looped, pages, cursor, count, account,
-        }, 'tweet page loaded');
-
-        if (looped) {
-          pages += 1;
-        }
-      } while (looped && !this.isDestroyed);
+      return saved;
     } catch (err) {
-      this.logger.warn({ err }, 'error occurred while tweet loading');
+      this.logger.warn({ id: data.id_str, err }, 'failed to save tweet');
+      return false;
     }
   }
 
@@ -491,7 +238,7 @@ class Twitter {
       const payload = transform(tweet, TYPE_TWEET);
       this.core.emit(kPublishEvent, route, payload);
     } else {
-      this.logger.trace({ tweet: tweet.id, account, following }, 'skipped broadcast');
+      // this.logger.trace({ tweet: tweet.id, account, following }, 'skipped broadcast');
     }
   }
 
@@ -502,10 +249,10 @@ class Twitter {
       if (data) {
         this.logger.debug({ data }, 'tweet fetchById');
 
-        if (Twitter.isTweet(data)) {
+        if (isTweet(data)) {
           // inserted directly using api/sync
           const tweetType = getTweetType(data);
-          const saved = await this._saveToStatuses(data, tweetType, true, this.logger);
+          const saved = await this._saveToStatuses(data, tweetType, true);
           this.logger.debug({ tweetId }, 'tweet synced');
           return saved;
         }
@@ -518,30 +265,127 @@ class Twitter {
     }
   }
 
-  async syncAccount({ account }, order = 'asc') {
-    const twitterStatuses = this.storage.twitterStatuses();
+  async syncFeed() {
+    const feeds = await this.storage
+      .feeds()
+      .fetch({ network: 'twitter' });
+
+    const accounts = feeds.reduce(extractAccount, []);
+
+    for (const item of accounts) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.syncAccount(item.account);
+    }
+
+    this.logger.info({ accounts }, 'resolved accounts');
+
+    this.setFollowing(accounts);
+    this.fillAccountIds(accounts);
+  }
+
+  isSyncable() {
+    return !this.isStopped;
+  }
+
+  startTimer() {
+    if (!this.isSyncable()) {
+      this.logger.debug('twitter is not syncable');
+      return;
+    }
+
+    if (this.syncTimer == null) {
+      this.syncTimer = setTimeout(() => {
+        // eslint-disable-next-line promise/catch-or-return
+        this.syncFeed()
+          .catch((err) => {
+            this.logger.warn({ err }, 'error occurred while syncing feeds');
+          })
+          .finally(() => {
+            this.syncTimer = null;
+            this.startTimer();
+          });
+      }, SYNC_INTERVAL);
+
+      this.logger.trace('sync timer restarted');
+    } else {
+      this.logger.trace('sync timer is already running...');
+    }
+  }
+
+  stopTimer() {
+    if (this.syncTimer) {
+      clearTimeout(this.syncTimer);
+      this.syncTimer = null;
+    }
+  }
+
+  async syncAccount(account) {
     // calculate notification on sync
     const notify = this.shouldNotifyFor('data', 'sync');
 
     // recursively syncs account
-    const [lastKnownTweet] = await twitterStatuses.list({
-      filter: {
-        page: 0,
-        account,
-        pageSize: 1,
-        order,
-      },
-    });
+    const lastTweet = await this.storage
+      .twitterStatuses()
+      .last({ account });
 
-    this.logger.info({ lastKnownTweet: { id_str: lastKnownTweet?.id_str, id: lastKnownTweet?.id }, account }, 'selected last tweet from account');
-
-    await this._runLoader({
-      lastKnownTweet,
+    this.logger.info({
+      lastKnownTweet: { id: lastTweet?.id },
       account,
-      order,
-      onSaveTweet: this.onData(notify),
-      maxPages: this.loaderMaxPages,
-    });
+    }, 'last known tweet');
+
+    try {
+      let looped = true;
+      let page = 1;
+      let count = 0;
+      let cursor = null;
+
+      do {
+        // eslint-disable-next-line no-await-in-loop
+        const result = await this.nitter.fetchTweets(account, cursor);
+        const tweets = result.tweets ?? [];
+        cursor = result.cursorBottom;
+
+        this.logger.debug({
+          account,
+          page,
+          tweets: tweets.map((tweet) => tweet.id_str),
+        }, 'tweets loaded');
+
+        if (lastTweet) {
+          for (const tweet of tweets) {
+            if (lastTweet.id === tweet.id_str) {
+              this.logger.debug({
+                account,
+                tweet_id: tweet.id_str,
+              }, 'reached last known tweet, account sync terminated');
+              looped = false;
+              break;
+            }
+          }
+          if (!looped) {
+            break;
+          }
+        }
+
+        for (const tweet of tweets) {
+          // eslint-disable-next-line no-await-in-loop
+          await this._onData(tweet, notify);
+        }
+
+        looped = page < this.loaderMaxPages && tweets.length > 0;
+        count += tweets.length;
+
+        this.logger.debug({
+          looped, page, cursor, count, account,
+        }, 'tweet page loaded');
+
+        if (looped) {
+          page += 1;
+        }
+      } while (looped && !this.isStopped);
+    } catch (err) {
+      this.logger.warn({ err, account }, 'error occurred while tweet loading');
+    }
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -562,17 +406,5 @@ class Twitter {
     return merge(original, accounts);
   }
 }
-
-/**
- *  static helpers
- */
-Twitter.one = new BN('1', 10);
-
-// isTweet checker
-Twitter.isTweet = conforms({
-  entities: isObject,
-  id_str: isString,
-  // TODO text or full_text: isString,
-});
 
 module.exports = Twitter;

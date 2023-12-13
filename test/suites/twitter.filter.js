@@ -1,15 +1,17 @@
 const Promise = require('bluebird');
 const assert = require('assert');
-const why = require('why-is-node-running');
-const wtf = require('wtfnode');
+const whyRunning = require('why-is-node-running');
 const prepareService = require('../../src');
 
 const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.attributes.type, 10) === type);
 
 // eslint-disable-next-line func-names
 describe('twitter.filter.js', function () {
+  this.timeout(180000);
+
   const tests = [
     {
+      enabled: true,
       name: 'test-1, filters ignored, expected types 0 and 1',
       ignoreFilters: true,
       filters: { filterReplies: true, filterRetweets: true },
@@ -17,6 +19,7 @@ describe('twitter.filter.js', function () {
       filteredTypes: [],
     },
     {
+      enabled: true,
       name: 'test-2, filters active, expected type 0',
       ignoreFilters: false,
       filters: { filterReplies: true, filterRetweets: true },
@@ -25,74 +28,86 @@ describe('twitter.filter.js', function () {
     },
   ];
 
-  tests.forEach(({
-    name, ignoreFilters, filters, expectedTypes, filteredTypes,
-  }) => {
-    // eslint-disable-next-line func-names
-    describe(`${name}`, function () {
-      let service;
+  tests
+    .filter((test) => test.enabled)
+    .forEach(({
+      name, ignoreFilters, filters, expectedTypes, filteredTypes,
+    }) => {
+      // eslint-disable-next-line func-names
+      describe(`${name}`, function () {
+        let service;
 
-      before(async () => {
-        const { filterReplies, filterRetweets } = filters;
+        before(async () => {
+          const { filterReplies, filterRetweets } = filters;
 
-        service = await prepareService({
-          notifier: {
-            enabled: false,
-          },
-          twitter: {
-            stream_filters: {
-              replies: filterReplies,
-              retweets: filterRetweets,
-              quotes: true,
-              userMentions: true,
-              hashTags: true,
-              skipValidAccounts: ignoreFilters,
+          service = await prepareService({
+            notifier: {
+              enabled: false,
             },
-          },
-        });
-        await service.connect();
-        await service.knex('feeds').delete();
-      });
-
-      after(() => service.close());
-
-      it('should register feed', async () => {
-        const payload = {
-          internal: 'test@test.ru',
-          network: 'twitter',
-          accounts: [
-            { username: 'v_aminev' },
-          ],
-        };
-
-        await service.amqp
-          .publishAndWait('social.feed.register', payload, { timeout: 15000 });
-      });
-
-      it('wait for stream to startup', () => Promise.delay(5000));
-
-      it(`tweet filtering [skip_valid_acc=${ignoreFilters}]`, async () => {
-        const response = await service.amqp
-          .publishAndWait('social.feed.read', { filter: { account: 'v_aminev' } });
-
-        assert(response.data.length);
-
-        expectedTypes.forEach((type) => {
-          const tweets = filterByType(response.data, type);
-          assert(tweets.length, `no tweets of ${type} type`);
+            twitter: {
+              stream_filters: {
+                replies: filterReplies,
+                retweets: filterRetweets,
+                quotes: true,
+                userMentions: true,
+                hashTags: true,
+                skipValidAccounts: ignoreFilters,
+              },
+            },
+          });
+          await service.connect();
+          await service.knex('feeds').delete();
         });
 
-        filteredTypes.forEach((type) => {
-          const tweets = filterByType(response.data, type);
-          assert.strictEqual(tweets.length, 0, `unsupported tweet type ${type} received`);
+        after(() => service.close());
+
+        it('should register feed', async () => {
+          const payload = {
+            internal: 'test@test.ru',
+            network: 'twitter',
+            accounts: [
+              { username: 'v_aminev' },
+            ],
+          };
+
+          await service.amqp
+            .publishAndWait('social.feed.register', payload, { timeout: 15000 });
+        });
+
+        it('wait for stream to startup', () => Promise.delay(30000));
+
+        it(`tweet filtering [skip_valid_acc=${ignoreFilters}]`, async () => {
+          const response = await service.amqp
+            .publishAndWait('social.feed.read', { filter: { account: 'v_aminev' } });
+
+          assert(response.data.length);
+
+          expectedTypes.forEach((type) => {
+            const tweets = filterByType(response.data, type);
+            assert(tweets.length, `no tweets of ${type} type`);
+          });
+
+          filteredTypes.forEach((type) => {
+            const tweets = filterByType(response.data, type);
+            assert.strictEqual(tweets.length, 0, `unsupported tweet type ${type} received`);
+          });
         });
       });
     });
-  });
 
   after(() => {
-    why();
-    wtf.dump();
-    process.exit(0);
+    whyRunning();
   });
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Application specific logging, throwing an error, or other logic here
+  process.exit(1); // Exit with a failure code
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Application specific logging, throwing an error, or other logic here
+  process.exit(1); // Exit with a failure code
 });

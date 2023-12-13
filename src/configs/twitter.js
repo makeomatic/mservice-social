@@ -2,6 +2,7 @@ module.exports = {
   twitter: {
     enabled: false,
     max_pages: 20,
+    syncOnStart: true,
     api: {
       user_timeline: {
         exclude_replies: false,
