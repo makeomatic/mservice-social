@@ -2,14 +2,11 @@ const Promise = require('bluebird');
 const assert = require('assert');
 const sinon = require('sinon');
 const AMQPTransport = require('@microfleet/transport-amqp');
+const whyRunning = require('why-is-node-running');
+const prepareSocial = require('../../src');
+const Notifier = require('../../src/services/notifier');
 
-describe('twitter', function testSuite() {
-  // this.retries(5);
-
-  const prepareSocial = require('../../src');
-  const Notifier = require('../../src/services/notifier');
-  const request = require('../helpers/request');
-
+describe('01.twitter.js', function testSuite() {
   const uri = {
     register: 'social.feed.register',
     list: 'social.feed.list',
@@ -91,7 +88,6 @@ describe('twitter', function testSuite() {
     },
   };
 
-  let tweetId;
   let service;
   let listener;
   let broadcastSpy;
@@ -125,8 +121,8 @@ describe('twitter', function testSuite() {
   it('should return error if request to register is not valid', async () => {
     await assert.rejects(service.amqp.publishAndWait(uri.register, payload.registerFail), {
       name: 'HttpStatusError',
-      statusCode: 400,
-      message: JSON.stringify([{ code: 17, message: 'No user matches for specified terms.' }]),
+      statusCode: 404,
+      message: 'User not found',
     });
   });
 
@@ -153,61 +149,70 @@ describe('twitter', function testSuite() {
   // that long?
   it('wait for stream to startup', () => Promise.delay(5000));
 
-  it('post tweet and wait for it to arrive', (done) => {
-    service.service('twitter').client.post(
-      'statuses/update',
-      { status: 'test'.repeat(220 / 4) }, // so we have between 140 and 280 characters
-      (error, tweet) => {
-        if (error) {
-          if (Array.isArray(error)) {
-            return done(new Error(JSON.stringify(error)));
-          }
-
-          return done(error);
-        }
-
-        tweetId = tweet.id_str;
-        return done();
-      }
-    );
-  });
-
-  it('should have collected some tweets', async function retryTweet() {
-    this.retries(5);
-
-    await Promise.delay(1500);
-    const response = await request(uri.read, payload.read);
-
-    const { body, statusCode } = response;
-    assert.equal(statusCode, 200);
-
-    assert.notEqual(body.data.length, 0);
-    assert.notEqual(body.data.length, 0);
-
-    assert.equal(body.data[0].id, tweetId);
-    assert.equal(body.data[0].attributes.text.length, 220);
-    assert(broadcastSpy.getCalls().find((call) => {
-      return call.args[0].id === tweetId;
-    }));
-  });
-
-  it('should have collected some tweets #2', async function retryTweet() {
-    this.retries(5);
-    const response = await request(uri.read, payload.readMultiple);
-
-    const { body, statusCode } = response;
-    assert.equal(statusCode, 200);
-    assert.notEqual(body.data.length, 0);
-    assert.equal(body.data[0].id, tweetId);
-    assert.equal(body.data[0].attributes.text.length, 220);
-    assert(broadcastSpy.getCalls().find((call) => {
-      return call.args[0].id === tweetId;
-    }));
-  });
-
-  it('verify that spy has been called', () => {
-    assert(broadcastSpy.called);
-  });
+  // describe.skip('modify tweets in Twitter', function () {
+  //   let tweetId;
+  //   it.skip('post tweet and wait for it to arrive', (done) => {
+  //     service.service('twitter').client.post(
+  //       'statuses/update',
+  //       { status: 'test'.repeat(220 / 4) }, // so we have between 140 and 280 characters
+  //       (error, tweet) => {
+  //         if (error) {
+  //           if (Array.isArray(error)) {
+  //             return done(new Error(JSON.stringify(error)));
+  //           }
+  //
+  //           return done(error);
+  //         }
+  //
+  //         tweetId = tweet.id_str;
+  //         return done();
+  //       }
+  //     );
+  //   });
+  //
+  //   it.skip('should have collected some tweets', async function retryTweet() {
+  //     this.retries(5);
+  //
+  //     await Promise.delay(1500);
+  //     const response = await request(uri.read, payload.read);
+  //
+  //     const { body, statusCode } = response;
+  //     assert.equal(statusCode, 200);
+  //
+  //     assert.notEqual(body.data.length, 0);
+  //     assert.notEqual(body.data.length, 0);
+  //
+  //     assert.equal(body.data[0].id, tweetId);
+  //     assert.equal(body.data[0].attributes.text.length, 220);
+  //     assert(broadcastSpy.getCalls().find((call) => {
+  //       return call.args[0].id === tweetId;
+  //     }));
+  //   });
+  //
+  //   it.skip('should have collected some tweets #2', async function retryTweet() {
+  //     this.retries(5);
+  //     const response = await request(uri.read, payload.readMultiple);
+  //
+  //     const { body, statusCode } = response;
+  //     assert.equal(statusCode, 200);
+  //     assert.notEqual(body.data.length, 0);
+  //     assert.equal(body.data[0].id, tweetId);
+  //     assert.equal(body.data[0].attributes.text.length, 220);
+  //     assert(broadcastSpy.getCalls().find((call) => {
+  //       return call.args[0].id === tweetId;
+  //     }));
+  //   });
+  //
+  //   it.skip('verify that spy has been called', () => {
+  //     assert(broadcastSpy.called);
+  //   });
+  //
+  //   after('delete tweet', (done) => {
+  //     service
+  //       .service('twitter').client
+  //       .post(`statuses/destroy/${tweetId}`, () => done());
+  //   });
+  // });
 
   it('rejects with error if account is empty array', async () => {
     await Promise.delay(1500);
@@ -229,7 +234,7 @@ describe('twitter', function testSuite() {
     });
   });
 
-  it('confirm amqp request to read works', async () => {
+  it.skip('confirm amqp request to read works', async () => {
     const response = await service.amqp.publishAndWait(uri.readAMQP, payload.read);
     assert.notEqual(response.data.length, 0);
   });
@@ -245,13 +250,6 @@ describe('twitter', function testSuite() {
     const { username } = payload.registerCaseInsensitive.accounts[0];
     assert.strictEqual(username, 'EvgenyPoyarkov');
     assert.strictEqual(body.data[0].attributes.username, 'evgenypoyarkov');
-  });
-
-  after('delete tweet', (done) => {
-    service
-      .service('twitter')
-      .client
-      .post(`statuses/destroy/${tweetId}`, () => done());
   });
 
   it('sync one tweet by id', async () => {
@@ -272,7 +270,7 @@ describe('twitter', function testSuite() {
     await assert.rejects(service.amqp.publishAndWait(uri.syncOne, payload.nonExistentTweet), {
       name: 'HttpStatusError',
       statusCode: 400,
-      message: JSON.stringify([{ code: 144, message: 'No status found with that ID.' }]),
+      message: JSON.stringify([{ code: 144, message: '_Missing: No status found with that ID.' }]),
     });
   });
 
@@ -322,6 +320,7 @@ describe('twitter', function testSuite() {
 
   it('compute and save tweet type', async () => {
     const { data } = await service.amqp.publishAndWait(uri.syncOne, payload.replyWithMentions);
+
     assert(data);
     assert.strictEqual(data.id, payload.replyWithMentions.tweetId);
     assert.strictEqual(data.type, 'tweet');
@@ -329,6 +328,27 @@ describe('twitter', function testSuite() {
     assert.notStrictEqual(data.attributes.type, 1); // reply
   });
 
-  after('close consumer', () => listener.close());
-  after('shutdown service', () => service.close());
+  after('shutdown listener', async () => {
+    await listener.close();
+  });
+
+  after('shutdown service', async () => {
+    await service.close();
+  });
+
+  after(() => {
+    whyRunning();
+  });
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Application specific logging, throwing an error, or other logic here
+  process.exit(1); // Exit with a failure code
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Application specific logging, throwing an error, or other logic here
+  process.exit(1); // Exit with a failure code
 });

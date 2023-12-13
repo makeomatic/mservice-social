@@ -4,6 +4,7 @@ const request = require('request-promise');
 const { StatusCodeError } = require('request-promise/errors');
 const assert = require('assert');
 const sinon = require('sinon');
+const whyRunning = require('why-is-node-running');
 const { mockPageFeeds, makeRequest } = require('../mocks/facebook/page-feeds');
 const prepareSocial = require('../../src');
 const { SERVICE_STORAGE } = require('../../src/constants');
@@ -13,7 +14,14 @@ const chance = new Chance();
 describe('service', function suite() {
   describe('facebook', function facebookSuite() {
     before('create feed', async () => {
-      const social = await prepareSocial();
+      const social = await prepareSocial({
+        twitter: {
+          syncOnStart: false,
+        },
+        facebook: {
+          subscribeOnStart: false,
+        },
+      });
 
       await social.connect();
 
@@ -50,7 +58,14 @@ describe('service', function suite() {
     });
 
     after('clean up feeds', async () => {
-      const social = await prepareSocial();
+      const social = await prepareSocial({
+        twitter: {
+          syncOnStart: false,
+        },
+        facebook: {
+          subscribeOnStart: false,
+        },
+      });
 
       return social
         .connect()
@@ -62,6 +77,9 @@ describe('service', function suite() {
     it('should be able to synchronize media on start up', async () => {
       const mock = sinon.mock(request);
       const social = await prepareSocial({
+        twitter: {
+          syncOnStart: false,
+        },
         facebook: {
           enabled: true,
           syncMediaOnStart: true,
@@ -94,6 +112,9 @@ describe('service', function suite() {
     it('should be able to create subscriptions on start up', async () => {
       const mock = sinon.mock(request);
       const social = await prepareSocial({
+        twitter: {
+          syncOnStart: false,
+        },
         facebook: {
           enabled: true,
           syncMediaOnStart: false,
@@ -131,7 +152,9 @@ describe('service', function suite() {
       return social
         .connect()
         .then(() => mock.verify())
-        .finally(() => social.close());
+        .finally(async () => {
+          await social.close();
+        });
     });
 
     it('should invalidate feed on `invalid token` response', async () => {
@@ -142,6 +165,9 @@ describe('service', function suite() {
         .usingPromise(Promise);
 
       const social = await prepareSocial({
+        twitter: {
+          syncOnStart: false,
+        },
         facebook: {
           enabled: true,
           syncMediaOnStart: true,
@@ -171,6 +197,9 @@ describe('service', function suite() {
     it('should not sync `invalid` feeds', async () => {
       const stub = sinon.stub(request, 'get');
       const social = await prepareSocial({
+        twitter: {
+          syncOnStart: false,
+        },
         facebook: {
           enabled: true,
           syncMediaOnStart: true,
@@ -191,5 +220,9 @@ describe('service', function suite() {
       stub.reset();
       stub.restore();
     });
+  });
+
+  after(() => {
+    whyRunning();
   });
 });
