@@ -1,5 +1,5 @@
 module.exports = {
   logger: {
-    defaultLogger: true,
-  },
+    defaultLogger: true
+  }
 };
