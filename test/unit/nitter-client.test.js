@@ -7,6 +7,10 @@ process.env.NITTER_URL = 'https://api-nitter.fly.dev';
 describe('NitterClient', function Nitter() {
   const nitter = new NitterClient();
 
+  after(async () => {
+    await nitter.close();
+  });
+
   it('should fetch id by username', async () => {
     const { id } = await nitter.fetchUserId('elonmusk');
     console.log('elonmusk id=', id);
