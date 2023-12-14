@@ -64,5 +64,5 @@ describe('NitterClient', function Nitter() {
 
   after(async () => {
     await nitter.destroy();
-  })
+  });
 });
