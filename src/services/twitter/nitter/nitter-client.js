@@ -14,8 +14,8 @@ class NitterClient {
     this.logger = options?.logger;
     this.baseUrl = options?.baseUrl ?? process.env.NITTER_URL;
     this.pool = new Pool(this.baseUrl, {
-      connections: options?.connections ?? 1,
-      pipelining: 0,
+      connections: options?.connections ?? 10,
+      pipelining: 1,
       bodyTimeout: 5000,
       headersTimeout: 5000,
       connectTimeout: 5000
@@ -102,10 +102,6 @@ class NitterClient {
 
   async destroy() {
     await this.pool.destroy();
-  }
-
-  async close() {
-    await this.pool.close();
   }
 }
 

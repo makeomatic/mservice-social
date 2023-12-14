@@ -4,7 +4,6 @@ const request = require('request-promise');
 const { StatusCodeError } = require('request-promise/errors');
 const assert = require('assert');
 const sinon = require('sinon');
-const whyRunning = require('why-is-node-running');
 const { mockPageFeeds, makeRequest } = require('../mocks/facebook/page-feeds');
 const prepareSocial = require('../../src');
 const { SERVICE_STORAGE } = require('../../src/constants');
@@ -220,9 +219,5 @@ describe('service', function suite() {
       stub.reset();
       stub.restore();
     });
-  });
-
-  after(() => {
-    whyRunning();
   });
 });

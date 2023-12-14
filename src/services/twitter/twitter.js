@@ -9,7 +9,7 @@ const { transform, TYPE_TWEET } = require('../../utils/response');
 const { getTweetType, TweetTypeByName, isTweet } = require('./tweet-types');
 
 const { kPublishEvent } = require('../notifier');
-const { NitterClient } = require('./nitter/nitter-request');
+const { NitterClient } = require('./nitter/nitter-client');
 
 const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
 
@@ -28,7 +28,6 @@ function extractAccount(accum, value) {
 }
 
 /**
- * @property {TwitterClient} client
  * @property {array} listeners
  * @property {Knex} knex
  * @property {Logger} logger
@@ -87,6 +86,7 @@ class Twitter {
       logger: logger.child({ namespace: '@social/nitter' }),
     });
     this.logger = logger.child({ namespace: '@social/twitter' });
+    this.loaders = new Map();
 
     const { restrictedTypes = [] } = config.requests || {};
     this.restrictedStatusTypes = restrictedTypes.map((name) => TweetTypeByName[name]);
@@ -97,11 +97,6 @@ class Twitter {
     this.following = [];
     this.accountIds = {};
     this.syncTimer = null;
-
-    // this.fetchTweets = Twitter.tweetFetcherFactory(this.client, this.logger, twitterApiConfig(config));
-    // this.fetchById = Twitter.tweetSyncFactory(this.client, this.logger);
-    // this.fetchTweets = this.nitter.fetchTweets.bind(this.nitter);
-    // this.fetchById = this.nitter.fetchById.bind(this.nitter);
 
     this.syncFeed = this.syncFeed.bind(this);
     this.init = this.init.bind(this);
@@ -117,7 +112,7 @@ class Twitter {
    */
   async init() {
     if (this.syncOnStart) {
-      await this.start();
+      await this._start();
       this.logger.debug('twitter initialized, sync started');
     } else {
       this.logger.debug('twitter plugin initialized, no sync on start');
@@ -129,19 +124,19 @@ class Twitter {
    * @returns {Promise<void>}
    */
   async destroy() {
-    this.logger.debug('twitter service to be stopped');
-    await this.stop();
+    this.logger.debug('twitter service/plugin to be destroyed');
+    await this._stop();
   }
 
-  async start() {
+  async _start() {
     this.isStopped = false;
     this.startTimer();
   }
 
-  async stop() {
+  async _stop() {
     this.isStopped = true;
     this.stopTimer();
-    await this.nitter.cancel();
+    await this.nitter.destroy();
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -277,7 +272,7 @@ class Twitter {
       await this.syncAccount(item.account);
     }
 
-    this.logger.info({ accounts }, 'resolved accounts');
+    this.logger.debug({ accounts }, 'resolved accounts');
 
     this.setFollowing(accounts);
     this.fillAccountIds(accounts);
@@ -289,7 +284,7 @@ class Twitter {
 
   startTimer() {
     if (!this.isSyncable()) {
-      this.logger.debug('twitter is not syncable');
+      this.logger.trace('twitter is not syncable');
       return;
     }
 
@@ -320,20 +315,26 @@ class Twitter {
   }
 
   async syncAccount(account) {
-    // calculate notification on sync
-    const notify = this.shouldNotifyFor('data', 'sync');
+    if (this.loaders.has(account)) {
+      return;
+    }
 
-    // recursively syncs account
-    const lastTweet = await this.storage
-      .twitterStatuses()
-      .last({ account });
-
-    this.logger.info({
-      lastKnownTweet: { id: lastTweet?.id },
-      account,
-    }, 'last known tweet');
+    this.loaders.set(account, true);
 
     try {
+      // calculate notification on sync
+      const notify = this.shouldNotifyFor('data', 'sync');
+
+      // recursively syncs account
+      const lastTweet = await this.storage
+        .twitterStatuses()
+        .last({ account });
+
+      this.logger.info({
+        tweet: { id: lastTweet?.id },
+        account,
+      }, 'last tweet');
+
       let looped = true;
       let page = 1;
       let count = 0;
@@ -357,7 +358,7 @@ class Twitter {
               this.logger.debug({
                 account,
                 tweet_id: tweet.id_str,
-              }, 'reached last known tweet, account sync terminated');
+              }, 'last known tweet reached, loader terminated');
               looped = false;
               break;
             }
@@ -385,6 +386,8 @@ class Twitter {
       } while (looped && !this.isStopped);
     } catch (err) {
       this.logger.warn({ err, account }, 'error occurred while tweet loading');
+    } finally {
+      this.loaders.delete(account);
     }
   }
 

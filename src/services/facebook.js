@@ -46,22 +46,22 @@ class Facebook {
    * @returns {Promise<void>}
    */
   async init() {
-    this.logger.debug('feedback service/plugin initialization.');
+    this.logger.debug('facebook service/plugin initialization.');
 
     if (this.config.subscribeOnStart) {
-      this.logger.debug('feedback service/plugin will subscribe in 60 seconds.');
+      this.logger.debug('facebook service/plugin will subscribe in 60 seconds.');
       await Promise.delay(60000);
       const job = this.subscription.subscribe();
       this.cancellable.push(job);
       await job;
-      this.logger.debug('feedback subscription initialized.');
+      this.logger.debug('facebook subscription initialized.');
     } else {
-      this.logger.debug('feedback service/plugin subscription skipped.');
+      this.logger.debug('facebook service/plugin subscription skipped.');
     }
 
     if (this.config.syncMediaOnStart) {
       await this.media.syncPagesHistory();
-      this.logger.debug('feedback media synced.');
+      this.logger.debug('facebook media synced.');
     }
   }
 
@@ -74,7 +74,7 @@ class Facebook {
       job.cancel();
     }
     this.cancellable = [];
-    this.logger.debug('feedback service/plugin destroyed.');
+    this.logger.debug('facebook service/plugin destroyed.');
   }
 
   retry(response) {

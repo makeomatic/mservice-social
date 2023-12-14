@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 const assert = require('assert');
-const { NitterClient: NitterClientTest } = require('../../src/services/twitter/nitter/nitter-request');
+const { NitterClient } = require('../../src/services/twitter/nitter/nitter-client');
 
 process.env.NITTER_URL = 'https://api-nitter.fly.dev';
 
 describe('NitterClient', function Nitter() {
-  const nitter = new NitterClientTest();
+  const nitter = new NitterClient();
 
   it('should fetch id by username', async () => {
     const { id } = await nitter.fetchUserId('elonmusk');
@@ -27,7 +27,7 @@ describe('NitterClient', function Nitter() {
 
     while (looped) {
       // eslint-disable-next-line no-await-in-loop
-      const { tweets, cursorTop, cursorBottom } = await nitter.fetchTweets(cursor, account, order);
+      const { tweets, cursorTop, cursorBottom } = await nitter.fetchTweets(account, cursor);
 
       assert(cursorTop);
       assert(cursorBottom);
@@ -51,15 +51,13 @@ describe('NitterClient', function Nitter() {
   });
 
   it('should fetch tweet by id', async () => {
-    const account = 'elonmusk';
-    const cursor = null;
-    const order = null;
-    const { tweets } = await nitter.fetchTweets(cursor, account, order);
+    const account = 'v_aminev';
+    const { tweets } = await nitter.fetchTweets(account);
     const [tweetFromList] = tweets;
     const { id_str: id } = tweetFromList;
 
     const tweetById = await nitter.fetchById(id);
-    // console.log('seek', id, 'result', tweetById);
+
     assert(tweetById.id_str === id);
     assert(tweetById.full_text === tweetFromList.full_text);
     assert(tweetById.text === tweetFromList.text);

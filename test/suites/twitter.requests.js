@@ -1,6 +1,5 @@
 const Promise = require('bluebird');
 const assert = require('assert');
-const whyRunning = require('why-is-node-running');
 const { TweetType } = require('../../src/services/twitter/tweet-types');
 const prepareSocial = require('../../src');
 
@@ -83,20 +82,4 @@ describe('tweeter.requests.js', function () {
         });
       });
     });
-
-  after(() => {
-    whyRunning();
-  });
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Application specific logging, throwing an error, or other logic here
-  process.exit(1); // Exit with a failure code
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  // Application specific logging, throwing an error, or other logic here
-  process.exit(1); // Exit with a failure code
 });

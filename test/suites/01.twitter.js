@@ -2,7 +2,6 @@ const Promise = require('bluebird');
 const assert = require('assert');
 const sinon = require('sinon');
 const AMQPTransport = require('@microfleet/transport-amqp');
-const whyRunning = require('why-is-node-running');
 const prepareSocial = require('../../src');
 const Notifier = require('../../src/services/notifier');
 
@@ -147,7 +146,7 @@ describe('01.twitter.js', function testSuite() {
   });
 
   // that long?
-  it('wait for stream to startup', () => Promise.delay(5000));
+  it('wait for tweet loader to complete', () => Promise.delay(30000));
 
   // describe.skip('modify tweets in Twitter', function () {
   //   let tweetId;
@@ -234,7 +233,7 @@ describe('01.twitter.js', function testSuite() {
     });
   });
 
-  it.skip('confirm amqp request to read works', async () => {
+  it('confirm amqp request to read works', async () => {
     const response = await service.amqp.publishAndWait(uri.readAMQP, payload.read);
     assert.notEqual(response.data.length, 0);
   });
@@ -335,20 +334,4 @@ describe('01.twitter.js', function testSuite() {
   after('shutdown service', async () => {
     await service.close();
   });
-
-  after(() => {
-    whyRunning();
-  });
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Application specific logging, throwing an error, or other logic here
-  process.exit(1); // Exit with a failure code
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  // Application specific logging, throwing an error, or other logic here
-  process.exit(1); // Exit with a failure code
 });
