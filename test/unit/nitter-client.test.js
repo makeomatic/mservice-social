@@ -61,4 +61,8 @@ describe('NitterClient', function Nitter() {
     assert(tweetById.full_text === tweetFromList.full_text);
     assert(tweetById.text === tweetFromList.text);
   });
+
+  after(async () => {
+    await nitter.destroy();
+  })
 });

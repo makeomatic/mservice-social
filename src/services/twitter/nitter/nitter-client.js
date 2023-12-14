@@ -36,8 +36,8 @@ class NitterClient {
       method: method.toUpperCase()
     });
 
-    const statusCode = response.statusCode
-    const data = await response.body.json()
+    const statusCode = response.statusCode;
+    const data = await response.body.json();
 
     if (statusCode !== 200) {
       throw new Error(`Request failed with status code: ${statusCode}, body: ${data}`);
@@ -46,7 +46,7 @@ class NitterClient {
     return {
       statusCode,
       data
-    }
+    };
   }
 
   async fetchById(id) {

@@ -4,10 +4,10 @@ const TwitterStatusesTest = require('../../src/services/storage/twitter-statuses
 
 describe('TwitterStatuses', function Nitter() {
   let twitterStatuses;
-
+  let knex;
   before(async () => {
     // eslint-disable-next-line import/no-unresolved
-    const knex = require('knex')({
+    knex = require('knex')({
       client: 'pg',
       debug: false,
       connection: {
@@ -30,5 +30,9 @@ describe('TwitterStatuses', function Nitter() {
     const result = await twitterStatuses.last({ account });
 
     console.log(result);
+  });
+
+  after(async () => {
+    await knex.destroy();
   });
 });
