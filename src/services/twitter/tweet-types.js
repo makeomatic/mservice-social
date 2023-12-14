@@ -1,5 +1,6 @@
 const isNil = require('lodash/isNil');
 const get = require('get-value');
+const { conforms, isObject, isString } = require('lodash');
 
 const TweetType = {
   ORIGINAL: 0,
@@ -14,6 +15,15 @@ const TweetTypeByName = {
   retweet: TweetType.RETWEET,
   quote: TweetType.QUOTE,
 };
+
+/**
+ * @returns {boolean}
+ */
+const isTweet = (data) => conforms({
+  entities: isObject,
+  id_str: isString,
+  text: isString,
+})(data);
 
 // https://developer.twitter.com/en/docs/tutorials/determining-tweet-types
 const isReply = (data) => !isNil(data.in_reply_to_status_id) || !isNil(data.in_reply_to_user_id);
@@ -46,6 +56,7 @@ function hasHashTags(data) {
 }
 
 module.exports = {
+  isTweet,
   TweetType,
   TweetTypeByName,
   getTweetType,
