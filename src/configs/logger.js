@@ -1,6 +1,5 @@
 module.exports = {
   logger: {
-    defaultLogger: true,
-    prettifyDefaultLogger: true,
+    defaultLogger: true
   },
 };
