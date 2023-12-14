@@ -34,12 +34,11 @@ describe('NitterClient', function Nitter() {
 
       for (const tweet of tweets) {
         console.log(cursorBottom, tweet.id_str, tweet.created_at, tweet.user.id_str, tweet.retweeted_status?.user?.id_str);
-        // sample = tweet;
       }
 
       looped = pages < maxPages && tweets.length > 0;
       cursor = cursorBottom;
-      // count += tweets.length;
+
       if (looped) {
         pages += 1;
       }

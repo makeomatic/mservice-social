@@ -86,20 +86,11 @@ class Social extends Microfleet {
     const storage = this.service(k.SERVICE_STORAGE);
     const facebook = new Facebook(this, config.facebook, storage, feed, log);
 
+    // initialization and destruction logics moved into service lifecycle methods
     this.addConnector(ConnectorsTypes.application, () => facebook.init(), 'facebook');
 
     /* so that it stops before database is closed, but after transport is unavailable */
     this.addDestructor(ConnectorsTypes.migration, () => facebook.destroy(), 'facebook');
-
-    // if (config.facebook.subscribeOnStart) {
-    //   this.addConnector(ConnectorsTypes.application, () => Promise
-    //     .delay(60000)
-    //     .then(() => facebook.subscription.subscribe()));
-    // }
-    //
-    // if (config.facebook.syncMediaOnStart) {
-    //   this.addConnector(ConnectorsTypes.application, () => facebook.media.syncPagesHistory());
-    // }
 
     this.service(k.SERVICE_FACEBOOK, facebook);
     feed.service(k.SERVICE_FACEBOOK, facebook);

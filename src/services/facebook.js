@@ -50,10 +50,13 @@ class Facebook {
 
     if (this.config.subscribeOnStart) {
       this.logger.debug('facebook service/plugin will subscribe in 60 seconds.');
+
       await Promise.delay(60000);
+
       const job = this.subscription.subscribe();
       this.cancellable.push(job);
       await job;
+
       this.logger.debug('facebook subscription initialized.');
     } else {
       this.logger.debug('facebook service/plugin subscription skipped.');
