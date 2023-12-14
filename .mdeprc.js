@@ -1,7 +1,7 @@
 require('dotenv').config()
 
 module.exports = {
-  "node": "18",
+  "node": "20.10",
   "auto_compose": true,
   "with_local_compose": true,
   "nycCoverage": false,
@@ -20,16 +20,7 @@ module.exports = {
       "environment": {
         "NCONF_FILE_PATH": JSON.stringify(['/src/test/configs/config.js']),
       }
-    },
-    "postgres": {
-      "ports": ["5432:5432"]
-    },
-    "nitter": {
-      "ports": ["8080:8080"]
-    },
-    "rabbitmq": {
-      "ports": ["15672:15672"]
-    },
+    }
   },
   pre: 'rimraf ./coverage/tmp',
   post_exec: 'pnpm exec -- c8 report -r text -r lcov',

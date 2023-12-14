@@ -136,7 +136,7 @@ class Twitter {
   async _stop() {
     this.isStopped = true;
     this.stopTimer();
-    await this.nitter.destroy();
+    await this.nitter.close();
   }
 
   // eslint-disable-next-line class-methods-use-this
