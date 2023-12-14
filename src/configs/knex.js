@@ -9,6 +9,11 @@ module.exports = {
       user: 'postgres',
       password: '',
     },
+    pool: {
+      min: 1,
+      max: 10,
+      acquireTimeoutMillis: 30000,
+    },
     searchPath: ['public', 'social'],
     migrations: {
       tableName: 'migrations',

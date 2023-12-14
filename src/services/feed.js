@@ -81,13 +81,6 @@ class Feed {
     }
 
     try {
-      // schedule resync
-      this.service('twitter').connect();
-    } catch (e) {
-      this.logger.info(e);
-    }
-
-    try {
       const facebook = this.service('facebook');
       const acts = [];
       for (const feed of feeds) { // eslint-disable-line no-restricted-syntax
