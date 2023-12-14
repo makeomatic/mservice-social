@@ -12,21 +12,17 @@ describe('NitterClient', function Nitter() {
   });
 
   it('should fetch id by username', async () => {
-    const { id } = await nitter.fetchUserId('elonmusk');
-    console.log('elonmusk id=', id);
+    const { id } = await nitter.fetchUserId('v_aminev');
     assert(id);
   });
 
   it('should fetch tweets by username', async () => {
-    // const account = 'elonmusk';
     const account = 'v_aminev';
     const maxPages = 100;
 
     let cursor = null;
     let looped = true;
     let pages = 1;
-    // let count = 0;
-    // let sample;
 
     while (looped) {
       // eslint-disable-next-line no-await-in-loop

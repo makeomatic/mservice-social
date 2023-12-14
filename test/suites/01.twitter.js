@@ -145,8 +145,7 @@ describe('01.twitter.js', function testSuite() {
     });
   });
 
-  // that long?
-  it('wait for tweet loader to complete', () => Promise.delay(30000));
+  it('wait for tweet loader to complete', () => Promise.delay(15000));
 
   it('rejects with error if account is empty array', async () => {
     await Promise.delay(1500);

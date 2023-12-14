@@ -176,8 +176,8 @@ class Twitter {
     if (directlyInserted) {
       status.explicit = true;
     }
-    // logger.debug({ id: status.id }, 'saving serialized status');
-    // this.logger.trace({ status }, 'saving serialized status data');
+
+    this.logger.trace({ status }, 'saving serialized status data');
 
     return this.storage
       .twitterStatuses()
@@ -196,27 +196,15 @@ class Twitter {
     const tweetType = getTweetType(data);
 
     if (this.shouldFilterTweet(data, tweetType) !== false) {
-      // this.logger.trace({
-      //   id: data.id_str,
-      //   type: tweetType,
-      //   user: data.user.screen_name
-      // }, 'tweet skipped by type filter');
-      // await this._saveCursor(data);
       return false;
     }
 
-    // this.logger.debug({ id: data.id_str, type: tweetType, user: data.user.screen_name }, 'inserting tweet');
-    // this.logger.trace({ data }, 'inserting tweet data');
-
     try {
       const saved = await this._saveToStatuses(data, tweetType, false);
-      // await this._saveCursor(data);
 
       if (notify) {
         this.publish(saved);
       }
-
-      // this.logger.trace({ id: data.id_str }, 'tweet saved');
 
       return saved;
     } catch (err) {
@@ -233,7 +221,7 @@ class Twitter {
       const payload = transform(tweet, TYPE_TWEET);
       this.core.emit(kPublishEvent, route, payload);
     } else {
-      // this.logger.trace({ tweet: tweet.id, account, following }, 'skipped broadcast');
+      this.logger.trace({ tweet: tweet.id, account, following }, 'skipped broadcast');
     }
   }
 

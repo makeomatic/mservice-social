@@ -6,8 +6,6 @@ const filterByType = (tweets, type) => tweets.filter((x) => Number.parseInt(x.at
 
 // eslint-disable-next-line func-names
 describe('twitter.filter.js', function () {
-  this.timeout(180000);
-
   const tests = [
     {
       enabled: true,
@@ -73,7 +71,7 @@ describe('twitter.filter.js', function () {
             .publishAndWait('social.feed.register', payload, { timeout: 15000 });
         });
 
-        it('wait for stream to startup', () => Promise.delay(30000));
+        it('wait for stream to startup', () => Promise.delay(15000));
 
         it(`tweet filtering [skip_valid_acc=${ignoreFilters}]`, async () => {
           const response = await service.amqp

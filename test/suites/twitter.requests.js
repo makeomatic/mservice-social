@@ -5,8 +5,6 @@ const prepareSocial = require('../../src');
 
 // eslint-disable-next-line func-names
 describe('tweeter.requests.js', function () {
-  this.timeout(180000);
-
   const tests = [
     {
       enabled: true,
@@ -64,10 +62,10 @@ describe('tweeter.requests.js', function () {
           };
 
           await service.amqp
-            .publishAndWait('social.feed.register', payload, { timeout: 30000 });
+            .publishAndWait('social.feed.register', payload, { timeout: 15000 });
         });
 
-        it('wait for stream to startup', () => Promise.delay(30000));
+        it('wait for stream to startup', () => Promise.delay(15000));
 
         it('should have collected some tweets', async () => {
           // eslint-disable-next-line  no-unused-vars
