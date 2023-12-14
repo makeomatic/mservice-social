@@ -1,7 +1,7 @@
 require('dotenv').config()
 
 module.exports = {
-  "node": "18",
+  "node": "20.10",
   "auto_compose": true,
   "with_local_compose": true,
   "nycCoverage": false,
