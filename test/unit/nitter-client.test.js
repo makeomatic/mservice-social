@@ -16,7 +16,6 @@ describe('NitterClient', function Nitter() {
   it('should fetch tweets by username', async () => {
     // const account = 'elonmusk';
     const account = 'v_aminev';
-    const order = 'asc'; // dummy, no effect
     const maxPages = 100;
 
     let cursor = null;
