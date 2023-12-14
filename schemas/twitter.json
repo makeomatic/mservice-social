@@ -29,6 +29,13 @@
           "type": "boolean",
           "default": false
         },
+        "max_pages": {
+          "type": "number"
+        },
+        "syncOnStart": {
+          "type": "boolean",
+          "default": true
+        },
         "api": {
           "$ref": "common.json#/definitions/twitter_api"
         },

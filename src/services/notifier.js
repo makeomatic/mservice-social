@@ -62,7 +62,8 @@ class Notifier {
     }
 
     try {
-      this.log.debug('publishing %j to %s', data, `/${this.namespace}/${route}`);
+      this.log.debug('publishing %s', `/${this.namespace}/${route}`);
+      // this.log.trace('publishing %j to %s', data, `/${this.namespace}/${route}`);
       // Post notification to a fanout exchange
       await this.amqpClient.publish(`/${this.namespace}/${route}`, data, {
         confirm: true,
