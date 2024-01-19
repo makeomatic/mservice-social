@@ -14,7 +14,7 @@ class TwitterStatuses {
       .where({ account })
       .orderBy([{ column: 'id', order: 'desc' }])
       .limit(1)
-      .first()
+      .first();
   }
 
   list(data, restrictedTypes = []) {
