@@ -32,7 +32,7 @@ module.exports = {
   notifier: {
     enabled: true,
     transport: {
-      exchange: 'ex.broadcast',
+      exchange: 'amq.fanout',
     },
   },
   logger: {
