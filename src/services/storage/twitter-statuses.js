@@ -9,21 +9,12 @@ class TwitterStatuses {
   }
 
   async last({ account }) {
-    const rawQuery = 'account = ?';
-    const query = this.knex(this.table)
+    return this.knex(this.table)
       .select()
-      .whereRaw(rawQuery, [account]);
-
-    query
-      .orderBy([
-        { column: 'id', order: 'desc' },
-      ])
+      .where({ account })
+      .orderBy([{ column: 'id', order: 'desc' }])
       .limit(1)
-      .offset(0);
-
-    const [last] = await query;
-
-    return last;
+      .first()
   }
 
   list(data, restrictedTypes = []) {
