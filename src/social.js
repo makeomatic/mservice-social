@@ -1,6 +1,4 @@
 const { Microfleet, ConnectorsTypes } = require('@microfleet/core');
-// eslint-disable-next-line no-unused-vars
-const Promise = require('bluebird');
 const { NotFoundError } = require('common-errors');
 const Deepmerge = require('@fastify/deepmerge');
 
@@ -17,8 +15,8 @@ const k = require('./constants');
 const services = new WeakMap();
 
 class Social extends Microfleet {
-  constructor(config) {
-    super(config);
+  async register() {
+    await super.register();
 
     this.initServices();
     this.initKnex();
