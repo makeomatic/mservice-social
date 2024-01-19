@@ -1,3 +1,4 @@
+const { setTimeout } = require('node:timers/promises');
 const omit = require('lodash/omit');
 const get = require('get-value');
 const Promise = require('bluebird');
@@ -50,7 +51,9 @@ class Facebook {
 
     if (this.config.subscribeOnStart) {
       this.logger.debug('facebook service/plugin will subscribe in 60 seconds.');
+
       await setTimeout(60000, null, { ref: false });
+
       const job = this.subscription.subscribe();
       this.cancellable.push(job);
       await job;
