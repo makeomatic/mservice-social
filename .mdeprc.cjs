@@ -1,11 +1,9 @@
 require('dotenv').config()
 
 module.exports = {
-  "node": "20.10",
+  "node": "20.11",
   "auto_compose": true,
   "with_local_compose": true,
-  "nycCoverage": false,
-  "nycReport": false,
   "test_framework": 'c8 /src/node_modules/.bin/mocha',
   "services": [
     "redisCluster",
@@ -14,9 +12,6 @@ module.exports = {
   ],
   "extras": {
     "tester": {
-      "volumes": [
-        "${PWD}:/src:cached"
-      ],
       "environment": {
         "NCONF_FILE_PATH": JSON.stringify(['/src/test/configs/config.js']),
       }

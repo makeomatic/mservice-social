@@ -1,6 +1,4 @@
 const { Microfleet, ConnectorsTypes } = require('@microfleet/core');
-// eslint-disable-next-line no-unused-vars
-const Promise = require('bluebird');
 const { NotFoundError } = require('common-errors');
 const Deepmerge = require('@fastify/deepmerge');
 
@@ -17,8 +15,8 @@ const k = require('./constants');
 const services = new WeakMap();
 
 class Social extends Microfleet {
-  constructor(config) {
-    super(config);
+  async register() {
+    await super.register();
 
     this.initServices();
     this.initKnex();
@@ -90,16 +88,6 @@ class Social extends Microfleet {
 
     /* so that it stops before database is closed, but after transport is unavailable */
     this.addDestructor(ConnectorsTypes.migration, () => facebook.destroy(), 'facebook');
-
-    // if (config.facebook.subscribeOnStart) {
-    //   this.addConnector(ConnectorsTypes.application, () => Promise
-    //     .delay(60000)
-    //     .then(() => facebook.subscription.subscribe()));
-    // }
-    //
-    // if (config.facebook.syncMediaOnStart) {
-    //   this.addConnector(ConnectorsTypes.application, () => facebook.media.syncPagesHistory());
-    // }
 
     this.service(k.SERVICE_FACEBOOK, facebook);
     feed.service(k.SERVICE_FACEBOOK, facebook);
