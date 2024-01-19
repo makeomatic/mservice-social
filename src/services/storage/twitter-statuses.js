@@ -8,6 +8,15 @@ class TwitterStatuses {
     return this.knex.upsertItem(this.table, 'id', data);
   }
 
+  async last({ account }) {
+    return this.knex(this.table)
+      .select()
+      .where({ account })
+      .orderBy([{ column: 'id', order: 'desc' }])
+      .limit(1)
+      .first()
+  }
+
   list(data, restrictedTypes = []) {
     const {
       page,
