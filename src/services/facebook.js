@@ -1,3 +1,4 @@
+const { setTimeout } = require('node:timers/promises');
 const omit = require('lodash/omit');
 const get = require('get-value');
 const Promise = require('bluebird');
@@ -38,6 +39,46 @@ class Facebook {
 
     this.media = new Media(this);
     this.subscription = new Subscription(this);
+    this.cancellable = [];
+  }
+
+  /**
+   * @description plugin lifecycle, initialization
+   * @returns {Promise<void>}
+   */
+  async init() {
+    this.logger.debug('facebook service/plugin initialization.');
+
+    if (this.config.subscribeOnStart) {
+      this.logger.debug('facebook service/plugin will subscribe in 60 seconds.');
+
+      await setTimeout(60000, null, { ref: false });
+
+      const job = this.subscription.subscribe();
+      this.cancellable.push(job);
+      await job;
+
+      this.logger.debug('facebook subscription initialized.');
+    } else {
+      this.logger.debug('facebook service/plugin subscription skipped.');
+    }
+
+    if (this.config.syncMediaOnStart) {
+      await this.media.syncPagesHistory();
+      this.logger.debug('facebook media synced.');
+    }
+  }
+
+  /**
+   * @description plugin lifecycle, destruction
+   * @returns {Promise<void>}
+   */
+  async destroy() {
+    for (const job of this.cancellable) {
+      job.cancel();
+    }
+    this.cancellable = [];
+    this.logger.debug('facebook service/plugin destroyed.');
   }
 
   retry(response) {

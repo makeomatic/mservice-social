@@ -1,5 +1,4 @@
 const { Microfleet, ConnectorsTypes } = require('@microfleet/core');
-const Promise = require('bluebird');
 const { NotFoundError } = require('common-errors');
 const Deepmerge = require('@fastify/deepmerge');
 
@@ -16,8 +15,8 @@ const k = require('./constants');
 const services = new WeakMap();
 
 class Social extends Microfleet {
-  constructor(config) {
-    super(config);
+  async register() {
+    await super.register();
 
     this.initServices();
     this.initKnex();
@@ -85,15 +84,11 @@ class Social extends Microfleet {
     const storage = this.service(k.SERVICE_STORAGE);
     const facebook = new Facebook(this, config.facebook, storage, feed, log);
 
-    if (config.facebook.subscribeOnStart) {
-      this.addConnector(ConnectorsTypes.application, () => Promise
-        .delay(60000)
-        .then(() => facebook.subscription.subscribe()));
-    }
+    // initialization and destruction logics moved into service lifecycle methods
+    this.addConnector(ConnectorsTypes.application, () => facebook.init(), 'facebook');
 
-    if (config.facebook.syncMediaOnStart) {
-      this.addConnector(ConnectorsTypes.application, () => facebook.media.syncPagesHistory());
-    }
+    /* so that it stops before database is closed, but after transport is unavailable */
+    this.addDestructor(ConnectorsTypes.migration, () => facebook.destroy(), 'facebook');
 
     this.service(k.SERVICE_FACEBOOK, facebook);
     feed.service(k.SERVICE_FACEBOOK, facebook);
@@ -121,7 +116,7 @@ class Social extends Microfleet {
     this.addConnector(ConnectorsTypes.application, () => twitter.init(), 'twitter');
 
     /* so that it stops before database is closed, but after transport is unavailable */
-    this.addDestructor(ConnectorsTypes.migration, () => twitter.destroy(true), 'twitter');
+    this.addDestructor(ConnectorsTypes.migration, () => twitter.destroy(), 'twitter');
 
     this.service(k.SERVICE_TWITTER, twitter);
     feed.service(k.SERVICE_TWITTER, twitter);
