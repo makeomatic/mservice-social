@@ -2,7 +2,7 @@
   "name": "mservice-social",
   "description": "mservice-social",
   "main": "./src/index.js",
-  "version": "8.0.2",
+  "version": "9.0.0",
   "scripts": {
     "test:e2e:exit": "mdep test run --test_args -- --exit",
     "test:e2e": "mdep test run",

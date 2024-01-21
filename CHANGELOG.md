@@ -1,3 +1,20 @@
+# [9.0.0](https://github.com/makeomatic/mservice-social/compare/v8.0.2...v9.0.0) (2024-01-21)
+
+
+### Bug Fixes
+
+* issues with release scripts ([7b2ed43](https://github.com/makeomatic/mservice-social/commit/7b2ed4346a8f19e3406e306e2c16765e7935bcb8))
+
+
+### Features
+
+* nitter ([#141](https://github.com/makeomatic/mservice-social/issues/141)) ([9dd91d2](https://github.com/makeomatic/mservice-social/commit/9dd91d2af3d58728ee8574484ca3f83ec4535603))
+
+
+### BREAKING CHANGES
+
+* use nitter as internal API source with guest accounts, upgrade microfleet
+
 ## [8.0.2](https://github.com/makeomatic/mservice-social/compare/v8.0.1...v8.0.2) (2023-05-27)
 
 
