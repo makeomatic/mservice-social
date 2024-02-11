@@ -1,3 +1,10 @@
+## [9.0.1](https://github.com/makeomatic/mservice-social/compare/v9.0.0...v9.0.1) (2024-02-11)
+
+
+### Bug Fixes
+
+* upgrade microfleet/knex, normalize account ([#143](https://github.com/makeomatic/mservice-social/issues/143)) ([f417840](https://github.com/makeomatic/mservice-social/commit/f417840d4bf548508f9382de9d17e8828f5a40b6))
+
 # [9.0.0](https://github.com/makeomatic/mservice-social/compare/v8.0.2...v9.0.0) (2024-01-21)
 
 
