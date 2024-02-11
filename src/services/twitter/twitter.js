@@ -20,7 +20,7 @@ function extractAccount(accum, value) {
     value.meta.internal = value.internal;
     value.meta.network_id = value.network_id;
     value.meta.cursor = value.cursor;
-    value.meta.account = value.account.toLowerCase();
+    value.meta.account = value.meta.account.toLowerCase();
     accum.push(value.meta);
   }
 
