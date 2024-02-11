@@ -1,8 +1,7 @@
 const get = require('get-value');
 const { HttpStatusError } = require('common-errors');
 const { merge, find } = require('lodash');
-// eslint-disable-next-line no-unused-vars
-const Promise = require('bluebird');
+const hwp = require('hwp');
 
 const StatusFilter = require('./status-filter');
 const { transform, TYPE_TWEET } = require('../../utils/response');
@@ -21,6 +20,7 @@ function extractAccount(accum, value) {
     value.meta.internal = value.internal;
     value.meta.network_id = value.network_id;
     value.meta.cursor = value.cursor;
+    value.meta.account = value.account.toLowerCase();
     accum.push(value.meta);
   }
 
@@ -255,10 +255,9 @@ class Twitter {
 
     const accounts = feeds.reduce(extractAccount, []);
 
-    for (const item of accounts) {
-      // eslint-disable-next-line no-await-in-loop
+    await hwp.forEach(accounts, async (item) => {
       await this.syncAccount(item.account);
-    }
+    });
 
     this.logger.debug({ accounts }, 'resolved accounts');
 
@@ -277,16 +276,15 @@ class Twitter {
     }
 
     if (this.syncTimer == null) {
-      this.syncTimer = setTimeout(() => {
-        // eslint-disable-next-line promise/catch-or-return
-        this.syncFeed()
-          .catch((err) => {
-            this.logger.warn({ err }, 'error occurred while syncing feeds');
-          })
-          .finally(() => {
-            this.syncTimer = null;
-            this.startTimer();
-          });
+      this.syncTimer = setTimeout(async () => {
+        try {
+          await this.syncFeed();
+        } catch (err) {
+          this.logger.warn({ err }, 'error occurred while syncing feeds');
+        } finally {
+          this.syncTimer = null;
+          this.startTimer();
+        }
       }, SYNC_INTERVAL);
 
       this.logger.trace('sync timer restarted');
