@@ -62,10 +62,12 @@ function getTweetFromGraphQL(data, id) {
                   setRetweetedStatus(legacy);
                   setInReplyTo(legacy);
 
-                  const user = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result?.legacy;
-                  user.id_str = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result.rest_id;
+                  const userResult = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result
+                  const user = userResult?.legacy;
+
+                  user.id_str = userResult?.rest_id;
                   user.id = parseInt(user.id_str, 10);
-                  user.verified = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result?.is_blue_verified;
+                  user.verified = userResult?.is_blue_verified || false;
 
                   return {
                     ...legacy,
