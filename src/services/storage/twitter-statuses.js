@@ -11,7 +11,7 @@ class TwitterStatuses {
   async last({ account }) {
     return this.knex(this.table)
       .select()
-      .where({ account })
+      .where({ account: account.toLowerCase() })
       .orderBy([{ column: 'id', order: 'desc' }])
       .limit(1)
       .first();

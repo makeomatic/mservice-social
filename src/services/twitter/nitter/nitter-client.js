@@ -29,17 +29,20 @@ class NitterClient {
       url = `${url}?${query}`;
     }
 
-    const response = await this.pool.request({
+    const {
+      statusCode,
+      body
+    } = await this.pool.request({
       path: url,
       method: method.toUpperCase()
     });
 
-    const statusCode = response.statusCode;
-    const data = await response.body.text();
-
     if (statusCode !== 200) {
-      throw new Error(`Request failed with status code: ${statusCode}, body: ${data}`);
+      await body.dump()
+      throw new HttpStatusError(statusCode, `Request failed with status code: ${statusCode}`);
     }
+
+    const data = await body.text();
 
     return {
       statusCode,
