@@ -39,7 +39,7 @@ class NitterClient {
 
     if (statusCode !== 200) {
       await body.dump()
-      throw new Error(`Request failed with status code: ${statusCode}, body: ${data}`);
+      throw new HttpStatusError(statusCode, `Request failed with status code: ${statusCode}`);
     }
 
     const data = await body.text();

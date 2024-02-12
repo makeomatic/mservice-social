@@ -374,11 +374,20 @@ class Twitter {
       };
     } catch (err) {
       this.logger.warn({ err }, 'error occurred while tweet loading');
-      // whatever happens on the api, should take a backoff to let it calm down
+
+      if (err.statusCode === 429) {
+        // whatever happens on the api, should take a backoff to let it calm down
+        return {
+          tweets: [],
+          cursorBottom: null,
+          backoff: true,
+        };
+      }
+
       return {
         tweets: [],
         cursorBottom: null,
-        backoff: true,
+        backoff: false,
       };
     }
   }
