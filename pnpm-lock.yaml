@@ -71,6 +71,9 @@ dependencies:
   debug:
     specifier: ^4.3.4
     version: 4.3.4(supports-color@8.1.1)
+  fastq:
+    specifier: ^1.17.1
+    version: 1.17.1
   get-value:
     specifier: ^3.0.1
     version: 3.0.1
