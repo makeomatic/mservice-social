@@ -65,6 +65,7 @@ function getTweetFromGraphQL(data, id) {
                   const user = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result?.legacy;
                   user.id_str = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result.rest_id;
                   user.id = parseInt(user.id_str, 10);
+                  user.verified = entry.content?.itemContent?.tweet_results?.result?.core?.user_results?.result?.is_blue_verified;
 
                   return {
                     ...legacy,
