@@ -1,7 +1,9 @@
 const get = require('get-value');
 const { HttpStatusError } = require('common-errors');
 const { merge, find } = require('lodash');
+// eslint-disable-next-line no-unused-vars
 const hwp = require('hwp');
+const fastq = require('fastq');
 
 const StatusFilter = require('./status-filter');
 const { transform, TYPE_TWEET } = require('../../utils/response');
@@ -11,6 +13,7 @@ const { kPublishEvent } = require('../notifier');
 const { NitterClient } = require('./nitter/nitter-client');
 
 const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '2500', 10);
+const BACKOFF_INTERVAL = parseInt(process.env.BACKOFF_INTERVAL || '30000', 10);
 
 function extractAccount(accum, value) {
   const accountId = value.meta.account_id;
@@ -69,6 +72,20 @@ class Twitter {
     return tweet;
   }
 
+  static findTweet(tweets, tweetId) {
+    if (!tweetId) {
+      return null;
+    }
+
+    for (const tweet of tweets) {
+      if (tweetId === tweet.id_str) {
+        return tweet;
+      }
+    }
+
+    return null;
+  }
+
   /**
    * @param {Social} core
    * @param {object} config
@@ -86,7 +103,6 @@ class Twitter {
       logger: logger.child({ namespace: '@social/nitter' }),
     });
     this.logger = logger.child({ namespace: '@social/twitter' });
-    this.loaders = new Map();
 
     const { restrictedTypes = [] } = config.requests || {};
     this.restrictedStatusTypes = restrictedTypes.map((name) => TweetTypeByName[name]);
@@ -97,6 +113,7 @@ class Twitter {
     this.following = [];
     this.accountIds = {};
     this.syncTimer = null;
+    this.syncQueue = fastq.promise(this, this.syncAccount, 1);
 
     this.syncFeed = this.syncFeed.bind(this);
     this.init = this.init.bind(this);
@@ -158,6 +175,12 @@ class Twitter {
     Object.setPrototypeOf(this.accountIds, null);
   }
 
+  /**
+   * @description returns a boolean flag whether notification required
+   * @param event
+   * @param from
+   * @returns {boolean}
+   */
   shouldNotifyFor(event, from) {
     const allow = this.notifyConfig[event];
 
@@ -179,12 +202,13 @@ class Twitter {
 
     this.logger.trace({ status }, 'saving serialized status data');
 
+    // noinspection JSUnresolvedReference
     return this.storage
       .twitterStatuses()
       .save(status);
   }
 
-  async _onData(data, notify = true) {
+  async _onTweetData(data, notify = true) {
     if (!this.isSyncable()) {
       return false;
     }
@@ -199,18 +223,24 @@ class Twitter {
       return false;
     }
 
+    let saved;
+
     try {
-      const saved = await this._saveToStatuses(data, tweetType, false);
-
-      if (notify) {
-        this.publish(saved);
-      }
-
-      return saved;
+      saved = await this._saveToStatuses(data, tweetType, false);
     } catch (err) {
       this.logger.warn({ id: data.id_str, err }, 'failed to save tweet');
       return false;
     }
+
+    if (notify) {
+      try {
+        this.publish(saved);
+      } catch (err) {
+        this.logger.warn({ err }, 'failed to publish tweet');
+      }
+    }
+
+    return saved;
   }
 
   publish(tweet) {
@@ -249,15 +279,20 @@ class Twitter {
   }
 
   async syncFeed() {
+    // noinspection JSUnresolvedReference
     const feeds = await this.storage
       .feeds()
       .fetch({ network: 'twitter' });
 
     const accounts = feeds.reduce(extractAccount, []);
 
-    await hwp.forEach(accounts, async (item) => {
-      await this.syncAccount(item.account);
-    });
+    for (const item of accounts) {
+      // This promise could be ignored as it will not lead to a 'unhandledRejection'.
+      // noinspection ES6MissingAwait
+      this.syncQueue.push(item.account);
+    }
+
+    await this.syncQueue.drained();
 
     this.logger.debug({ accounts }, 'resolved accounts');
 
@@ -300,80 +335,107 @@ class Twitter {
     }
   }
 
+  /**
+   * @description asynchronous worker for fastq
+   * @param account
+   * @returns {Promise<void>}
+   */
   async syncAccount(account) {
-    if (this.loaders.has(account)) {
-      return;
+    // calculate notification on sync
+    const notify = this.shouldNotifyFor('data', 'sync');
+
+    // recursively syncs account
+    // noinspection JSUnresolvedReference
+    const lastTweet = await this.storage
+      .twitterStatuses()
+      .last({ account });
+
+    for await (const tweets of this.pageLoader(account, lastTweet?.id)) {
+      // up to 16 tweets can be saved concurrently by default
+      await hwp.forEach(tweets, async (tweet) => {
+        return this._onTweetData(tweet, notify);
+      }, 16);
     }
+  }
 
-    this.loaders.set(account, true);
-
+  /**
+   * @description wrapper around nitter method, should introduce backoff flag capability
+   * @param account
+   * @param cursor
+   * @returns {Promise<{cursor: *, tweets: (*[]|[]|*|*[])}>}
+   */
+  async fetchTweets(account, cursor) {
     try {
-      // calculate notification on sync
-      const notify = this.shouldNotifyFor('data', 'sync');
+      const result = await this.nitter.fetchTweets(account, cursor);
+      return {
+        tweets: result?.tweets ?? [],
+        cursorBottom: result?.cursorBottom,
+        backoff: false,
+      };
+    } catch (err) {
+      this.logger.warn({ err }, 'error occurred while tweet loading');
+      // whatever happens on the api, should take a backoff to let it calm down
+      return {
+        tweets: [],
+        cursorBottom: null,
+        backoff: true,
+      };
+    }
+  }
 
-      // recursively syncs account
-      const lastTweet = await this.storage
-        .twitterStatuses()
-        .last({ account });
+  /**
+   * @description tweet page async generator for given account,
+   *  should stop loading as soon as lastTweetId is reached
+   * @param account
+   * @param lastTweetId
+   * @returns {AsyncGenerator<[]|*[], void, *>}
+   */
+  async* pageLoader(account, lastTweetId) {
+    let total = 0;
+    let cursor = null;
 
-      this.logger.info({
-        tweet: { id: lastTweet?.id },
-        account,
-      }, 'last tweet');
+    for (let page = 1; page <= this.loaderMaxPages; page += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const { tweets, cursorBottom, backoff } = await this.fetchTweets(account, cursor);
 
-      let looped = true;
-      let page = 1;
-      let count = 0;
-      let cursor = null;
-
-      do {
-        // eslint-disable-next-line no-await-in-loop
-        const result = await this.nitter.fetchTweets(account, cursor);
-        const tweets = result.tweets ?? [];
-        cursor = result.cursorBottom;
-
+      if (backoff) {
         this.logger.debug({
           account,
-          page,
-          tweets: tweets.map((tweet) => tweet.id_str),
-        }, 'tweets loaded');
+          lastTweetId,
+          backoff,
+          backoffInterval: BACKOFF_INTERVAL,
+        }, 'pageLoader backoff');
 
-        if (lastTweet) {
-          for (const tweet of tweets) {
-            if (lastTweet.id === tweet.id_str) {
-              this.logger.debug({
-                account,
-                tweet_id: tweet.id_str,
-              }, 'last known tweet reached, loader terminated');
-              looped = false;
-              break;
-            }
-          }
-          if (!looped) {
-            break;
-          }
-        }
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => { setTimeout(resolve, BACKOFF_INTERVAL); });
 
-        for (const tweet of tweets) {
-          // eslint-disable-next-line no-await-in-loop
-          await this._onData(tweet, notify);
-        }
+        yield [];
+        break;
+      }
 
-        looped = page < this.loaderMaxPages && tweets.length > 0;
-        count += tweets.length;
+      cursor = cursorBottom;
+      total += tweets.length;
+      const isLastTweet = !!Twitter.findTweet(tweets, lastTweetId);
+      const nextPage = tweets.length > 0 && this.isSyncable() && !isLastTweet;
 
-        this.logger.debug({
-          looped, page, cursor, count, account,
-        }, 'tweet page loaded');
+      this.logger.debug({
+        nextPage,
+        page,
+        cursor,
+        total,
+        account,
+        lastTweetId,
+        isLastTweet,
+        ...(this.logger.level === 'debug' || this.logger.level === 'trace'
+          ? { tweetIds: tweets.map((tweet) => tweet.id_str) }
+          : {}),
+      }, 'tweet page loaded');
 
-        if (looped) {
-          page += 1;
-        }
-      } while (looped && !this.isStopped);
-    } catch (err) {
-      this.logger.warn({ err, account }, 'error occurred while tweet loading');
-    } finally {
-      this.loaders.delete(account);
+      yield tweets;
+
+      if (!nextPage) {
+        break;
+      }
     }
   }
 
