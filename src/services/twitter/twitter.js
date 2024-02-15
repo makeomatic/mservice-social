@@ -251,7 +251,7 @@ class Twitter {
   async syncFeed() {
     const feeds = await this.storage
       .feeds()
-      .fetch({ network: 'twitter' });
+      .fetch({ network: 'twitter', invalid: false });
 
     const accounts = feeds.reduce(extractAccount, []);
 
