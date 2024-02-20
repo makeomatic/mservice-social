@@ -231,7 +231,7 @@ describe('01.twitter.js', function testSuite() {
     assert(meta.account_id, '12');
     assert(meta.account);
     assert(meta.account_name);
-    assert.equal(meta.account_verified, false); // NOTE: status is gone now in 1.1
+    assert.equal(meta.account_verified, true); // from is_blue_verified
     assert(meta.retweet_count);
     assert(meta.favorite_count);
   });
